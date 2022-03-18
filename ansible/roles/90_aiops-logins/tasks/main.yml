@@ -1,0 +1,506 @@
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Connection Details
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Get Cluster FQDN
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+
+- name: PREREQUISITES -  🌏 Get Cluster FQDN
+  shell: |
+    CLUSTER_ROUTE=$(oc get routes console -n openshift-console | tail -n 1 2>&1 ) 
+    CLUSTER_FQDN=$( echo $CLUSTER_ROUTE | awk '{print $2}')
+    echo ${CLUSTER_FQDN##*console.}
+  register: CLUSTER_NAME
+
+
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# WAIOPS
+# --------------------------------------------------------------------------------------------------------------------------------------
+- name: LOGIN -  🚀 WAIOPS
+  shell: |
+    echo "CloudPak for Watson AIOps"
+    echo "**********************************************************************************************************************************"
+    echo "CP4WAIOPS"
+    echo "**********************************************************************************************************************************"
+    echo "    AIOPS:"
+    echo "        URL:      https://$(oc get route -n {{ WAIOPS_NAMESPACE }} cpd -o jsonpath={.spec.host})"
+    echo "        ADMIN USER:"
+    echo "         User:     $(oc -n ibm-common-services get secret platform-auth-idp-credentials -o jsonpath='{.data.admin_username}' | base64 --decode && echo)"
+    echo "         Password: $(oc -n ibm-common-services get secret platform-auth-idp-credentials -o jsonpath='{.data.admin_password}' | base64 --decode)"
+    echo " "
+    echo "    Administration hub / Common Services"
+    echo "        URL:      https://$(oc get route -n ibm-common-services cp-console -o jsonpath={.spec.host})"
+    echo "        User:     $(oc -n ibm-common-services get secret platform-auth-idp-credentials -o jsonpath='{.data.admin_username}' | base64 --decode && echo)"
+    echo "        Password: $(oc -n ibm-common-services get secret platform-auth-idp-credentials -o jsonpath='{.data.admin_password}' | base64 --decode)"
+    echo " "
+    echo " "
+    echo " "
+    echo " "
+  register: output_string
+  ignore_errors: yes
+- name: LOGIN -          🔐 WAIOPS
+  debug: 
+    var: output_string.stdout_lines
+  #when: PRINT_LOGINS == true
+
+
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# EventManager
+# --------------------------------------------------------------------------------------------------------------------------------------
+- name: CHECK -  🔎 ADDONS - EventManager
+  kubernetes.core.k8s:
+    kind: Namespace
+    name: "{{ EVTMGR_NAMESPACE }}"
+  register: EVENTMANAGER_EXISTS 
+
+- name: LOGIN -  🚀 ADDONS - EventManager
+  block:
+  - name: LOGIN -  🚀 ADDONS - EventManager
+    shell: |
+      echo "**********************************************************************************************************************************"
+      echo "EventManager Connection Details"
+      echo "**********************************************************************************************************************************"
+      echo "            🌏 URL:      https://$(oc get route -n {{ EVTMGR_NAMESPACE }}  evtmanager-ibm-hdm-common-ui -o jsonpath={.spec.host})"
+      echo "            🧑 User:     demo"
+      echo "            🔐 Password: P4ssw0rd!"
+      echo ""
+      echo "            🧑 User:     smadmin"
+      echo "            🔐 Password: $(oc get secret -n {{ EVTMGR_NAMESPACE }}  evtmanager-was-secret -o jsonpath='{.data.WAS_PASSWORD}'| base64 --decode && echo)"
+    register: output_string
+    ignore_errors: yes
+  - name: LOGIN -          🔐 EventManager
+    debug: 
+      var: output_string.stdout_lines
+    #when: PRINT_LOGINS == true
+  when: EVENTMANAGER_EXISTS .resources|length != 0
+
+
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# OCP Demo User
+# --------------------------------------------------------------------------------------------------------------------------------------
+- name: LOGIN -  🚀 OCP Demo User
+  shell: |
+    echo "**********************************************************************************************************************************"
+    echo "OCP Connection Details"
+    echo "**********************************************************************************************************************************"
+    DEMO_TOKEN=$(oc -n default get secret $(oc get secret -n default |grep -m1 demo-admin-token|awk '{print$1}') -o jsonpath='{.data.token}'|base64 --decode)
+    DEMO_URL=$(oc status|grep -m1 "In project"|awk '{print$6}')
+    echo "        URL:     $DEMO_URL"
+    echo "        Token:   $DEMO_TOKEN"
+    echo ""
+    echo ""
+    echo ""
+    echo "        Login:   oc login --token=$DEMO_TOKEN --server=$DEMO_URL"
+    echo ""
+    echo " "
+    echo " "
+    echo " "
+    echo " "
+  register: output_string
+  ignore_errors: yes
+- name: LOGIN -          🔐 OCP Demo User
+  debug: 
+    var: output_string.stdout_lines
+  #when: PRINT_LOGINS == true
+
+
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Demo Apps
+# --------------------------------------------------------------------------------------------------------------------------------------
+- name: LOGIN -  🚀 Demo Apps
+  shell: |
+    echo "**********************************************************************************************************************************"
+    echo "Demo Apps - Details"
+    echo "**********************************************************************************************************************************"
+    appURL=$(oc get routes -n robot-shop web  -o jsonpath="{['spec']['host']}")|| true
+    echo "    RobotShop:"
+    echo "        APP URL:           http://$appURL/"
+    echo ""
+    appURL=$(oc get routes -n kubetoy kubetoy  -o jsonpath="{['spec']['host']}")|| true
+    echo "    Kubetoy:"
+    echo "        APP URL:           http://$appURL/"
+    echo " "
+    echo " "
+    echo " "
+    echo " "
+  register: output_string
+  ignore_errors: yes
+- name: LOGIN -          🔐 Demo Apps
+  debug: 
+    var: output_string.stdout_lines
+  #when: PRINT_LOGINS == true
+
+
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# LDAP Connection
+# --------------------------------------------------------------------------------------------------------------------------------------
+- name: LOGIN -  🚀 LDAP Connection
+  shell: |
+    echo "**********************************************************************************************************************************"
+    echo "LDAP Connection Details"
+    echo "**********************************************************************************************************************************"
+    echo "    OPENLDAP:"
+    echo "        URL:      http://$(oc get route -n default openldap-admin -o jsonpath={.spec.host})"
+    echo "        User:     cn=admin,dc=ibm,dc=com"
+    echo "        Password: P4ssw0rd!"
+    echo " "
+    echo " "
+    echo " "
+    echo " "
+  register: output_string
+  ignore_errors: yes
+- name: LOGIN -          🔐 LDAP Connection
+  debug: 
+    var: output_string.stdout_lines
+  #when: PRINT_LOGINS == true
+
+
+
+
+
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# ADDONS - Turbonomic
+# --------------------------------------------------------------------------------------------------------------------------------------
+- name: CHECK -  🔎 ADDONS - Turbonomic
+  kubernetes.core.k8s:
+    kind: Namespace
+    name: turbonomic
+  register: EVENTMANAGER_EXISTS 
+
+- name: LOGIN -  🚀 ADDONS - Turbonomic
+  block:
+  - name: LOGIN -  🚀 ADDONS - Turbonomic
+    shell: |
+      echo "**********************************************************************************************************************************"
+      echo "Turbonomic Dashboard Connection Details"
+      echo "**********************************************************************************************************************************"
+      echo "    Turbonomic Dashboard :"
+      echo "        URL:      https://$(oc get route -n turbonomic api -o jsonpath={.spec.host})"
+      echo "        User:     administrator"
+      echo "        Password: As set at init step"
+      echo " "
+      echo " "
+      echo " "
+      echo " "
+    register: ready
+    ignore_errors: yes
+  - name: LOGIN -          🔐 ADDONS - Turbonomic
+    debug: 
+      var: ready.stdout_lines
+    #when: PRINT_LOGINS == true
+  when: EVENTMANAGER_EXISTS .resources|length != 0
+
+
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# ADDONS - Humio
+# --------------------------------------------------------------------------------------------------------------------------------------
+- name: CHECK -  🔎 ADDONS - Istio
+  k8s_info:
+    kind: Namespace
+    name: istio-system
+  register: EVENTMANAGER_EXISTS 
+
+- name: LOGIN -  🚀 ADDONS - Istio
+  block:
+  - name: LOGIN -  🚀 ADDONS - Istio
+    shell: |
+      echo "**********************************************************************************************************************************"
+      echo "Istio Connection Details"
+      echo "**********************************************************************************************************************************"
+      echo ""
+      echo "                🌏 RobotShop:     http://$(oc get route -n istio-system istio-ingressgateway -o jsonpath={.spec.host})"
+      echo "                🌏 Kiali:         https://$(oc get route -n istio-system kiali -o jsonpath={.spec.host})"
+      echo "                🌏 Jaeger:        https://$(oc get route -n istio-system jaeger -o jsonpath={.spec.host})"
+      echo "                🌏 Grafana:       https://$(oc get route -n istio-system grafana -o jsonpath={.spec.host})"
+      echo "    "
+      echo "    "
+      echo "          In the begining all traffic is routed to ratings-test"
+      echo "            You can modify the routing by executing:"
+      echo "              All Traffic to test:    oc apply -n robot-shop -f ./ansible/templates/demo_apps/robotshop/istio/ratings-100-0.yaml"
+      echo "              Traffic split 50-50:    oc apply -n robot-shop -f ./ansible/templates/demo_apps/robotshop/istio/ratings-50-50.yaml"
+      echo "              All Traffic to prod:    oc apply -n robot-shop -f ./ansible/templates/demo_apps/robotshop/istio/ratings-0-100.yaml"
+      echo "    "
+      echo "    "
+      echo "    "
+    register: output_string
+    ignore_errors: yes
+  - name: LOGIN -          🔐 ADDONS - Istio
+    debug: 
+      var: output_string.stdout_lines
+    #when: PRINT_LOGINS == true
+  when: EVENTMANAGER_EXISTS .resources|length != 0
+
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# ADDONS - AWX
+# --------------------------------------------------------------------------------------------------------------------------------------
+- name: CHECK -  🔎 ADDONS - AWX
+  kubernetes.core.k8s:
+    kind: Namespace
+    name: awx
+  register: EVENTMANAGER_EXISTS 
+
+- name: LOGIN -  🚀 ADDONS - AWX
+  block:
+  - name: LOGIN -  🚀 ADDONS - AWX
+    shell: |
+      echo "**********************************************************************************************************************************"
+      echo "AWX Connection Details"
+      echo "**********************************************************************************************************************************"
+      echo "    AWX:"
+      echo "                🌏 URL:      https://$(oc get route -n awx awx -o jsonpath={.spec.host})"
+      echo "                🧑 User:     admin"
+      echo "                🔐 Password: $(oc -n awx get secret awx-admin-password -o jsonpath='{.data.password}' | base64 --decode && echo)"
+      echo " "
+      echo " "
+    register: output_string
+    ignore_errors: yes
+  - name: LOGIN -          🔐 ADDONS - AWX
+    debug: 
+      var: output_string.stdout_lines
+    #when: PRINT_LOGINS == true
+  when: EVENTMANAGER_EXISTS .resources|length != 0
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# ADDONS - ManageIQ
+# --------------------------------------------------------------------------------------------------------------------------------------
+- name: CHECK -  🔎 ADDONS - ManageIQ
+  kubernetes.core.k8s:
+    kind: Namespace
+    name: manageiq
+  register: EVENTMANAGER_EXISTS 
+
+- name: LOGIN -  🚀 ADDONS - HuManageIQmio
+  block:
+  - name: LOGIN -  🚀 ADDONS - ManageIQ
+    shell: |
+      echo "**********************************************************************************************************************************"
+      echo "ManageIQ Connection Details"
+      echo "**********************************************************************************************************************************"
+      echo "    ManageIQ:"
+      echo ""
+      echo "                🌏 URL:      https://$(oc get route -n manageiq $(oc get route -n manageiq|grep httpd|awk '{print$1}') -o jsonpath={.spec.host})"
+      echo "                🧑 User:     admin"
+      echo "                🔐 Password: smartvm"
+      echo " "
+      echo " "
+    register: output_string
+    ignore_errors: yes
+  - name: LOGIN -          🔐 ADDONS - ManageIQ
+    debug: 
+      var: output_string.stdout_lines
+    #when: PRINT_LOGINS == true
+  when: EVENTMANAGER_EXISTS .resources|length != 0
+  # --------------------------------------------------------------------------------------------------------------------------------------
+# ADDONS - Humio
+# --------------------------------------------------------------------------------------------------------------------------------------
+- name: CHECK -  🔎 ADDONS - Humio
+  kubernetes.core.k8s:
+    kind: Namespace
+    name: humio-logging
+  register: EVENTMANAGER_EXISTS 
+
+- name: LOGIN -  🚀 ADDONS - Humio
+  block:
+  - name: LOGIN -  🚀 ADDONS - Humio
+    shell: |
+      echo "**********************************************************************************************************************************"
+      echo "HUMIO Connection Details"
+      echo "**********************************************************************************************************************************"
+      echo "    HUMIO:"
+      echo "        URL:      http://$(oc get route -n humio-logging humio -o jsonpath={.spec.host})"
+      echo "        User:     developer"
+      echo "        Password: $(oc get secret developer-user-password -n humio-logging -o  jsonpath="{['data']['password']}" | base64 --decode)"
+      echo ""
+      echo ""
+      echo ""
+      echo "        INTEGRATION URL:      http://$(oc get route -n humio-logging humio -o jsonpath={.spec.host})/api/v1/repositories/aiops/query"
+      echo " "
+      echo " "
+      echo " "
+      echo " "
+    register: output_string
+    ignore_errors: yes
+  - name: LOGIN -          🔐 ADDONS - Humio
+    debug: 
+      var: output_string.stdout_lines
+    #when: PRINT_LOGINS == true
+  when: EVENTMANAGER_EXISTS .resources|length != 0
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# ADDONS - Rook/Ceph
+# --------------------------------------------------------------------------------------------------------------------------------------
+- name: CHECK -  🔎 ADDONS - Rook/Ceph
+  kubernetes.core.k8s:
+    kind: Namespace
+    name: rook-ceph
+  register: EVENTMANAGER_EXISTS 
+
+- name: LOGIN -  🚀 ADDONS - Rook/Ceph
+  block:
+  - name: LOGIN -  🚀 ADDONS - Rook/Ceph
+    shell: |
+      echo "**********************************************************************************************************************************"
+      echo "Rook/Ceph Dashboard Connection Details"
+      echo "**********************************************************************************************************************************"
+      echo "    Rook/Ceph Dashboard :"
+      echo "        URL:      https://dash-rook-ceph.{{ CLUSTER_NAME.stdout }}/"
+      echo "        User:     admin"
+      echo "        Password: $(oc -n rook-ceph get secret rook-ceph-dashboard-password -o jsonpath="{['data']['password']}" | base64 --decode)"
+    register: output_string
+    ignore_errors: yes
+  - name: LOGIN -          🔐 ADDONS - Rook/Ceph
+    debug: 
+      var: output_string.stdout_lines
+    #when: PRINT_LOGINS == true
+  when: EVENTMANAGER_EXISTS .resources|length != 0
+
+
+
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# ADDONS - ELK
+# --------------------------------------------------------------------------------------------------------------------------------------
+- name: CHECK -  🔎 ADDONS - ELK
+  kubernetes.core.k8s:
+    kind: Namespace
+    name: openshift-logging
+  register: EVENTMANAGER_EXISTS 
+
+- name: LOGIN -  🚀 ADDONS - ELK
+  block:
+  - name: LOGIN -  🚀 ADDONS - ELK
+    shell: |
+      token=$(oc sa get-token cluster-logging-operator -n openshift-logging)
+      routeES=`oc get route elasticsearch -o jsonpath={.spec.host} -n openshift-logging`
+      routeKIBANA=`oc get route kibana -o jsonpath={.spec.host} -n openshift-logging`
+      echo "      "
+      echo "            📥 ELK:"
+      echo "      "
+      echo "               🌏 ELK service URL             : https://$routeES/app*"
+      echo "               🔐 Authentication type         : Token"
+      echo "               🔐 Token                       : $token"
+      echo "      "
+      echo "               🌏 Kibana URL                  : https://$routeKIBANA"
+      echo "               🚪 Kibana port                 : 443"
+      echo "               🗺️  Mapping                     : "
+      echo "{ "
+      echo "  \"codec\": \"elk\","
+      echo "  \"message_field\": \"message\","
+      echo "  \"log_entity_types\": \"kubernetes.container_image_id, kubernetes.host, kubernetes.pod_name, kubernetes.namespace_name\","
+      echo "  \"instance_id_field\": \"kubernetes.container_name\","
+      echo "  \"rolling_time\": 10,"
+      echo "  \"timestamp_field\": \"@timestamp\""
+      echo "}"
+      echo "  "
+      echo ""
+      echo ""
+    register: output_string
+    ignore_errors: yes
+  - name: LOGIN -          🔐 ADDONS - ELK
+    debug: 
+      var: output_string.stdout_lines
+    #when: PRINT_LOGINS == true
+  when: EVENTMANAGER_EXISTS .resources|length != 0
+
+
+
+
+
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# USER
+# --------------------------------------------------------------------------------------------------------------------------------------
+- name: LOGIN -  🚀 Flink Task Manager
+  shell: |
+    echo "**********************************************************************************************************************************"
+    echo "Flink Task Manager"
+    echo "**********************************************************************************************************************************"
+    appURL=$(oc get routes -n {{ WAIOPS_NAMESPACE }} job-manager  -o jsonpath="{['spec']['host']}")
+    echo "    Flink Task Manager:"
+    echo "        APP URL:           https://$appURL/"
+    echo ""
+    echo "        In Chrome: if you get blocked just type "thisisunsafe" and it will continue (you don't get any visual feedback when typing!)"
+    echo " "
+    echo " "
+    echo " "
+    echo " "
+  register: output_string
+  ignore_errors: yes
+- name: LOGIN -          🔐 Flink Task Manager
+  debug: 
+    var: output_string.stdout_lines
+  #when: PRINT_LOGINS == true
+
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# USER
+# --------------------------------------------------------------------------------------------------------------------------------------
+- name: LOGIN -  🚀 Vault
+  shell: |
+    echo "**********************************************************************************************************************************"
+    echo "Vault"
+    echo "**********************************************************************************************************************************"
+    echo "                🌏 URL:      https://$(oc get route -n {{ WAIOPS_NAMESPACE }} ibm-vault-deploy-vault-route -o jsonpath={.spec.host})"
+    echo "                🔐 Token:    $(oc get secret -n {{ WAIOPS_NAMESPACE }} ibm-vault-deploy-vault-credential -o jsonpath='{.data.token}' | base64 --decode && echo)"
+  register: output_string
+  ignore_errors: yes
+- name: LOGIN -          🔐 Vault
+  debug: 
+    var: output_string.stdout_lines
+  #when: PRINT_LOGINS == true
+
+
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Service Now
+# --------------------------------------------------------------------------------------------------------------------------------------
+- name: LOGIN -  🚀 Service Now Connection
+  shell: |
+    echo "**********************************************************************************************************************************"
+    echo "Service Now Connection Details"
+    echo "**********************************************************************************************************************************"
+    echo "            📥 Login SNOW Dev Portal (if you have to wake the dev instance):"
+    echo "    " 
+    echo "                🌏 URL:                   https://developer.servicenow.com/dev.do"
+    echo "                🧑 User:                  demo@mydemo.center"
+    echo "                🔐 Password:              P4ssw0rd!IBM"
+    echo ""
+    echo ""
+    echo "            📥  Login SNOW Instance::"
+    echo ""
+    echo "                🌏 URL:                   https://dev56805.service-now.com"
+    echo "                🧑 User ID:               abraham.lincoln             (if you followed the demo install instructions)"
+    echo "                🔐 Password:              P4ssw0rd!                   (if you followed the demo install instructions)"
+    echo "                🔐 Encrypted Password:    g4W3L7/eFsUjV0eMncBkbg==    (if you followed the demo install instructions)"
+    echo ""
+    echo ""
+    echo "            📥 INTEGRATION SNOW-->CP4WAIOPS:"
+    echo "    " 
+    echo "                🌏 URL:                   https://$(oc get route -n {{ WAIOPS_NAMESPACE }} cpd -o jsonpath={.spec.host})    (URL for IBM Watson AIOps connection)"
+    echo "                📛 Instance Name:         aimanager"
+    echo "                🧑 User:                  admin"
+    echo "                🔐 Password:              $(oc -n ibm-common-services get secret platform-auth-idp-credentials -o jsonpath='{.data.admin_password}' | base64 --decode)"
+    echo " "
+    echo " "
+    echo " "
+    echo " "
+  register: output_string
+  ignore_errors: yes
+- name: LOGIN -          🔐 Service Now Connection
+  debug: 
+    var: output_string.stdout_lines
+  #when: PRINT_LOGINS == true

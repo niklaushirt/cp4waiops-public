@@ -1,0 +1,24 @@
+apiVersion: core.humio.com/v1alpha1
+kind: HumioRepository
+metadata:
+  name: aiops
+  namespace: humio-logging
+spec:
+  managedClusterName: humiocluster
+  name: aiops
+  description: "aiops"
+  retention:
+    timeInDays: 60
+    ingestSizeInGB: 50
+    storageSizeInGB: 30
+---
+apiVersion: core.humio.com/v1alpha1
+kind: HumioIngestToken
+metadata:
+  name: aiops-humioingesttoken
+  namespace: humio-logging
+spec:
+  managedClusterName: humiocluster
+  name: aiops-humioingesttoken
+  repositoryName: aiops
+  tokenSecretName: aiops-humioingesttoken

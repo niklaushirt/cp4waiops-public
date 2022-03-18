@@ -1,0 +1,72 @@
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Install MANAGEIQ (open source CloudForms)
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Install MANAGEIQ
+# --------------------------------------------------------------------------------------------------------------------------------------
+- name: MANAGEIQ -           🌏 Get Cluster FQDN
+  shell: |
+    CLUSTER_ROUTE=$(oc get routes console -n openshift-console | tail -n 1 2>&1 ) 
+    CLUSTER_FQDN=$( echo $CLUSTER_ROUTE | awk '{print $2}')
+    echo ${CLUSTER_FQDN##*console.}
+  register: CLUSTER_NAME
+
+- name: ROOKCEPH -           💾 Set Global Cluster Name={{ CLUSTER_NAME.stdout_lines[0] }} 
+  set_fact: CLUSTER_NAME_GLOBAL={{ CLUSTER_NAME.stdout_lines[0] }} 
+
+
+
+- name: MANAGEIQ -           🚀 Create MANAGEIQ namespace
+  kubernetes.core.k8s:
+    api_version: v1
+    kind: Namespace
+    name: "manageiq"
+    state: present
+  
+  
+- name: MANAGEIQ -           🚀 Create MANAGEIQ CRD
+  kubernetes.core.k8s:
+    state: present
+    namespace: manageiq
+    src: ./templates/manageiq/1_manageiq.org_manageiqs_crd.yaml
+  
+
+- name: MANAGEIQ -           🚀 Create MANAGEIQ Service Account
+  kubernetes.core.k8s:
+    state: present
+    namespace: manageiq
+    src: ./templates/manageiq/2_service_account.yaml
+  
+
+- name: MANAGEIQ -           🚀 Create MANAGEIQ Role
+  kubernetes.core.k8s:
+    state: present
+    namespace: manageiq
+    src: ./templates/manageiq/3_role.yaml
+  
+
+- name: MANAGEIQ -           🚀 Create MANAGEIQ Role Binding
+  kubernetes.core.k8s:
+    state: present
+    namespace: manageiq
+    src: ./templates/manageiq/4_role_binding.yaml
+  
+
+- name: MANAGEIQ -           🚀 Create MANAGEIQ Operator
+  kubernetes.core.k8s:
+    state: present
+    namespace: manageiq
+    src: ./templates/manageiq/5_operator.yaml
+  
+
+- name: MANAGEIQ -           🚀 Create MANAGEIQ Instance
+  kubernetes.core.k8s:
+    state: present
+    namespace: manageiq
+    template: ./templates/manageiq/6_manageiq_install_cr.j2
+  

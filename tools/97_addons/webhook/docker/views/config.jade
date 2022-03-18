@@ -1,0 +1,72 @@
+extends layout
+
+block title
+  h1 AIManager
+  h2 Generic Event Webhook
+
+
+block navigation
+  p
+  p Endpoints
+  p
+  a(href='/webhook') Webhook
+  p
+  p Configuration
+  p
+  a(href='/config') Configuration
+  p
+  p About
+  p
+  a(href='/about') About
+
+
+block content
+  p
+  h3 Current Configuration
+  h4 MAPPING
+
+  table
+    tbody
+      tr
+        td  Iterate Over:     
+        td #{iterateElement}
+      tr
+        td  Node:             
+        td #{nodeElement}
+      tr
+        td  AlertGroup:       
+        td #{alertgroupElement}
+      tr
+        td  Summary:          
+        td #{summaryElement}
+      tr
+        td  URL:              
+        td #{urlElement}
+      tr
+        td  Severity:         
+        td #{severityElement}
+      tr
+        td  Timestamp:        
+        td #{timestampElement}
+  br
+  h4 KAFKA Parameters
+  table
+    tbody
+      tr
+        td   KafkaBroker:     
+        td #{kafkaBroker}
+      tr
+        td   KafkaUser:       
+        td #{kafkaUser}
+      tr
+        td   KafkaPWD:        
+        td **PROVIDED**
+      tr
+        td   KafkaTopic Events:
+        td #{kafkaTopicEvents}
+      tr
+        td   KafkaTopic Logs:
+        td #{kafkaTopicLogs}
+      tr
+        td   Token:
+        td #{token}

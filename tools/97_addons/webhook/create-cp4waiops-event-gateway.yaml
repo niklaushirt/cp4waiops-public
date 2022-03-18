@@ -1,0 +1,97 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name:  cp4waiops-event-gateway-config
+  namespace: cp4waiops
+data:
+  ITERATE_ELEMENT: 'events'
+  NODE_ELEMENT: 'kubernetes.container_name'
+  ALERT_ELEMENT: 'kubernetes.namespace_name'
+  SUMMARY_ELEMENT: '@rawstring'
+  TIMESTAMP_ELEMENT: '@timestamp'
+  URL_ELEMENT: 'none'
+  SEVERITY_ELEMENT: '5'
+  MANAGER_ELEMENT: 'KafkaWebhook'
+  KAFKA_BROKER: 'iaf-system-kafka-0-cp4waiops.itzroks-270003bu3k-r49ukk-6ccd7f378ae819553d37d5f2ee142bd6-0000.eu-gb.containers.appdomain.cloud:443'
+  KAFKA_USER: 'cp4waiops-cartridge-kafka-auth'
+  KAFKA_PWD: 'PHvHr8n4Pl5a'
+  KAFKA_TOPIC: ''
+  CERT_ELEMENT:  |-
+    -----BEGIN CERTIFICATE-----
+    MIIDGzCCAgOgAwIBAgIRAIjPGNXO7yaBikWS2XYK9/UwDQYJKoZIhvcNAQELBQAw
+    JzElMCMGA1UEAxMcSUJNIEF1dG9tYXRpb24gRm91bmRhdGlvbiBDQTAeFw0yMTEy
+    MTMxMTA3NTdaFw0yMjAzMTMxMTA3NTdaMCcxJTAjBgNVBAMTHElCTSBBdXRvbWF0
+    aW9uIEZvdW5kYXRpb24gQ0EwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIB
+    AQCxo6B1mvxfCZL+neJG7iHgYuZe4akf4Q5GXfyv2H+fkq3vTcAxzw5cNHHS+FEN
+    rcyu3q6cJVMWVZqi6uNTcCN53QKupoMsKqHlAFuTakmcN3nuqYk05RYwMajnXfeR
+    sGPu2ydMjOrW4CitSpv2RHulIclBaoCaJ5r+Mjrx+g2fsfYxhZFqTihA1HzggKGf
+    z189qTagOArHBSKen+qMmqM3nuAJNDNSL6V9cT1NkSAj8Pyy/eimue2bpduAxMjx
+    /4qrUrKafYBc+Fofxtr8fvUF7Yd9yPSi0kZWjYK0VCg7B23P2PdjqxbmXjCKige8
+    RPH6JMsVDaClyqORi3eiVQ9RAgMBAAGjQjBAMA4GA1UdDwEB/wQEAwIChDAPBgNV
+    HRMBAf8EBTADAQH/MB0GA1UdDgQWBBTTZdI2TLsYKwk/c7BDCOz+aSyv0zANBgkq
+    hkiG9w0BAQsFAAOCAQEAOQkHOSspyoO2VnQm498qlZM6bnlH+plnsbToRBONy4TV
+    2jLCDp8fjWPq1GGqLb1kJGuzShVPLmHeeTxQ2DTW+ow4lr4b5SVWL/u/psgT8Lhe
+    26EZ58Vzf+/PDcjkZ/wlm0/aTeR2AJoj5LLD1Vo4KUvBk13xzIvWY4vyDQfGGQZZ
+    rDJlcwY+nbsbL0swvjRvBmL/jI6tKMXeQpv2bdgdNLhxryxaXGLGT3lwjrZJ/6GE
+    Bl/sWkyb99bDeuoi+bYJrhCCaXR1MLr6q2EnDyLMLHz01ybfDWI8n515yriO+Rf+
+    g/aAhVoK7GG9Uy/AeCNRN04hz1XnlKkKWWQ8Usdp4w==
+    -----END CERTIFICATE-----
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cp4waiops-event-gateway
+  namespace: cp4waiops
+  labels:
+      app:  cp4waiops-event-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app:  cp4waiops-event-gateway
+  template:
+    metadata:
+      labels:
+        app:  cp4waiops-event-gateway
+    spec:
+      containers:
+      - image: niklaushirt/cp4waiops-event-gateway:2.3
+        imagePullPolicy: IfNotPresent
+        name: gateway
+        command:
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            cpu: "50m"
+            memory: "50Mi"
+          limits:
+            cpu: "250m"
+            memory: "250Mi"
+        envFrom:
+        - configMapRef:
+            name:  cp4waiops-event-gateway-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name:  cp4waiops-event-gateway-service
+  namespace: cp4waiops
+spec:
+  selector:
+    app:  cp4waiops-event-gateway
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name:  cp4waiops-event-gateway
+  namespace: cp4waiops
+spec:
+  to:
+    kind: Service
+    name:  cp4waiops-event-gateway-service
+

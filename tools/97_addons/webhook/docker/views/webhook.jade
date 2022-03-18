@@ -1,0 +1,110 @@
+extends layout
+
+block title
+  h1 AIManager
+  h2 Generic Event Webhook
+
+
+block navigation
+  p
+  p Endpoints
+  p
+  a(href='/webhook') Webhook
+  p
+  p Configuration
+  p
+  a(href='/config') Configuration
+  p
+  p About
+  p
+  a(href='/about') About
+
+
+block content
+  h2#usage Usage
+    h3#accessing-the-web-ui Accessing the Web UI
+    p
+      | You can access the Web UI via the external Route that you can determine like this:
+    pre.
+      oc get route -n cp4waiops cp4waiops-event-gateway  -o jsonpath={.spec.host}
+    p You have to use the Token to access the UI.
+    h3#using-the-webhook Using the Webhook
+    p
+      | The Webhook API is available at 
+      code http://<YOUR-CLUSTER>/webhook
+    p
+      | It has to be called with the 
+      code POST
+      |  Method and the security 
+      code token
+      |  (defined in the ConfigMap) has to be provided in the Header.
+    p
+      | By default a dummy Mapping is being used, with the fields mapping to their target name in AI Manager (Node, NodeAlias, AlertGroup, ...).
+      | Other Mappings (at the end of this documentation) can be defined by modifying the ConfigMap.
+    p
+      | For the following example we will iterate over the 
+      code events
+      |  array and epush them to mapped version to Kafka:
+    pre.
+      curl -X "POST" "http://<YOUR-CLUSTER>/webhook" \
+        -H 'token: my-token' \
+        -H 'Content-Type: application/json; charset=utf-8' \
+        -d $'{
+      "events": [
+        {
+          "URL": "https://pirsoscom.github.io/git-commit-robot.html",
+          "Manager": "Github",
+          "Severity": 2,
+          "Summary": "[Git] Commit in repository robot-shop by Niklaus Hirt on file robot-shop.yaml - New Memory Limits",
+          "Node": "mysql-github",
+          "NodeAlias": "github",
+          "AlertGroup": "robot-shop"
+        },
+        {
+          "URL": "https://pirsoscom.github.io/INSTANA_CHANGE_ROB.html",
+          "Manager": "Instana",
+          "Severity": 3,
+          "Summary": "[Instana] MySQL - change detected - The value **resources/limits** has changed",
+          "Node": "mysql-instana",
+          "NodeAlias": "mysql",
+          "AlertGroup": "robot-shop"
+        },
+        {
+          "URL": "none",
+          "Manager": "Security",
+          "Severity": 2,
+          "Summary": "[Security] MySQL K8s Pod Created",
+          "Node": "mysql-security",
+          "NodeAlias": "mysql",
+          "AlertGroup": "robot-shop"
+        }
+      ],
+      "numberOfEvents": 3
+      }'
+    h2#mappings Mappings 
+    h3#default Default
+    pre.
+      data:
+        ITERATE_ELEMENT: 'events'
+        NODE_ELEMENT: 'Node'
+        NODEALIAS_ELEMENT: 'NodeAlias'
+        ALERT_ELEMENT: 'AlertGroup'
+        SUMMARY_ELEMENT: 'Summary'
+        TIMESTAMP_ELEMENT: '@timestamp'
+        URL_ELEMENT: 'URL'
+        SEVERITY_ELEMENT: 'Severity'
+        MANAGER_ELEMENT: 'Manager'
+    h3#humio Humio
+    pre.
+      data:
+        ITERATE_ELEMENT: 'events'
+        NODE_ELEMENT: 'kubernetes.container_name'
+        NODEALIAS_ELEMENT: 'kubernetes.container_name'
+        ALERT_ELEMENT: 'kubernetes.namespace_name'
+        SUMMARY_ELEMENT: '@rawstring'
+        TIMESTAMP_ELEMENT: '@timestamp'
+        URL_ELEMENT: 'none'
+        SEVERITY_ELEMENT: '5'
+        MANAGER_ELEMENT: 'KafkaWebhook'
+    p 
+    p 

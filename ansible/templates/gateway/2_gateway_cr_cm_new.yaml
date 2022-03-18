@@ -1,0 +1,316 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: eventmanagergateway-emgwconfig
+  namespace: cp4waiops
+data:
+  G_EVTMGR.props: >-
+    Gate.Reader.Server              : 'AGG_V'
+
+    Gate.Reader.CommonNames         :
+    'AGG_V,aiops-proxy.cp4waiops.svc,aiops-proxy.cp4waiops.svc'
+
+    Gate.Reader.Description         : 'AIManager Event Feed Gateway'
+
+    MessageLevel                    : 'WARN'
+
+    Gate.XMLGateway.DateFormat      : 'yyyy-MM-dd\'T\'HH:mm:ssZ'
+
+    Gate.Reader.IducFlushRate       : 5
+
+    # and run gateway
+
+
+    Gate.Reader.Username            : '${OMNIBUS_USER}'
+
+    Gate.Reader.Password            : '${OMNIBUS_PWD}' 
+
+    #
+
+    # Set memory limits
+
+    #
+
+    Gate.Java.Arguments             : '-Xmx1000m'
+
+    Gate.Java.Debug : TRUE
+
+    #
+
+    # Properties defining JSON messages over kafka
+
+    #
+
+    Gate.MapFile                    :
+    '$NCHOME/omnibus/gates/xml/field_filter.map'
+
+    Gate.Reader.TblReplicateDefFile : '$NCHOME/omnibus/gates/xml/row_filter.def'
+
+
+    Gate.XMLGateway.TransformerFile :
+    '$NCHOME/omnibus/java/conf/event_transformer.xml'
+
+    Gate.XMLGateway.TransportFile   :
+    '$NCHOME/omnibus/java/conf/transport.properties'
+
+    Gate.XMLGateway.TransportType   : 'KAFKA'
+
+    Gate.XMLGateway.MessageKey      : '@ServerSerial'
+
+    Gate.XMLGateway.DateFormat      : 'yyyy-MM-dd\'T\'HH:mm:ss'
+  event_transformer.xml: >-
+    <?xml version="1.0" encoding="UTF-8"?>
+
+    <tns:transformers
+    xmlns:tns="http://item.tivoli.ibm.com/omnibus/netcool/transformer"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+      <tns:transformer name="netcoolEvents" type="northbound"  endpoint="netcool" className="com.ibm.tivoli.netcool.integrations.transformer.XSLTTransformer">
+        <tns:property name="xsltFilename" type="java.lang.String" value="${OMNIHOME}/java/conf/netcool2json.xsl" description="XSLT file for converting Netcool events to JSON"/>
+      </tns:transformer>
+    </tns:transformers>
+  init.sh: |-
+    CA_CERTIFICATE_PRI=/opt/ibm/netcool/gateway/rootca-primary.crt
+    CA_CERTIFICATE_BAK=/opt/ibm/netcool/gateway/rootca-backup.crt
+    CA_CERTIFICATE_SERVICE=/opt/ibm/netcool/gateway/service-ca.crt
+    CA_NAME=AGG_V
+    KDB_PW=`head -c 32 /dev/urandom | base64`
+    NCO_SSL_SETTING=" "
+    ENABLE_TRANSPORT_DEBUG_LOG=false
+    writeOmniDotDat() {
+      if [ -s "${NCHOME}/etc/omni.dat" ];
+      then
+        rm ${NCHOME}/etc/omni.dat
+      fi
+      cat <<- EOF > ${NCHOME}/etc/omni.dat
+    [AGG_P]
+    {
+      Primary: ${OMNIBUS_PRIMARY_HOST} ${NCO_SSL_SETTING} ${OMNIBUS_PRIMARY_PORT}
+    }
+    [AGG_B]
+    {
+      Primary: ${OMNIBUS_BACKUP_HOST} ${NCO_SSL_SETTING} ${OMNIBUS_BACKUP_PORT}
+    }
+    [${OMNIBUS_VIRTUAL_PAIR_NAME}]
+    {
+      Primary: ${OMNIBUS_PRIMARY_HOST} ${NCO_SSL_SETTING} ${OMNIBUS_PRIMARY_PORT}
+      Backup: ${OMNIBUS_BACKUP_HOST} ${NCO_SSL_SETTING} ${OMNIBUS_BACKUP_PORT}
+    }
+    [G_EVTMGR]
+    {
+        Primary: 0.0.0.0 4300
+    }
+    EOF
+      echo "$(date) omni.dat is:"
+      cat ${NCHOME}/etc/omni.dat
+      ${NCHOME}/bin/nco_igen
+    }
+    createKeystore() {
+      # do we have a root CA cert for TLS'd ObjectServers?
+      ls -la /opt/ibm/netcool/gateway
+      if [ -s ${CA_CERTIFICATE_PRI} -o -s ${CA_CERTIFICATE_BAK} -o -s ${CA_CERTIFICATE_SERVICE} ]; then
+        echo "$(date) Enabling ssl for omni.dat"
+        NCO_SSL_SETTING=" ssl "
+        echo "$(date) Creating a key database"
+        ${NCHOME}/bin/nc_gskcmd -keydb -create -db ${NCHOME}/etc/security/keys/omni.kdb -pw ${KDB_PW} -stash -expire 366
+
+        if [ ! -d ${CA_CERTIFICATE_SERVICE} ] && [ -s ${CA_CERTIFICATE_SERVICE} ]; then
+          echo "$(date) Importing certificate ($(basename ${CA_CERTIFICATE_SERVICE})) to the key database"
+          ${NCHOME}/bin/nc_gskcmd -cert -add -db ${NCHOME}/etc/security/keys/omni.kdb -pw ${KDB_PW} -label openshift-service-ca -file ${CA_CERTIFICATE_SERVICE}
+        fi
+        if [ ! -d ${CA_CERTIFICATE_PRI} ] && [ -s ${CA_CERTIFICATE_PRI} ]; then
+          echo "$(date) Importing certificate ($(basename ${CA_CERTIFICATE_PRI})) to the key database"
+          ${NCHOME}/bin/nc_gskcmd -cert -add -db ${NCHOME}/etc/security/keys/omni.kdb -pw ${KDB_PW} -label ${OMNIBUS_PRIMARY_HOST} -file ${CA_CERTIFICATE_PRI}
+        fi
+        if [ ! -d ${CA_CERTIFICATE_BAK} ] && [ -s ${CA_CERTIFICATE_BAK} ]; then
+          echo "$(date) Importing certificate ($(basename ${CA_CERTIFICATE_BAK})) to the key database"
+          ${NCHOME}/bin/nc_gskcmd -cert -add -db ${NCHOME}/etc/security/keys/omni.kdb -pw ${KDB_PW} -label ${OMNIBUS_BACKUP_HOST} -file ${CA_CERTIFICATE_BAK}
+        fi
+        ${NCHOME}/bin/nc_gskcmd -cert -list -db ${NCHOME}/etc/security/keys/omni.kdb -pw ${KDB_PW}
+      fi
+    }
+    initialize() {
+      # check if we have a certificate mounted and create keystore if needed
+      createKeystore
+      # write omni.dat with ssl options when cert is found
+      writeOmniDotDat
+    }
+    ncoping() {
+      while [ true ]; do
+        echo -n "`date` ";
+        if ${NCHOME}/omnibus/bin/nco_ping ${OMNIBUS_VIRTUAL_PAIR_NAME}; then
+          break;
+        else
+          sleep 5;
+        fi;
+      done
+    }
+    addKafkaCertificate() {
+      if [ -s ${KAFKA_CERTIFICATE} ]; then
+        updateJavaSecurityProvider "${NCHOME}/platform/linux2x86/jre64_1.8.0/jre/lib/security/java.security"
+        createEmptyFipsConfigFile
+        echo "$(date) Importing certificate KAFKA_CERTIFICATE to the key database"
+        ${NCHOME}/platform/linux2x86/jre64_1.8.0/jre/bin/keytool -noprompt -import -keystore /opt/IBM/tivoli/netcool/platform/linux2x86/jre64_1.8.0/jre/lib/security/cacerts -file ${KAFKA_CERTIFICATE} -alias "iaf-kafka" -storepass changeit
+      fi
+    }
+    updateLogConfig(){
+      if [[ "${ENABLE_TRANSPORT_DEBUG_LOG}" == "true" ]]; then
+        cat <<- EOF > ${NCHOME}/omnibus/java/conf/log4j/log4j2.xml
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!-- Log4j2 Configuration for Transport Module -->
+    <Configuration>
+      <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+          <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
+        </Console>
+      </Appenders>
+      <Loggers>
+        <Root level="DEBUG" > 
+          <!-- Increase the logging level to get more detailed logs if necessary. -->
+          <AppenderRef ref="Console"/>
+        </Root>
+      </Loggers>
+    </Configuration>
+    EOF
+        echo "Log4j2.xml config file updated."
+        export LOG4J_CONFIG=${NCHOME}/omnibus/java/conf/log4j/log4j2.xml
+        if [ -n "${CLASSPATH}" ]
+        then
+          CLASSPATH=${CLASSPATH}:${LOG4J_CONFIG}
+        else
+          CLASSPATH=${LOG4J_CONFIG}
+        fi
+      fi
+    }
+    rungateway() {
+      sed "s/KAFKA_JAAS_PASSWORD/${KAFKA_JAAS_PASSWORD}/g" /opt/IBM/tivoli/netcool/omnibus/java/conf/producer-tmpl.properties >> /opt/IBM/tivoli/netcool/omnibus/java/conf/producer.properties
+      updateLogConfig
+      exec ${NCHOME}/omnibus/bin/nco_g_xml -name G_EVTMGR -messagelog stdout ${OVERRIDE_PROPS}
+    }
+    createAwkFile() {
+      local awkFile=${1}
+      cat <<- EOF > ${awkFile}
+    # AWK program file to add the required java security provider
+    # to support AES FIPS.
+    BEGIN {
+        i=0;
+    }
+    { 
+        if (\$0 ~ /^\s?security\.provider./ ) 
+        {
+            # Found first security provider
+            split(\$0, key, "="); split(key[1], subkey, ".")
+            if (int(subkey[3]) == 1 )
+            {
+                i = int(subkey[3])
+            }
+
+            if (\$0 ~ /com\.ibm\.crypto\.provider\.IBMJCE\$/ )
+            {
+                # Add com.ibm.crypto.fips.provider.IBMJCEFIPS before com.ibm.crypto.provider.IBMJCE
+                print subkey[1] "." subkey[2] "." i "=com.ibm.crypto.fips.provider.IBMJCEFIPS"
+                i++
+            }
+            print subkey[1] "." subkey[2] "." i "=" key[2]
+            i++
+        }
+        else
+        {
+            print \$0
+        }
+    }
+    EOF
+    }
+    function updateJavaSecurityProvider() {
+        local securityFile=${1:-}
+
+        if [[ ! -f "$securityFile" ]]; then
+            echo "Error: $securityFile doesn't exists."
+        else
+            echo "Checking if com.ibm.crypto.fips.provider.IBMJCEFIPS security provider is already set."
+            checkProvider=$(grep -e "^security.provider" $securityFile )
+            if [ -n "$checkProvider" ]; then
+                if [[ -n "$(echo $checkProvider | grep "com.ibm.crypto.provider.IBMJCE")" ]] \
+                && [[ -z "$(echo $checkProvider | grep "com.ibm.crypto.fips.provider.IBMJCEFIPS")" ]]; then
+                    echo "Updating java security provider to add com.ibm.crypto.fips.provider.IBMJCEFIPS."
+                    mkdir -p /home/netcool/etc/
+                    local tempSecurityFile="/home/netcool/etc/$(basename $securityFile).default"
+                    if [ -f $tempSecurityFile ]; then
+                        rm $tempSecurityFile
+                    fi
+                    # Make a backup
+                    echo "Keep a copy of \"$(basename $securityFile)\" as backup."
+                    cp $securityFile "$securityFile.bak"
+                    cp $securityFile $tempSecurityFile
+                    local updatedSecurityFilename=$(basename $securityFile).update
+                    createAwkFile /tmp/update_java_sec_provider.awk
+                    awk -f /tmp/update_java_sec_provider.awk $tempSecurityFile > $updatedSecurityFilename
+                    echo "Replacing $(basename $securityFile) with updated file: $updatedSecurityFilename"
+                    mv $updatedSecurityFilename $securityFile
+                    grep -e "^security.provider" $securityFile 
+                    echo "Java security file updated."
+                else
+                    echo "Found com.ibm.crypto.fips.provider.IBMJCEFIPS security provider in java.security file. Skip file update."
+                fi
+            fi
+        fi
+    }
+    function createEmptyFipsConfigFile(){
+        touch $NCHOME/etc/security/fips.conf
+    }
+  kafkaConnectionProperties.json: |-
+    {
+      "zookeeper_client" : {
+        "target" : "",
+        "properties" : "",
+        "java_sys_props" : "",
+        "topic_watch": true,
+        "broker_watch": true
+      },
+      "brokers" : "iaf-system-kafka-bootstrap.cp4waiops.svc:9091",
+      "topics": "cp4waiops-cartridge-alerts-noi-lwt6jy65",
+      "kafka_client" : {
+        "properties" : "/opt/IBM/tivoli/netcool/omnibus/java/conf/producer.properties",
+        "java_sys_props" : ""
+      }
+    }
+  producer-tmpl.properties: >-
+    acks=1
+
+    retries=3
+
+    retry.backoff.ms=1000
+
+    security.protocol=PLAINTEXT
+
+    sasl.mechanism=PLAIN
+
+    ssl.truststore.location=/opt/IBM/tivoli/netcool/platform/linux2x86/jre64_1.8.0/jre/lib/security/cacerts
+
+    ssl.truststore.password=changeit
+
+    ssl.truststore.type=JKS
+
+    key.serializer=org.apache.kafka.common.serialization.StringSerializer
+
+    value.serializer=org.apache.kafka.common.serialization.StringSerializer
+
+    bootstrap.servers=iaf-system-kafka-bootstrap.cp4waiops.svc:9091
+
+    sasl.jaas.config=org.apache.kafka.common.security.scram.ScramLoginModule
+    required username=cp4waiops-cartridge-kafka-auth
+    password=KAFKA_JAAS_PASSWORD;
+  row_filter.def: |-
+    REPLICATE INSERTS,UPDATES
+       FROM TABLE 'alerts.status'
+       USING MAP 'StatusMap'
+       FILTER WITH 'Severity>=0';
+  transport.properties: >-
+    kafkaClientMode=PRODUCER
+
+    LivenessCriterion=TOPIC
+
+    LivenessCheckInterval=20
+
+    LivenessCheckTimeout=10
+
+    connectionPropertiesFile=/opt/IBM/tivoli/netcool/omnibus/java/conf/kafkaConnectionProperties.json

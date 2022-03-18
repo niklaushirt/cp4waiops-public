@@ -1,0 +1,312 @@
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#       __________  __ ___       _____    ________            
+#      / ____/ __ \/ // / |     / /   |  /  _/ __ \____  _____
+#     / /   / /_/ / // /| | /| / / /| |  / // / / / __ \/ ___/
+#    / /___/ ____/__  __/ |/ |/ / ___ |_/ // /_/ / /_/ (__  ) 
+#    \____/_/      /_/  |__/|__/_/  |_/___/\____/ .___/____/  
+#                                              /_/            
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------------------------------------------------------"
+#  CP4WAIOPS 3.2 - Ansible Install Parameters
+#
+#  CloudPak for Watson AIOps
+#
+#  ©2022 nikh@ch.ibm.com
+# ---------------------------------------------------------------------------------------------------------------------------------------------------"
+# ---------------------------------------------------------------------------------------------------------------------------------------------------"
+# ---------------------------------------------------------------------------------------------------------------------------------------------------"
+# ---------------------------------------------------------------------------------------------------------------------------------------------------"
+
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# CP4WAIOPS AI Manager INSTALL PARAMETERS
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+
+# CP4WAIOPS Namespace for installation
+WAIOPS_NAMESPACE: cp4waiops
+
+# CP4WAIOPS Size of the install (small: PoC/Demo, tall: Production)
+WAIOPS_SIZE: small # Leave at small unless you know what you're doing
+
+# Version of the catalog subscription
+SUBSCRIPTION_CHANNEL: v3.2
+
+
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# CP4WAIOPS Storage Class Override
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+
+# Override the Storage Class auto detection (not_configured, ibmc-file-gold-gid, rook-cephfs, nfs-client, ...)
+STORAGECLASS_FILE_OVERRIDE: not_configured
+#STORAGECLASS_FILE_OVERRIDE: ibmc-file-gold-gid          # ROKS
+#STORAGECLASS_FILE_OVERRIDE: rook-cephfs                 # FYRE
+#STORAGECLASS_FILE_OVERRIDE: nfs-client                  # TEC
+STORAGECLASS_BLOCK_OVERRIDE: not_configured
+#STORAGECLASS_BLOCK_OVERRIDE: ibmc-block-gold            # ROKS
+#STORAGECLASS_BLOCK_OVERRIDE: rook-cephfs                # FYRE
+#STORAGECLASS_BLOCK_OVERRIDE: nfs-client                 # TEC
+
+
+
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# CP4WAIOPS Event Manager INSTALL PARAMETERS
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+
+# CP4WAIOPS Namespace for installation
+EVTMGR_NAMESPACE: cp4waiops-evtmgr
+
+
+
+
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# DEMO INSTALL PARAMETERS
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+
+# Create a demo user in the OCP cluster
+CREATE_DEMO_USER: true
+
+# Install Demo Applications
+INSTALL_DEMO_APPS: true
+
+# Print all credentials at the end of the installation
+PRINT_LOGINS: true
+
+# Install Bastion Server for Runbook Automation
+INSTALL_RUNBOOK_BASTION: true
+
+
+
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# MODULE INSTALL PARAMETERS
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+
+# Install Rook-Ceph (Should Rook-Ceph be installed (automatic: install when on IBM Fyre) (enable, automatic, disable))
+ROOK_CEPH_INSTALL_MODE: automatic
+
+
+# Install LDAP Server
+INSTALL_LDAP: true
+# LDAP Domain
+LDAP_DOMAIN: ibm.com
+# LDAP Base
+LDAP_BASE: dc=ibm,dc=com
+# LDAP Admin Password
+LDAP_ADMIN_PASSWORD: P4ssw0rd!
+
+
+# Install Turbonomic (experimental - needs separate license)
+INSTALL_TURBONOMIC: false
+# Turbonomic Storage Class (ibmc-block-gold, rook-cephfs, nfs-client, ...)
+STORAGE_CLASS_TURBO: ibmc-block-gold
+# Install Turbonomic Metrics simulation (highly experimental!)
+INSTALL_TURBONOMIC_METRICS: false
+# Install Turbonomic --> Event Manager Gateway (highly experimental!)
+INSTALL_TURBONOMIC_GATEWAY: false
+
+
+# Install Humio (needs separate license)
+INSTALL_HUMIO: false
+# Humio Storage Class (ibmc-block-gold, rook-cephfs, nfs-client, ...)
+STORAGE_CLASS_HUMIO: ibmc-block-gold
+
+
+# Install ELK Stack
+INSTALL_ELK: false
+
+
+# Install ServiceMesh/Istio
+INSTALL_ISTIO: false
+
+
+# Install AWX (Open Source Ansible Tower)
+INSTALL_AWX: false
+
+
+# Install ManageIQ (Open Source CloudForms)
+INSTALL_MANAGEIQ: false
+
+
+
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# OCP LOGIN PARAMETERS
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+OCP_LOGIN: false
+OCP_URL: not_configured
+OCP_TOKEN: not_configured
+
+#Version of your OCP Cluster (override by setting manually - 4.6, 4.7,...)
+OCP_MAJOR_VERSION: automatic
+
+
+
+
+
+# *************************************************************************************************************************************************
+# *************************************************************************************************************************************************
+# *************************************************************************************************************************************************
+# DO NOT EDIT BELOW
+# *************************************************************************************************************************************************
+# *************************************************************************************************************************************************
+# *************************************************************************************************************************************************
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# WAIOPS INSTALL PARAMETERS (do not change)
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+
+# Name of the CP4WAIOPS instance
+WAIOPS_NAME: ibm-aiops
+# Create externally accessible Route for Topology
+CREATE_TOPO_ROUTE: true
+# Create externally accessible Routes  (security risk!)
+# Flink
+# AI Manager API Route
+# Datalayer API
+CREATE_EXTERNAL_ROUTES: true
+
+# Install the EvtManager --> AI Manegr Gateway
+INSTALL_GATEWAY: true
+# Number of Pods to be expected in final CP4WAIOPS Namespace
+WAIOPS_NS_MIN_PODS_FINAL: 110
+# Number of Pods to be expected in final AI Manager Namespace
+CS_NS_MIN_PODS: 35
+# Number of Pods to be expected in final RookCeph Namespace
+ROOK_NS_MIN_PODS: 38
+# Number of Pods to be expected in final Event MAnager Namespace
+EVTMGR_NS_MIN_PODS_FINAL: 70
+
+
+
+
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# IBM ENTITLED REGISTRY PARAMETERS
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+# IBM Entitled Registry
+ENTITLED_REGISTRY: cp.icr.io
+ENTITLED_REGISTRY_USER: cp
+ENTITLED_REGISTRY_KEY: TOKEN
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ENTITLED_REGISTRY: hyc-katamari-cicd-team-docker-local.artifactory.swg-devops.com
+# ENTITLED_REGISTRY_USER: nikh@ch.ibm.com
+
+# CATALOG_IMAGE: hyc-katamari-cicd-team-docker-local.artifactory.swg-devops.com/katamari/relatedimages/ibm-watson-aiops-catalog:v3.2.0-20211029.0822-d63ba3a42
+#CATALOG_IMAGE: hyc-katamari-cicd-team-docker-local.artifactory.swg-devops.com/katamari/relatedimages/ibm-watson-aiops-catalog:v3.2.0-20211022.0601-4c62759e2  <-- worked
+#CATALOG_IMAGE: hyc-katamari-cicd-team-docker-local.artifactory.swg-devops.com/katamari/relatedimages/ibm-watson-aiops-catalog:v3.2.0-20211017.0002-ec2d009bf   <-- worked
+#CATALOG_IMAGE: hyc-katamari-cicd-team-docker-local.artifactory.swg-devops.com/katamari/relatedimages/ibm-watson-aiops-catalog:v3.2.0-20211014.0401-744608902
+#CATALOG_IMAGE: hyc-katamari-cicd-team-docker-local.artifactory.swg-devops.com/katamari/relatedimages/ibm-watson-aiops-catalog:v3.2.0-20211011.1801-7097d5a87 <-- worked
+#SUBSCRIPTION_CHANNEL: 3.2-dev
+
+#CATALOG_IMAGE: icr.io/cpopen/aiops-orchestrator-catalog:3.2-latest
+
+
+

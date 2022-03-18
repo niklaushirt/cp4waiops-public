@@ -1,0 +1,64 @@
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Install kubeturbo
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Install kubeturbo
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Create Namespace 
+- name: KUBETURBO -          🚀 Create namespace kubeturbo
+  kubernetes.core.k8s:
+    api_version: v1
+    kind: Namespace
+    name: "kubeturbo"
+    state: present
+
+
+- name: KUBETURBO -         🚀 Patch KUBETURBO Instance
+  shell: |
+    oc create route edge turbonomic-targets -n turbonomic --service=topology-processor --port=http-topology-processor
+    oc create clusterrolebinding kubeturbo-admin --clusterrole=cluster-admin --serviceaccount=kubeturbo:kubeturbo-operator
+
+  ignore_errors: yes
+
+
+- name: KUBETURBO -         🚀 Create kubeturbo service account
+  kubernetes.core.k8s:
+    state: present
+    namespace: kubeturbo
+    src: ./templates/kubeturbo/service_account.yaml
+  
+
+- name: KUBETURBO -         🚀 Create kubeturbo role bindings
+  kubernetes.core.k8s:
+    state: present
+    namespace: kubeturbo
+    src: ./templates/kubeturbo/role_binding.yaml
+  
+
+- name: KUBETURBO -         🚀 Create kubeturbo CRD
+  kubernetes.core.k8s:
+    state: present
+    namespace: kubeturbo
+    src: ./templates/kubeturbo/crds/charts_v1alpha1_kubeturbo_crd.yaml
+  
+
+- name: KUBETURBO -         🚀 Create kubeturbo Operator
+  kubernetes.core.k8s:
+    state: present
+    namespace: kubeturbo
+    src: ./templates/kubeturbo/operator.yaml
+  
+  
+- name: KUBETURBO -         🚀 Create kubeturbo installation
+  kubernetes.core.k8s:
+    state: present
+    namespace: kubeturbo
+    src: ./templates/kubeturbo/my_kubeturbo_instance_cr.yaml
+  
+
+ 

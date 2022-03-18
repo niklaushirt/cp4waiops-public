@@ -1,0 +1,53 @@
+
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Create Gateway
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+    
+
+
+
+
+- name: GATEWAY -            🔐 Copy Pull Secret from WAIOPS Namespace
+  shell: |
+    oc delete secret aiops-omni-secret -n {{ WAIOPS_NAMESPACE }}
+    oc get secret evtmanager-omni-secret -n {{ EVTMGR_NAMESPACE }} -ojson | jq -r '.data.OMNIBUS_ROOT_PASSWORD'| base64 -d > ./OMNIBUS_ROOT_PASSWORD
+    oc create secret generic aiops-omni-secret -n {{ WAIOPS_NAMESPACE }} --from-literal=username=root --from-file=password=./OMNIBUS_ROOT_PASSWORD --from-file=OMNIBUS_ROOT_PASSWORD=./OMNIBUS_ROOT_PASSWORD
+    rm ./OMNIBUS_ROOT_PASSWORD
+  ignore_errors: yes
+
+
+
+- name: GATEWAY -            🔎 Check Gateway
+  k8s_info:
+    api_version: ai-manager.watson-aiops.ibm.com/v1beta1
+    kind: EventManagerGateway
+    name: event-gateway-generic
+    namespace: "{{ WAIOPS_NAMESPACE }}"
+  register: GATEWAY_EXISTS 
+
+
+- name: GATEWAY -            🚀 Install Gateway
+  block:
+  # --------------------------------------------------------------------------------------------------------------------------------------
+  # Create Gateway
+  # --------------------------------------------------------------------------------------------------------------------------------------
+  - name: GATEWAY -            🚀 Create Gateway
+    kubernetes.core.k8s:
+      state: present
+      namespace: "{{ WAIOPS_NAMESPACE }}"
+      template: ./templates/gateway/1_gateway-generic-template.j2
+    when: INSTALL_GATEWAY == true
+
+  # - name: GATEWAY -            🩹 Patch Gateway
+  #   shell: oc apply -n {{ WAIOPS_NAMESPACE }} -f ./templates/gateway/2_gateway_cr_cm.yaml
+  #   ignore_errors: yes
+  #   when: INSTALL_GATEWAY == true
+
+  # - name: GATEWAY -            ♻️  Restart Gateway
+  #   shell: oc delete pod -n {{ WAIOPS_NAMESPACE }} $(oc get po -n {{ WAIOPS_NAMESPACE }}|grep event-gateway-generic|awk '{print$1}') 
+  #   ignore_errors: yes
+  #   when: INSTALL_GATEWAY == true
+  # when: GATEWAY_EXISTS.resources|length == 0

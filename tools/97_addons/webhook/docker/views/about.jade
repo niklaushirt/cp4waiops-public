@@ -1,0 +1,38 @@
+extends layout
+
+block title
+  h1 AIManager
+  h2 Generic Event Webhook
+
+
+block navigation
+  p
+  p Endpoints
+  p
+  a(href='/webhook') Webhook
+  p
+  p Configuration
+  p
+  a(href='/config') Configuration
+  p
+  p About
+  p
+  a(href='/about') About
+
+
+block content
+  doctype html
+  html
+    head
+      meta(charset='utf-8')
+      meta(name='viewport' content='width=device-width, initial-scale=1.0, user-scalable=yes')
+      title README
+
+    body
+      h3#toc_0 A Simple Webhook to Kafka Deployment for CP4WAIOPS AIManager
+      p
+        | A Simple Webhook to Kafka Gateway for CP4WAIOPS.
+        | This allows you to push generic JSON to AIManager Events throught a Webhook into Kafka.
+      blockquote
+        p Source code is included if you want to mess around a bit.
+      h3 🚀 Provided by Niklaus Hirt (nikh@ch.ibm.com)

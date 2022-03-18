@@ -1,0 +1,159 @@
+extends layout
+
+block title
+  h1 AIManager
+  h2 Generic Event Webhook
+
+
+block navigation
+  p
+  p Endpoints
+  p
+  a(href='/webhook') Webhook
+  p
+  p Configuration
+  p
+  a(href='/config') Configuration
+  p
+  p About
+  p
+  a(href='/about') About
+
+
+block content
+  doctype html
+  html
+    head
+      meta(charset='utf-8')
+      meta(name='viewport' content='width=device-width, initial-scale=1.0, user-scalable=yes')
+      title README
+
+    body
+      h2 Automated Deployment
+      p The easiest way to deploy the webhook is by using the automated Ansible script.
+      div
+        pre.
+          ansible-playbook ./ansible/19_aiops-event-webhook.yaml
+
+      h2 Manual Deployment
+      h3#toc_1 Message mapping Parameters
+      p Those Strings define how the message is being decoded.
+      p
+        | To adapt the mapping parameters to your needs, you have to modify in the 
+        code cp4waiops-event-gateway-config
+        |  ConfigMap in file 
+        code ./tools/97_addons/webhook/create-cp4waiops-event-gateway.yaml
+        | .
+      p The following paramters have to be mapped (example for Humio format):
+      div
+        ul
+          li ITERATE_ELEMENT: 'events'
+          li NODE_ELEMENT: 'kubernetes.container_name'
+          li ALERT_ELEMENT: 'kubernetes.namespace_name'
+          li SUMMARY_ELEMENT: '@rawstring'
+          li TIMESTAMP_ELEMENT: '@timestamp'
+          li URL_ELEMENT: 'none'
+          li SEVERITY_ELEMENT: '5'
+          li MANAGER_ELEMENT: 'KafkaWebhook'
+      ol
+        li
+          | The 
+          code ITERATE_ELEMENT
+          |  is the element of the Message that we iterate over.
+          | This means that the Gateway will get the 
+          code ITERATE_ELEMENT
+          | element and iterate, map and push all messages in the array.
+        li
+          | The sub-elements that will be mapped for each element in the array are:
+          ul
+            li Node
+            li AlertGroup
+            li Summary
+            li URL
+            li Severity
+            li Manager
+            li Timestamp
+      blockquote
+        p
+          | Any element that cannot be found will be defaulted by the indicated value.
+          | Example for Severity: If we put the mapping value "5" in the config, this probably won't correspond to a JSON key and the severity for all messages is forced to 5.
+        p
+          | Exception is 
+          code Timestamp
+          |  which, when not found will default to the current EPOCH date.
+      h3#toc_2 Getting the Kafka Conncetion Parameters
+      p
+        | This gives you the Parameters for the Kafka Connection that you have to modify in the 
+        code cp4waiops-event-gateway-config
+        |  ConfigMap in file 
+        code ./tools/97_addons/webhook/create-cp4waiops-event-gateway.yaml
+        | .
+         
+        pre.
+          export WAIOPS_NAMESPACE=cp4waiops
+          export KAFKA_TOPIC_EVENTS=$(oc get kafkatopics -n $WAIOPS_NAMESPACE | grep -v cp4waiopscp4waiops|grep -v noi-integration 
+            | grep cp4waiops-cartridge-alerts-noi| awk '{print $1;}')
+          export KAFKA_TOPIC_LOGS=$(oc get kafkatopics -n $WAIOPS_NAMESPACE  | grep -v cp4waiopscp4waiops| grep cp4waiops-cartridge-logs-humio| awk '{print $1;}')
+          export KAFKA_USER=$(oc get secret ibm-aiops-kafka-secret -n $WAIOPS_NAMESPACE --template={{.data.username}} | base64 --decode)
+          export KAFKA_PWD=$(oc get secret ibm-aiops-kafka-secret -n $WAIOPS_NAMESPACE --template={{.data.password}} | base64 --decode)
+          export KAFKA_BROKER=$(oc get routes iaf-system-kafka-0 -n $WAIOPS_NAMESPACE -o=jsonpath='{.status.ingress[0].host}{"\n"}'):443
+          export CERT_ELEMENT=$(oc get secret -n $WAIOPS_NAMESPACE kafka-secrets  -o 'go-template={{index .data "ca.crt"}}'| base64 -d)
+          export TOKEN=123456789
+
+          echo "KAFKA_BROKER: '"$KAFKA_BROKER"'"
+          echo "KAFKA_USER: '"$KAFKA_USER"'"
+          echo "KAFKA_PWD: '"$KAFKA_PWD"'"
+          echo "KAFKA_TOPIC_EVENTS: '"$KAFKA_TOPIC_EVENTS"'"
+          echo "KAFKA_TOPIC_LOGS: '"$KAFKA_TOPIC_EVENTS"'"
+          echo "CERT_ELEMENT:  |- "
+          echo $CERT_ELEMENT
+          echo "TOKEN: '"$TOKEN"'"
+      blockquote
+        p You will have to indent the Certificate!
+      h3#toc_3 Deploying
+      div
+        pre.
+          oc apply -n default -f ./tools/97_addons/webhook/create-cp4waiops-event-gateway.yaml
+          oc get route -n cp4waiops cp4waiops-event-gateway  -o jsonpath={.spec.host}
+      h3#toc_4 Using the Webhook
+      p
+        | For the following example we will iterate over the 
+        code events
+        |  array and epush them to mapped version to Kafka:
+      div
+        pre.
+          curl -X "POST" "http://localhost:8080/webhook" \
+            -H 'token: my-token' \
+            -H 'Content-Type: application/json; charset=utf-8' \
+            -d $'{
+          "events": [
+            {
+              "URL": "https://pirsoscom.github.io/git-commit-robot.html",
+              "Manager": "Github",
+              "Severity": 2,
+              "Summary": "[Git] Commit in repository robot-shop by Niklaus Hirt on file robot-shop.yaml - New Memory Limits",
+              "Node": "mysql-github",
+              "NodeAlias": "github",
+              "AlertGroup": "robot-shop"
+            },
+            {
+              "URL": "https://pirsoscom.github.io/INSTANA_CHANGE_ROB.html",
+              "Manager": "Instana",
+              "Severity": 3,
+              "Summary": "[Instana] MySQL - change detected - The value **resources/limits** has changed",
+              "Node": "mysql-instana",
+              "NodeAlias": "mysql",
+              "AlertGroup": "robot-shop"
+            },
+            {
+              "URL": "none",
+              "Manager": "Security",
+              "Severity": 2,
+              "Summary": "[Security] MySQL K8s Pod Created",
+              "Node": "mysql-security",
+              "NodeAlias": "mysql",
+              "AlertGroup": "robot-shop"
+            }
+          ],
+          "numberOfEvents": 3
+        }'

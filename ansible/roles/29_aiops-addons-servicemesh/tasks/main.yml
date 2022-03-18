@@ -1,0 +1,188 @@
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Install ServiceMesh/Istio
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+    
+
+- name: ISTIO -              🔎 Check ServiceMesh Installed
+  k8s_info:
+    kind: Deployment
+    name: kiali
+    namespace: istio-system
+  register: ISTIO_EXISTS 
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Install Service Mesh Operators
+# --------------------------------------------------------------------------------------------------------------------------------------
+- name: ISTIO -            🚀 Create openshift-operators-redhat Namespace
+  kubernetes.core.k8s:
+    api_version: v1
+    kind: Namespace
+    name: openshift-operators-redhat
+    state: present
+  when: ISTIO_EXISTS.resources|length == 0
+
+
+- name: ISTIO -            🚀 Install Elasticsearch Operator
+  kubernetes.core.k8s:
+    state: present
+    template: ./templates/istio/sub-elasticsearch.yaml
+  when: ISTIO_EXISTS.resources|length == 0
+
+
+- name: ISTIO -            🚀 Install Jaeger Operator
+  kubernetes.core.k8s:
+    state: present
+    template: ./templates/istio/sub-jaeger.yaml
+  when: ISTIO_EXISTS.resources|length == 0
+
+
+- name: ISTIO -            🚀 Install Kiali Operator
+  kubernetes.core.k8s:
+    state: present
+    template: ./templates/istio/sub-kiali.yaml
+  when: ISTIO_EXISTS.resources|length == 0
+
+
+- name: ISTIO -            🚀 Install Service Mesh Operator
+  kubernetes.core.k8s:
+    state: present
+    template: ./templates/istio/sub-servicemesh.yaml
+  when: ISTIO_EXISTS.resources|length == 0
+
+
+- name: CHECK -              🕦 Wait for ServiceMesh Operators to be ready
+  shell: oc get po -n openshift-operators | grep -v Completed | grep -v Error |grep "0/" |wc -l| tr -d ' '
+  register: kubectl_get_pods
+  until: kubectl_get_pods.stdout == "0"
+  retries: 500
+  delay: 15
+
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Install Service Mesh Instance
+# --------------------------------------------------------------------------------------------------------------------------------------
+- name: ISTIO -            🚀 Create istio-system Namespace
+  kubernetes.core.k8s:
+    api_version: v1
+    kind: Namespace
+    name: istio-system
+    state: present
+  when: ISTIO_EXISTS.resources|length == 0
+
+
+
+
+
+- name: CHECK -              🕦 Wait for ServiceMesh Operators to be ready
+  shell: oc get crd servicemeshcontrolplanes.maistra.io --no-headers|wc -l| tr -d ' '
+  register: kubectl_get_crd
+  until: kubectl_get_crd.stdout == "1"
+  retries: 500
+  delay: 15
+
+
+
+- name: ISTIO -            🚀 Install Service Mesh CR
+  kubernetes.core.k8s:
+    state: present
+    namespace: istio-system
+    template: ./templates/istio/install-servicemesh.yaml
+  when: ISTIO_EXISTS.resources|length == 0
+
+
+- name: ISTIO -            🚀 Install Service Mesh Member Roll
+  kubernetes.core.k8s:
+    state: present
+    namespace: istio-system
+    template: ./templates/istio/install-service-member.yaml
+  when: ISTIO_EXISTS.resources|length == 0
+
+
+
+- name: CHECK -              🕦 Wait for ServiceMesh to be ready
+  shell: |
+    KIALI_POD=$(oc get po -n istio-system | grep kiali)
+    echo $KIALI_POD
+  register: kubectl_kiali
+  until: ("1/1" in kubectl_kiali.stdout)
+  retries: 500
+  delay: 15
+
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Adapt Robot-Shop
+# --------------------------------------------------------------------------------------------------------------------------------------
+- name: ISTIO -            🚀 Install Robot-Shop Gateway
+  kubernetes.core.k8s:
+    state: present
+    namespace: istio-system
+    template: ./templates/demo_apps/robotshop/istio/gateway.yaml
+  #when: ISTIO_EXISTS.resources|length == 0
+
+
+- name: ISTIO -            🚀 Install Robot-Shop Ratings Staging Test
+  kubernetes.core.k8s:
+    state: present
+    namespace: robot-shop
+    src: ./templates/demo_apps/robotshop/istio/ratings-staging.yaml
+  #when: ISTIO_EXISTS.resources|length == 0
+
+
+- name: ISTIO -            🚀 Install Robot-Shop Payment v2
+  kubernetes.core.k8s:
+    state: present
+    namespace: robot-shop
+    src: ./templates/demo_apps/robotshop/istio/payment-staging.yaml
+  #when: ISTIO_EXISTS.resources|length == 0
+
+
+- name: ISTIO -            🚀 Install Robot-Shop VirtualService Ratings all traffic to test Pod
+  kubernetes.core.k8s:
+    state: present
+    namespace: robot-shop
+    src: ./templates/demo_apps/robotshop/istio/ratings-100-0.yaml
+  #when: ISTIO_EXISTS.resources|length == 0
+
+
+- name: ISTIO -            🚀 Install Robot-Shop VirtualService Payment 50/50 traffic to v2 Pod
+  kubernetes.core.k8s:
+    state: present
+    namespace: robot-shop
+    src: ./templates/demo_apps/robotshop/istio/ratings-100-0.yaml
+  #when: ISTIO_EXISTS.resources|length == 0
+
+
+- name: ISTIO -            🔬 Get ISTIO Ingress
+  shell: |
+    ISTIO_INGRESSGATEWAY=$(oc get route -n istio-system istio-ingressgateway -o jsonpath={.spec.host})
+    echo "http://$ISTIO_INGRESSGATEWAY"
+  register: ISTIO_INGRESSGATEWAY
+
+
+- name: ISTIO -            💾 Set ISTIO Ingress
+  set_fact: ISTIO_INGRESSGATEWAY={{ ISTIO_INGRESSGATEWAY.stdout_lines[0] }} 
+
+
+
+- name: ISTIO -            ❎ Delete Load Pod
+  shell: |
+    oc delete -n robot-shop deployment load
+  ignore_errors: yes
+
+
+- name: ISTIO -            🚀 Re-Install Robot-Shop load Pod {{ ISTIO_INGRESSGATEWAY }}
+  kubernetes.core.k8s:
+    state: present
+    namespace: robot-shop
+    template: ./templates/demo_apps/robotshop/istio/load-deployment-istio.j2
+
+
+
+
+- name: ISTIO -            ❎ Restart all Pods
+  shell: |
+    oc delete -n robot-shop pods --all
+  ignore_errors: yes
+

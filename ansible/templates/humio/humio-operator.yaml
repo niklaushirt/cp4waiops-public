@@ -1,0 +1,307 @@
+---
+# Source: humio-operator/templates/operator-rbac.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: 'humio-operator'
+  namespace: 'humio-logging'
+  labels:
+    app: 'humio-operator'
+    app.kubernetes.io/name: 'humio-operator'
+    app.kubernetes.io/instance: 'humio-operator'
+    app.kubernetes.io/managed-by: 'Helm'
+    helm.sh/chart: 'humio-operator-0.13.0'
+---
+# Source: humio-operator/templates/operator-rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: 'humio-logging-humio-operator'
+  labels:
+    app: 'humio-operator'
+    app.kubernetes.io/name: 'humio-operator'
+    app.kubernetes.io/instance: 'humio-operator'
+    app.kubernetes.io/managed-by: 'Helm'
+    helm.sh/chart: 'humio-operator-0.13.0'
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - services
+  - services/finalizers
+  - endpoints
+  - persistentvolumeclaims
+  - events
+  - configmaps
+  - secrets
+  - serviceaccounts
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - replicasets
+  - deployments
+  verbs:
+  - get
+- apiGroups:
+  - monitoring.coreos.com
+  resources:
+  - servicemonitors
+  verbs:
+  - get
+  - create
+- apiGroups:
+  - apps
+  resourceNames:
+  - humio-operator
+  resources:
+  - deployments/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - core.humio.com
+  resources:
+  - humioclusters
+  - humioclusters/finalizers
+  - humioclusters/status
+  - humioparsers
+  - humioparsers/finalizers
+  - humioparsers/status
+  - humioingesttokens
+  - humioingesttokens/finalizers
+  - humioingesttokens/status
+  - humiorepositories
+  - humiorepositories/finalizers
+  - humiorepositories/status
+  - humioviews
+  - humioviews/finalizers
+  - humioviews/status
+  - humioexternalclusters
+  - humioexternalclusters/finalizers
+  - humioexternalclusters/status
+  - humioactions
+  - humioactions/finalizers
+  - humioactions/status
+  - humioalerts
+  - humioalerts/finalizers
+  - humioalerts/status
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - roles
+  - rolebindings
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - ingresses
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - cert-manager.io
+  resources:
+  - certificates
+  - issuers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - clusterroles
+  - clusterrolebindings
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+---
+# Source: humio-operator/templates/operator-rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: 'humio-logging-humio-operator'
+  labels:
+    app: 'humio-operator'
+    app.kubernetes.io/name: 'humio-operator'
+    app.kubernetes.io/instance: 'humio-operator'
+    app.kubernetes.io/managed-by: 'Helm'
+    helm.sh/chart: 'humio-operator-0.13.0'
+subjects:
+- kind: ServiceAccount
+  name: 'humio-operator'
+  namespace: 'humio-logging'
+roleRef:
+  kind: ClusterRole
+  name: 'humio-logging-humio-operator'
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: humio-operator/templates/operator-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: 'humio-operator'
+  namespace: 'humio-logging'
+  labels:
+    app: 'humio-operator'
+    app.kubernetes.io/name: 'humio-operator'
+    app.kubernetes.io/instance: 'humio-operator'
+spec:
+  ports:
+  - name: metrics
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: 'humio-operator'
+    app.kubernetes.io/name: 'humio-operator'
+    app.kubernetes.io/instance: 'humio-operator'
+---
+# Source: humio-operator/templates/operator-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: humio-operator
+  namespace: humio-logging
+  annotations:
+    productID: "none"
+    productName: "humio-operator"
+    productVersion: "0.13.0"
+  labels:
+    app: 'humio-operator'
+    app.kubernetes.io/name: 'humio-operator'
+    app.kubernetes.io/instance: 'humio-operator'
+    app.kubernetes.io/managed-by: 'Helm'
+    helm.sh/chart: 'humio-operator-0.13.0'
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: 'humio-operator'
+      app.kubernetes.io/name: 'humio-operator'
+      app.kubernetes.io/instance: 'humio-operator'
+  template:
+    metadata:
+      annotations:
+        productID: "none"
+        productName: "humio-operator"
+        productVersion: "0.13.0"
+      labels:
+        app: 'humio-operator'
+        app.kubernetes.io/name: 'humio-operator'
+        app.kubernetes.io/instance: 'humio-operator'
+        app.kubernetes.io/managed-by: 'Helm'
+        helm.sh/chart: 'humio-operator-0.13.0'
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/arch
+                operator: In
+                values:
+                - amd64
+            - matchExpressions:
+              - key: kubernetes.io/os
+                operator: In
+                values:
+                - linux
+      serviceAccountName: humio-operator
+      containers:
+      - name: humio-operator
+        image: humio/humio-operator:0.13.0
+        imagePullPolicy: IfNotPresent
+        command:
+        - /manager
+        env:
+        - name: WATCH_NAMESPACE
+          value: ""
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: OPERATOR_NAME
+          value: "humio-operator"
+        - name: USE_CERTMANAGER
+          value: "true"
+        livenessProbe:
+          httpGet:
+            path: /metrics
+            port: 8080
+        readinessProbe:
+          httpGet:
+            path: /metrics
+            port: 8080
+            scheme: HTTP
+          timeoutSeconds: 40
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 30
+        resources:
+          limits:
+            cpu: 250m
+            memory: 500Mi
+          requests:
+            cpu: 250m
+            memory: 200Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          privileged: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 65534
+          capabilities:
+            add:
+            - NET_BIND_SERVICE
+            drop:
+            - ALL
+      securityContext:
+        runAsNonRoot: true

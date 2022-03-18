@@ -1,0 +1,40 @@
+apiVersion: core.humio.com/v1alpha1
+kind: HumioCluster
+metadata:
+  name: humiocluster
+spec:
+  license:
+    secretKeyRef:
+      name: humio-license
+      key: data
+  image: "humio/humio-core:1.30.1"
+  nodeCount: 1
+  tls:
+    enabled: false
+  targetReplicationFactor: 1
+  storagePartitionsCount: 24
+  digestPartitionsCount: 24
+  resources:
+    limits:
+      cpu: "2"
+      memory: 4Gi
+    requests:
+      cpu: "1"
+      memory: 2Gi
+  dataVolumePersistentVolumeClaimSpecTemplate:
+    storageClassName: {{STORAGE_CLASS_HUMIO}}
+    accessModes: [ReadWriteOnce]
+    resources:
+      requests:
+        storage: 10Gi
+  environmentVariables:
+    - name: "ZOOKEEPER_URL"
+      value: "humio-cp-zookeeper.humio-logging.svc:2181"
+    - name: "KAFKA_SERVERS"
+      value: "humio-cp-kafka.humio-logging.svc:9092"
+    - name: SINGLE_USER_PASSWORD
+      value: "P4ssw0rd!"
+    - name: KAFKA_SERVERS
+      value: "humio-instance-cp-kafka-0.humio-instance-cp-kafka-headless:9092"
+    - name: ZOOKEEPER_URL
+      value: "humio-instance-cp-zookeeper-0.humio-instance-cp-zookeeper:2181"

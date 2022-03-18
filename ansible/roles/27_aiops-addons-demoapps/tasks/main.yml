@@ -1,0 +1,53 @@
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Install Demo Apps
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Install RobotShop
+# --------------------------------------------------------------------------------------------------------------------------------------
+- name: DEMO -               🔎 Check RobotShop
+  k8s_info:
+    kind: Namespace
+    name: "robot-shop"
+  register: DEMO_EXISTS 
+
+- name: DEMO -               🚀 Install RobotShop
+  block:
+  - name: DEMO -               🚀 Create robot-shop namespace
+    kubernetes.core.k8s:
+      api_version: v1
+      kind: Namespace
+      name: "robot-shop"
+      state: present
+    #when: INSTALL_DEMO_APPS == true
+
+  - name: DEMO -               🚀 Create robot-shop service account
+    shell: |
+      oc adm policy add-scc-to-user privileged -n robot-shop -z robot-shop
+      oc create clusterrolebinding default-robotinfo1-admin --clusterrole=cluster-admin --serviceaccount=robot-shop:robot-shop
+      oc adm policy add-scc-to-user privileged -n robot-shop -z default                                
+      oc create clusterrolebinding default-robotinfo2-admin --clusterrole=cluster-admin --serviceaccount=robot-shop:default
+    ignore_errors: yes
+    register: demo_robot_shop
+    #when: INSTALL_DEMO_APPS == true
+              
+
+  - name: DEMO -               🚀 Create robot-shop application
+    kubernetes.core.k8s:
+      state: present
+      namespace: robot-shop
+      src: ./templates/demo_apps/robotshop/robot-all-in-one.yaml
+    #when: INSTALL_DEMO_APPS == true
+
+  - name: DEMO -               🚀 Create robot-shop load generation
+    kubernetes.core.k8s:
+      state: present
+      namespace: robot-shop
+      src: ./templates/demo_apps/robotshop/load-deployment.yaml
+    #when: INSTALL_DEMO_APPS == true
+  when: DEMO_EXISTS.resources|length == 0
+
+

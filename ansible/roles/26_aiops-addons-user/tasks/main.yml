@@ -1,0 +1,27 @@
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Install ADDONS
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Create OCP Demouser Account
+# --------------------------------------------------------------------------------------------------------------------------------------
+- name: USER -               🔎 Check OCP Demouser Account
+  k8s_info:
+    kind: serviceaccount
+    name: demo-admin
+    namespace: default
+  register: USER_EXISTS 
+
+- name: USER -               🩹 Create OCP Demouser Account
+  shell: |
+        oc project {{ WAIOPS_NAMESPACE }} 
+        oc create serviceaccount -n default demo-admin
+        oc create clusterrolebinding test-admin --clusterrole=cluster-admin --serviceaccount=default:demo-admin
+        oc create clusterrolebinding ibm-zen-operator-serviceaccount --clusterrole=cluster-admin --serviceaccount=ibm-common-services:ibm-zen-operator-serviceaccount
+  ignore_errors: yes
+  register: demo_account
+  when: USER_EXISTS.resources|length == 0
+

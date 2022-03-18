@@ -1,0 +1,156 @@
+[
+  {
+    "name": "Demo Runbook",
+    "description": "",
+    "steps": [
+      {
+        "title": "",
+        "description": "",
+        "number": 1,
+        "type": "automation",
+        "automationId": "§§exportedAutomation_0_§§",
+        "mappings": [
+          {
+            "automationParameterName": "target",
+            "parameterMappingType": "useDefaultFromAutomation",
+            "parameterValue": ""
+          },
+          {
+            "automationParameterName": "user",
+            "parameterMappingType": "useDefaultFromAutomation",
+            "parameterValue": ""
+          },
+          {
+            "automationParameterName": "$token",
+            "parameterMappingType": "useDefaultFromAutomation",
+            "parameterValue": ""
+          },
+          {
+            "automationParameterName": "$ocp_url",
+            "parameterMappingType": "fixed",
+            "parameterValue": "FIX_HTTP"
+          }
+        ]
+      },
+      {
+        "title": "",
+        "description": "<p>test1</p><p><strong>test2</strong></p><p>test3</p><p>&nbsp;</p>",
+        "number": 2,
+        "type": "manual"
+      },
+      {
+        "title": "",
+        "description": "",
+        "number": 3,
+        "type": "automation",
+        "automationId": "§§exportedAutomation_1_§§",
+        "mappings": [
+          {
+            "automationParameterName": "target",
+            "parameterMappingType": "useDefaultFromAutomation",
+            "parameterValue": ""
+          },
+          {
+            "automationParameterName": "user",
+            "parameterMappingType": "useDefaultFromAutomation",
+            "parameterValue": ""
+          }
+        ]
+      }
+    ],
+    "parameters": [],
+    "tags": [],
+    "automations": {
+      "§§exportedAutomation_0_§§": {
+        "name": "OCP Login",
+        "type": "SCRIPT",
+        "description": "",
+        "parameters": [
+          {
+            "name": "target",
+            "value": "",
+            "default": "bastion-host-service.default.svc",
+            "description": "Target system where the script will be executed",
+            "type": "string",
+            "minLength": 1
+          },
+          {
+            "name": "user",
+            "value": "",
+            "default": "root",
+            "description": "User ID that is used to run the script",
+            "type": "string",
+            "minLength": 1
+          },
+          {
+            "name": "$token",
+            "value": "",
+            "default": "TOKEN1234",
+            "description": "",
+            "type": "string",
+            "minLength": 1
+          },
+          {
+            "name": "$ocp_url",
+            "value": "",
+            "default": "HTTP_OCP",
+            "description": "",
+            "type": "string",
+            "minLength": 1
+          }
+        ],
+        "fields": [
+          {
+            "name": "subtype",
+            "value": "bash",
+            "encoding": "ascii",
+            "description": "script subtype"
+          },
+          {
+            "name": "script_ssh",
+            "value": "b2MgbG9naW4gLS10b2tlbj0kdG9rZW4gLS1zZXJ2ZXI9JG9jcF91cmw=",
+            "description": "script content",
+            "encoding": "base64"
+          }
+        ]
+      },
+      "§§exportedAutomation_1_§§": {
+        "name": "Mitigate Problem",
+        "type": "SCRIPT",
+        "description": "",
+        "parameters": [
+          {
+            "name": "target",
+            "value": "",
+            "default": "bastion-host-service.default.svc",
+            "description": "Target system where the script will be executed",
+            "type": "string",
+            "minLength": 1
+          },
+          {
+            "name": "user",
+            "value": "",
+            "default": "root",
+            "description": "User ID that is used to run the script",
+            "type": "string",
+            "minLength": 1
+          }
+        ],
+        "fields": [
+          {
+            "name": "subtype",
+            "value": "bash",
+            "encoding": "ascii",
+            "description": "script subtype"
+          },
+          {
+            "name": "script_ssh",
+            "value": "b2Mgc2NhbGUgZGVwbG95bWVudCAtLXJlcGxpY2FzPTEgLW4gcm9ib3Qtc2hvcCByYXRpbmdzCm9jIGRlbGV0ZSBwb2QgLW4gcm9ib3Qtc2hvcCAkKG9jIGdldCBwbyAtbiByb2JvdC1zaG9wfGdyZXAgcmF0aW5ncyB8YXdrICd7cHJpbnQkMX0nKSAtLWZvcmNlIC0tZ3JhY2UtcGVyaW9kPTAK",
+            "description": "script content",
+            "encoding": "base64"
+          }
+        ]
+      }
+    }
+  }
+]

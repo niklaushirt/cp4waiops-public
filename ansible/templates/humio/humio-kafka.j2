@@ -1,0 +1,610 @@
+---
+# Source: humio-helm-charts/charts/humio-core/charts/cp-helm-charts/charts/cp-zookeeper/templates/poddisruptionbudget.yaml
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: humio-instance-cp-zookeeper-pdb
+  labels:
+    app: cp-zookeeper
+    chart: cp-zookeeper-0.1.0
+    release: humio-instance
+    heritage: Helm
+spec:
+  selector:
+    matchLabels:
+      app: cp-zookeeper
+      release: humio-instance
+  maxUnavailable: 1
+---
+# Source: humio-helm-charts/charts/humio-core/templates/post-install-service-account.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: humio-instance-post-install
+  namespace: humio-logging
+---
+# Source: humio-helm-charts/charts/humio-core/templates/service-account.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: humio-instance
+  namespace: humio-logging
+---
+# Source: humio-helm-charts/charts/humio-core/charts/cp-helm-charts/charts/cp-kafka/templates/jmx-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: humio-instance-cp-kafka-jmx-configmap
+  labels:
+    app: cp-kafka
+    chart: cp-kafka-0.1.0
+    release: humio-instance
+    heritage: Helm
+data:
+  jmx-kafka-prometheus.yml: |+
+    jmxUrl: service:jmx:rmi:///jndi/rmi://localhost:5555/jmxrmi
+    lowercaseOutputName: true
+    lowercaseOutputLabelNames: true
+    ssl: false
+    rules:
+    - pattern : kafka.server<type=ReplicaManager, name=(.+)><>(Value|OneMinuteRate)
+      name: "cp_kafka_server_replicamanager_$1"
+    - pattern : kafka.controller<type=KafkaController, name=(.+)><>Value
+      name: "cp_kafka_controller_kafkacontroller_$1"
+    - pattern : kafka.server<type=BrokerTopicMetrics, name=(.+)><>OneMinuteRate
+      name: "cp_kafka_server_brokertopicmetrics_$1"
+    - pattern : kafka.network<type=RequestMetrics, name=RequestsPerSec, request=(.+)><>OneMinuteRate
+      name: "cp_kafka_network_requestmetrics_requestspersec_$1"
+    - pattern : kafka.network<type=SocketServer, name=NetworkProcessorAvgIdlePercent><>Value
+      name: "cp_kafka_network_socketserver_networkprocessoravgidlepercent"
+    - pattern : kafka.server<type=ReplicaFetcherManager, name=MaxLag, clientId=(.+)><>Value
+      name: "cp_kafka_server_replicafetchermanager_maxlag_$1"
+    - pattern : kafka.server<type=KafkaRequestHandlerPool, name=RequestHandlerAvgIdlePercent><>OneMinuteRate
+      name: "cp_kafka_kafkarequesthandlerpool_requesthandleravgidlepercent"
+    - pattern : kafka.controller<type=ControllerStats, name=(.+)><>OneMinuteRate
+      name: "cp_kafka_controller_controllerstats_$1"
+    - pattern : kafka.server<type=SessionExpireListener, name=(.+)><>OneMinuteRate
+      name: "cp_kafka_server_sessionexpirelistener_$1"
+---
+# Source: humio-helm-charts/charts/humio-core/charts/cp-helm-charts/charts/cp-zookeeper/templates/jmx-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: humio-instance-cp-zookeeper-jmx-configmap
+  labels:
+    app: cp-zookeeper
+    chart: cp-zookeeper-0.1.0
+    release: humio-instance
+    heritage: Helm
+data:
+  jmx-zookeeper-prometheus.yml: |+
+    jmxUrl: service:jmx:rmi:///jndi/rmi://localhost:5555/jmxrmi
+    lowercaseOutputName: true
+    lowercaseOutputLabelNames: true
+    ssl: false
+    rules:
+    - pattern: "org.apache.ZooKeeperService<name0=ReplicatedServer_id(\\d+)><>(\\w+)"
+      name: "cp_zookeeper_$2"
+    - pattern: "org.apache.ZooKeeperService<name0=ReplicatedServer_id(\\d+), name1=replica.(\\d+)><>(\\w+)"
+      name: "cp_zookeeper_$3"
+      labels:
+        replicaId: "$2"
+    - pattern: "org.apache.ZooKeeperService<name0=ReplicatedServer_id(\\d+), name1=replica.(\\d+), name2=(\\w+)><>(\\w+)"
+      name: "cp_zookeeper_$4"
+      labels:
+        replicaId: "$2"
+        memberType: "$3"
+    - pattern: "org.apache.ZooKeeperService<name0=ReplicatedServer_id(\\d+), name1=replica.(\\d+), name2=(\\w+), name3=(\\w+)><>(\\w+)"
+      name: "cp_zookeeper_$4_$5"
+      labels:
+        replicaId: "$2"
+        memberType: "$3"
+---
+# Source: humio-helm-charts/charts/humio-core/templates/post-install-role.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: humio-instance-post-install
+rules:
+- apiGroups: [""]
+  resources:
+  - pods
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources:
+   - secrets
+  verbs: ["get", "list", "create"]
+- apiGroups: ["batch"]
+  resources:
+  - jobs
+  verbs: ["get", "list", "watch"]
+---
+# Source: humio-helm-charts/charts/humio-core/templates/post-install-role-binding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: humio-instance-post-install
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: humio-instance-post-install
+subjects:
+- kind: ServiceAccount
+  name: humio-instance-post-install
+  namespace: humio-logging
+---
+# Source: humio-helm-charts/charts/humio-core/templates/role.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: humio-logging
+  name: humio-instance
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list", "create"]
+- apiGroups: [""]
+  resources:
+  - pods
+  verbs: ["get", "list", "watch"]
+---
+# Source: humio-helm-charts/charts/humio-core/templates/role-binding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: humio-instance
+  namespace: humio-logging
+subjects:
+- kind: ServiceAccount
+  name: humio-instance
+  namespace: humio-logging
+roleRef:
+  kind: Role
+  name: humio-instance
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: humio-helm-charts/charts/humio-core/charts/cp-helm-charts/charts/cp-kafka/templates/headless-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: humio-instance-cp-kafka-headless
+  labels:
+    app: cp-kafka
+    chart: cp-kafka-0.1.0
+    release: humio-instance
+    heritage: Helm
+spec:
+  ports:
+    - port: 9092
+      name: broker
+  clusterIP: None
+  selector:
+    app: cp-kafka
+    release: humio-instance
+---
+# Source: humio-helm-charts/charts/humio-core/charts/cp-helm-charts/charts/cp-kafka/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: humio-instance-cp-kafka
+  labels:
+    app: cp-kafka
+    chart: cp-kafka-0.1.0
+    release: humio-instance
+    heritage: Helm
+spec:
+  ports:
+    - port: 9092
+      name: broker
+  selector:
+    app: cp-kafka
+    release: humio-instance
+---
+# Source: humio-helm-charts/charts/humio-core/charts/cp-helm-charts/charts/cp-zookeeper/templates/headless-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: humio-instance-cp-zookeeper-headless
+  labels:
+    app: cp-zookeeper
+    chart: cp-zookeeper-0.1.0
+    release: humio-instance
+    heritage: Helm
+spec:
+  ports:
+    - port: 2888
+      name: server
+    - port: 3888
+      name: leader-election
+  clusterIP: None
+  selector:
+    app: cp-zookeeper
+    release: humio-instance
+---
+# Source: humio-helm-charts/charts/humio-core/charts/cp-helm-charts/charts/cp-zookeeper/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: humio-instance-cp-zookeeper
+  labels:
+    app: cp-zookeeper
+    chart: cp-zookeeper-0.1.0
+    release: humio-instance
+    heritage: Helm
+spec:
+  type: 
+  ports:
+    - port: 2181
+      name: client
+  selector:
+    app: cp-zookeeper
+    release: humio-instance
+---
+# Source: humio-helm-charts/charts/humio-core/templates/es-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: "humio-instance-humio-core-es"
+  labels:
+    app: humio-core
+    chart: humio-core-0.2.1
+    release: humio-instance
+    heritage: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 9200
+      targetPort: es
+      protocol: TCP
+      name: esclust
+  selector:
+    app: humio-core
+    release: humio-instance
+---
+# Source: humio-helm-charts/charts/humio-core/templates/headless-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: humio-instance-humio-core-headless
+  labels:
+    app: humio-core
+    chart: humio-core-0.2.1
+    release: humio-instance
+    heritage: Helm
+spec:
+  ports:
+    - port: 9200
+      name: humiointernales
+    - port: 8080
+      name: humiointernalhttp
+    - port: 80
+      name: humiointernalhttpeighty
+  clusterIP: None
+  selector:
+    app: humio-core
+    release: humio-instance
+---
+# Source: humio-helm-charts/charts/humio-core/templates/http-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: humio-instance-humio-core-http
+  labels:
+    app: humio-core
+    chart: humio-core-0.2.1
+    release: humio-instance
+    heritage: Helm
+
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: humio-core
+    release: humio-instance
+---
+# Source: humio-helm-charts/charts/humio-core/charts/cp-helm-charts/charts/cp-kafka/templates/statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: humio-instance-cp-kafka
+  labels:
+    app: cp-kafka
+    chart: cp-kafka-0.1.0
+    release: humio-instance
+    heritage: Helm
+spec:
+  selector:
+    matchLabels:
+      app: cp-kafka
+      release: humio-instance
+  serviceName: humio-instance-cp-kafka-headless
+  podManagementPolicy: OrderedReady
+  replicas: 3
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: cp-kafka
+        release: humio-instance
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "5556"
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: "app"
+                    operator: In
+                    values:
+                    - cp-kafka
+                  - key: "release"
+                    operator: In
+                    values:
+                    - humio-instance
+              topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: prometheus-jmx-exporter
+        image: "solsson/kafka-prometheus-jmx-exporter@sha256:6f82e2b0464f50da8104acd7363fb9b995001ddff77d248379f8788e78946143"
+        imagePullPolicy: "IfNotPresent"
+        command:
+        - java
+        - -XX:+UnlockExperimentalVMOptions
+        - -XX:+UseCGroupMemoryLimitForHeap
+        - -XX:MaxRAMFraction=1
+        - -XshowSettings:vm
+        - -jar
+        - jmx_prometheus_httpserver.jar
+        - "5556"
+        - /etc/jmx-kafka/jmx-kafka-prometheus.yml
+        ports:
+        - containerPort: 5556
+        resources:
+          {}
+        volumeMounts:
+        - name: jmx-config
+          mountPath: /etc/jmx-kafka
+      - name: cp-kafka-broker
+        image: "confluentinc/cp-enterprise-kafka:5.2.1"
+        imagePullPolicy: "IfNotPresent"
+        ports:
+        - containerPort: 9092
+          name: kafka
+        - containerPort: 5555
+          name: jmx
+        resources:
+          limits:
+            cpu: 1
+            memory: 768Mi
+          requests:
+            cpu: 300m
+            memory: 768Mi
+        env:
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: HOST_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: KAFKA_HEAP_OPTS
+          value: -Xms512M -Xmx512M
+        - name: KAFKA_ZOOKEEPER_CONNECT
+          value: "humio-instance-cp-zookeeper-headless:2181"
+        - name: KAFKA_LOG_DIRS
+          value: "/opt/kafka/data-0/logs"
+        - name: KAFKA_METRIC_REPORTERS
+          value: "io.confluent.metrics.reporter.ConfluentMetricsReporter"
+        - name: CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS
+          value: "PLAINTEXT://humio-instance-cp-kafka-headless:9092"
+        - name: "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP"
+          value: "PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT"
+        - name: "KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR"
+          value: "3"
+        - name: KAFKA_JMX_PORT
+          value: "5555"
+        # This is required because the Downward API does not yet support identification of
+        # pod numbering in statefulsets. Thus, we are required to specify a command which
+        # allows us to extract the pod ID for usage as the Kafka Broker ID.
+        # See: https://github.com/kubernetes/kubernetes/issues/31218
+        command:
+        - sh
+        - -exc
+        - |
+          export KAFKA_BROKER_ID=${HOSTNAME##*-} && \
+          export KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://${POD_NAME}.humio-instance-cp-kafka-headless.${POD_NAMESPACE}:9092,EXTERNAL://${HOST_IP}:$((31090 + ${KAFKA_BROKER_ID})) && \
+          exec /etc/confluent/docker/run
+        volumeMounts:
+          - name: datadir-0
+            mountPath: /opt/kafka/data-0
+      volumes:
+      - name: jmx-config
+        configMap:
+          name: humio-instance-cp-kafka-jmx-configmap
+  volumeClaimTemplates:
+  - metadata:
+      name: datadir-0
+    spec:
+      storageClassName: {{STORAGE_CLASS_HUMIO}}
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: "50Gi"
+---
+# Source: humio-helm-charts/charts/humio-core/charts/cp-helm-charts/charts/cp-zookeeper/templates/statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: humio-instance-cp-zookeeper
+  labels:
+    app: cp-zookeeper
+    chart: cp-zookeeper-0.1.0
+    release: humio-instance
+    heritage: Helm
+spec:
+  selector:
+    matchLabels:
+      app: cp-zookeeper
+      release: humio-instance
+  serviceName: humio-instance-cp-zookeeper-headless
+  podManagementPolicy: OrderedReady
+  replicas: 3
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: cp-zookeeper
+        release: humio-instance
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "5556"
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: "app"
+                    operator: In
+                    values:
+                    - cp-zookeeper
+                  - key: "release"
+                    operator: In
+                    values:
+                    - humio-instance
+              topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: prometheus-jmx-exporter
+        image: "solsson/kafka-prometheus-jmx-exporter@sha256:6f82e2b0464f50da8104acd7363fb9b995001ddff77d248379f8788e78946143"
+        imagePullPolicy: "IfNotPresent"
+        command:
+        - java
+        - -XX:+UnlockExperimentalVMOptions
+        - -XX:+UseCGroupMemoryLimitForHeap
+        - -XX:MaxRAMFraction=1
+        - -XshowSettings:vm
+        - -jar
+        - jmx_prometheus_httpserver.jar
+        - "5556"
+        - /etc/jmx-zookeeper/jmx-zookeeper-prometheus.yml
+        ports:
+        - containerPort: 5556
+        resources:
+          {}
+        volumeMounts:
+        - name: jmx-config
+          mountPath: /etc/jmx-zookeeper
+      - name: cp-zookeeper-server
+        image: "confluentinc/cp-zookeeper:5.2.1"
+        imagePullPolicy: "IfNotPresent"
+        ports:
+        - containerPort: 2181
+          name: client
+        - containerPort: 2888
+          name: server
+        - containerPort: 3888
+          name: leader-election
+        - containerPort: 5555
+          name: jmx
+        resources:
+          limits:
+            cpu: 500m
+            memory: 768Mi
+          requests:
+            cpu: 100m
+            memory: 768Mi
+        env:
+        - name : KAFKA_HEAP_OPTS
+          value: "-Xms512M -Xmx512M"
+        - name : KAFKA_JMX_PORT
+          value: "5555"
+        - name : ZOOKEEPER_TICK_TIME
+          value: "2000"
+        - name : ZOOKEEPER_SYNC_LIMIT
+          value: "5"
+        - name : ZOOKEEPER_INIT_LIMIT
+          value: "10"
+        - name : ZOOKEEPER_MAX_CLIENT_CNXNS
+          value: "60"
+        - name : ZOOKEEPER_AUTOPURGE_SNAP_RETAIN_COUNT
+          value: "3"
+        - name : ZOOKEEPER_AUTOPURGE_PURGE_INTERVAL
+          value: "24"
+        - name: ZOOKEEPER_CLIENT_PORT
+          value: "2181"
+        - name : ZOOKEEPER_SERVERS
+          value: "humio-instance-cp-zookeeper-0.humio-instance-cp-zookeeper-headless.humio-logging:2888:3888;humio-instance-cp-zookeeper-1.humio-instance-cp-zookeeper-headless.humio-logging:2888:3888;humio-instance-cp-zookeeper-2.humio-instance-cp-zookeeper-headless.humio-logging:2888:3888"
+        # ZOOKEEPER_SERVER_ID is required just to pass cp-zookeeper ensure script for env check,
+        # the value(metadata.mame) is not used and will be overwritten in command part
+        - name: ZOOKEEPER_SERVER_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        command:
+        - "bash"
+        - "-c"
+        - |
+          ZK_FIX_HOST_REGEX="s/${HOSTNAME}\.[^:]*:/0.0.0.0:/g"
+          ZOOKEEPER_SERVER_ID=$((${HOSTNAME##*-}+1)) \
+          ZOOKEEPER_SERVERS=`echo $ZOOKEEPER_SERVERS | sed -e "$ZK_FIX_HOST_REGEX"` \
+          /etc/confluent/docker/run
+        volumeMounts:
+        - name: datadir
+          mountPath: /var/lib/zookeeper/data
+        - name: datalogdir
+          mountPath: /var/lib/zookeeper/log
+      volumes:
+      
+      - name: jmx-config
+        configMap:
+          name: humio-instance-cp-zookeeper-jmx-configmap
+  volumeClaimTemplates:
+  - metadata:
+      name: datadir
+    spec:
+      storageClassName: {{STORAGE_CLASS_HUMIO}}
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: "10Gi"
+  - metadata:
+      name: datalogdir
+    spec:
+      storageClassName: {{STORAGE_CLASS_HUMIO}}
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: "10Gi"
+---
+# Source: humio-helm-charts/charts/humio-core/templates/single-user-secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: developer-user-password
+  annotations:
+    "helm.sh/hook": "pre-install"
+    "helm.sh/hook-delete-policy": before-hook-creation
+type: Opaque
+data:
+  password: "OXBuWEpkYk1WeDNaZlJFbnhsam5UV0JG"
+---

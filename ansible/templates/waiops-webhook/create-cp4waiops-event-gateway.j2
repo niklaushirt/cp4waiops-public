@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name:  {{ WAIOPS_NAME }}-event-gateway-config
+  namespace: {{ WAIOPS_NAMESPACE }}
+data:
+  TOKEN: 'token2022'
+  ITERATE_ELEMENT: 'events'
+  NODE_ELEMENT: 'Node'
+  NODEALIAS_ELEMENT: 'NodeAlias'
+  ALERT_ELEMENT: 'AlertGroup'
+  SUMMARY_ELEMENT: 'Summary'
+  TIMESTAMP_ELEMENT: '@timestamp'
+  URL_ELEMENT: 'URL'
+  SEVERITY_ELEMENT: 'Severity'
+  MANAGER_ELEMENT: 'Manager'
+  KAFKA_BROKER: '{{KAFKA_BROKER}}'
+  KAFKA_USER: '{{KAFKA_USER}}'
+  KAFKA_PWD: '{{KAFKA_PWD}}'
+  KAFKA_TOPIC_EVENTS: '{{KAFKA_TOPIC_EVENTS}}'
+  KAFKA_TOPIC_LOGS: '{{KAFKA_TOPIC_LOGS}}'
+  CERT_ELEMENT:  |-
+    {{CERT_ELEMENT}}
+  DEMO_EVENTS:  |-
+    {}
+  DEMO_LOGS:  |-
+    {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ WAIOPS_NAME }}-event-gateway
+  namespace: {{ WAIOPS_NAMESPACE }}
+  labels:
+      app:  {{ WAIOPS_NAME }}-event-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app:  {{ WAIOPS_NAME }}-event-gateway
+  template:
+    metadata:
+      labels:
+        app:  {{ WAIOPS_NAME }}-event-gateway
+    spec:
+      containers:
+      - image: niklaushirt/cp4waiops-event-gateway:2.3
+        imagePullPolicy: Always
+        name: gateway
+        command:
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            cpu: "50m"
+            memory: "50Mi"
+          limits:
+            cpu: "550m"
+            memory: "550Mi"
+        envFrom:
+        - configMapRef:
+            name:  {{ WAIOPS_NAME }}-event-gateway-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name:  {{ WAIOPS_NAME }}-event-gateway-service
+  namespace: {{ WAIOPS_NAMESPACE }}
+spec:
+  selector:
+    app:  {{ WAIOPS_NAME }}-event-gateway
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name:  cp4waiops-event-gateway
+  namespace: {{ WAIOPS_NAMESPACE }}
+spec:
+  to:
+    kind: Service
+    name:  {{ WAIOPS_NAME }}-event-gateway-service
+
