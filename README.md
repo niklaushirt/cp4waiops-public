@@ -1,6 +1,14 @@
 # CloudPak for Watson AIOps Demos
 ---------------------------------------------------------------------------------------------------------------
 
+
+
+![K8s CNI](./doc/pics/front.png)
+
+
+<center> ©2022 Niklaus Hirt / IBM </center>
+
+
 # Welcome to the CloudPak for Watson AIOps Demo Assets
 
 A Story-Telling demo showcasing Watson AIOps with integration of Instana, Humio, Slack, Event Manager (NetCool Operations Insights - NOI), AI Manager, and much more. The story explains how a broken website will be fixed .
@@ -32,7 +40,7 @@ Different flavors of this demo are available, a very flexible, PowerPoint based 
 	> 	**🕦 Preparation time**: about 8-12 hours if you have never done it.
 
 
-![arch](pics/demo-flow.gif)
+
 
 
 ## Show it - Offline Click Through Demo
