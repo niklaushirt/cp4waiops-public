@@ -50,6 +50,7 @@ If you need an easy and fast way to demo AIOps in an "almost real" way you can u
 
 
 The file is [AIOps INTERACTIVE DEMO 3.2 2021](https://ibm.box.com/s/915h3vnctzlz7ri7bw8qia6b9kc7kogm) in this repository.
+You can also find a short quick-and-dirty demo video in the folder.
 
 
 
