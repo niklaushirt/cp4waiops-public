@@ -1,4 +1,19 @@
 
+- name: TIMESTAMP -              🟢 START - RUN ALL TRAININGS
+  debug: 
+    msg="{{ lookup('pipe','date +%d.%m.%Y---%H:%M:%S') }}"
+
+
+
+- name: LOGGING -              🟢 WRITE TO LOGFILE
+  shell: |
+    export MESSAGE="Run All Trainings"
+    export currentDate=$(date +%Y-%m-%d_%H:%M)
+    echo "---------------------------------------------------------------------------------------------------------------------------------------------------" >> ../installAIManager.log
+    echo $currentDate" - "$USER" - "$MESSAGE  >> ../installAIManager.log
+  ignore_errors: yes
+
+
 
 - name: TOPOLOGY -        🚀 CREATE TOPOLOGY
   shell: |

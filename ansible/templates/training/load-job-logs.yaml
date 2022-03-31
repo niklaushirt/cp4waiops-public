@@ -5,6 +5,7 @@ metadata:
   name: load-log-indexes
   namespace: default
 spec:
+  serviceAccountName: demo-admin
   template:
     spec:
       containers:
@@ -16,8 +17,8 @@ spec:
               memory: "64Mi"
               cpu: "150m"
             limits:
-              memory: "256Mi"
-              cpu: "200m"
+              memory: "1256Mi"
+              cpu: "1200m"
           command:
             - /bin/sh
             - -c
@@ -25,13 +26,15 @@ spec:
               #!/bin/bash
               set -x
 
-              export AWX_REPO=https://github.com/niklaushirt/awx-waiops.git
+              export AWX_REPO=https://github.com/niklaushirt/awx-waiops-trainingdata.git
               git clone $AWX_REPO
-              cd awx-waiops
-              ./tools/02_training/robotshop-load-logs-for-training.sh
+              cd awx-waiops-trainingdata
+              ./training/robotshop-load-logs-for-training.sh
           env:
             - name: INDEX_OVERWRITE
               value : "false"
+            - name: VERSION
+              value : "3.3"
       restartPolicy: Never
 
   backoffLimit: 4

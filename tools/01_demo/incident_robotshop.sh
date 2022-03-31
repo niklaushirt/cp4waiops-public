@@ -9,7 +9,7 @@
 
 
 export APP_NAME=robot-shop
-export LOG_TYPE=humio   # humio, elk, splunk, ...
+export LOG_TYPE=elk   # humio, elk, splunk, ...
 export EVENTS_TYPE=noi
 
 
@@ -74,7 +74,7 @@ if [[ $LOG_TYPE == "" ]] ;
 then
       echo " ⚠️ Log Type not defined. Launching this script directly?"
       echo "    Falling back to humio"
-      export LOG_TYPE=humio
+      export LOG_TYPE=elk
 fi
 
 if [[ $EVENTS_TYPE == "" ]] ;
@@ -91,12 +91,16 @@ oc project $WAIOPS_NAMESPACE  >/tmp/demo.log 2>&1  || true
 echo ""
 echo ""
 echo "   ------------------------------------------------------------------------------------------------------------------------------"
-echo "   🚀  ❎ Closing existing Alerts..."
+echo "   🚀  ❎ Closing existing Stories and Alerts..."
 echo "   ------------------------------------------------------------------------------------------------------------------------------"
 export USER_PASS="$(oc get secret aiops-ir-core-ncodl-api-secret -o jsonpath='{.data.username}' | base64 --decode):$(oc get secret aiops-ir-core-ncodl-api-secret -o jsonpath='{.data.password}' | base64 --decode)"
 oc apply -n $WAIOPS_NAMESPACE -f ./tools/01_demo/scripts/datalayer-api-route.yaml >/tmp/demo.log 2>&1  || true
 sleep 2
 export DATALAYER_ROUTE=$(oc get route  -n $WAIOPS_NAMESPACE datalayer-api  -o jsonpath='{.status.ingress[0].host}')
+export result=$(curl "https://$DATALAYER_ROUTE/irdatalayer.aiops.io/active/v1/stories" --insecure --silent -X PATCH -u "${USER_PASS}" -d '{"state": "resolved"}' -H 'Content-Type: application/json' -H "x-username:admin" -H "x-subscription-id:cfd95b7e-3bc7-4006-a4a8-a73a79c71255")
+echo "       Stories closed: "$(echo $result | jq ".affected")
+
+#export result=$(curl "https://$DATALAYER_ROUTE/irdatalayer.aiops.io/active/v1/alerts?filter=type.classification%20%3D%20%27robot-shop%27" --insecure --silent -X PATCH -u "${USER_PASS}" -d '{"state": "closed"}' -H 'Content-Type: application/json' -H "x-username:admin" -H "x-subscription-id:cfd95b7e-3bc7-4006-a4a8-a73a79c71255")
 export result=$(curl "https://$DATALAYER_ROUTE/irdatalayer.aiops.io/active/v1/alerts" --insecure --silent -X PATCH -u "${USER_PASS}" -d '{"state": "closed"}' -H 'Content-Type: application/json' -H "x-username:admin" -H "x-subscription-id:cfd95b7e-3bc7-4006-a4a8-a73a79c71255")
 echo "       Alerts closed: "$(echo $result | jq ".affected")
 #curl "https://$DATALAYER_ROUTE/irdatalayer.aiops.io/active/v1/alerts" -X GET -u "${USER_PASS}" -H "x-username:admin" -H "x-subscription-id:cfd95b7e-3bc7-4006-a4a8-a73a79c71255" | grep '"state": "open"' | wc -l
@@ -114,7 +118,7 @@ echo "   -----------------------------------------------------------------------
 
 echo "     📥 Get Kafka Topics"
 export KAFKA_TOPIC_LOGS=$(oc get kafkatopics -n $WAIOPS_NAMESPACE | grep cp4waiops-cartridge-logs-$LOG_TYPE| awk '{print $1;}')
-export KAFKA_TOPIC_EVENTS=$(oc get kafkatopics -n $WAIOPS_NAMESPACE | grep -v cp4waiopscp4waiops| grep -v noi-integration| grep cp4waiops-cartridge-alerts-$EVENTS_TYPE| awk '{print $1;}')
+export KAFKA_TOPIC_EVENTS=$(oc get kafkatopics -n $WAIOPS_NAMESPACE | grep -v cp4waiopscp4waiops| grep -v noi-integration| grep -v "1000-1000"| grep cp4waiops-cartridge-alerts-$EVENTS_TYPE| awk '{print $1;}')
 
 echo " "
 echo "     🔐 Get Kafka Password"
@@ -126,6 +130,8 @@ echo " "
 echo "     📥 Get Working Directories"
 export WORKING_DIR_LOGS="./tools/01_demo/INCIDENT_FILES/$APP_NAME/logs"
 export WORKING_DIR_EVENTS="./tools/01_demo/INCIDENT_FILES/$APP_NAME/events"
+export WORKING_DIR_METRICS="./tools/01_demo/INCIDENT_FILES/$APP_NAME/metrics"
+
 echo " "
 
 echo "     📥 Get Date Formats"
@@ -228,6 +234,7 @@ echo "       🔐 Kafka Password              : $SASL_PASSWORD"
 echo "       🖥️  Kafka Executable            : $KAFKACAT_EXE"
 echo "     "
 echo "       📝 Log Type                    : $LOG_TYPE"
+echo "       📅 Date Format Logs            : $DATE_FORMAT_LOGS"
 echo "       📝 Events Type                 : $EVENTS_TYPE"
 echo "       📅 Date Format Events          : $DATE_FORMAT_EVENTS"
 echo "     "
@@ -269,6 +276,8 @@ echo "   -----------------------------------------------------------------------
 # Inject the Log Inception files
 ./tools/01_demo/scripts/simulate-logs.sh 
 
+# Inject the Metric Anomalies
+./tools/01_demo/scripts/simulate-metrics.sh
 
 
 echo " "

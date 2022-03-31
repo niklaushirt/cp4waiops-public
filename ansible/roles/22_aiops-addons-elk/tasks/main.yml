@@ -8,6 +8,21 @@
 # --------------------------------------------------------------------------------------------------------------------------------------
 # Install ELK Stack on OCP
 # --------------------------------------------------------------------------------------------------------------------------------------
+
+- name: TIMESTAMP -              🟢 START - INSTALL ELK
+  debug: 
+    msg="{{ lookup('pipe','date +%d.%m.%Y---%H:%M:%S') }}"
+
+
+- name: LOGGING -              🟢 WRITE TO LOGFILE
+  shell: |
+    export MESSAGE="Installing ELK"
+    export currentDate=$(date +%Y-%m-%d_%H:%M)
+    echo "---------------------------------------------------------------------------------------------------------------------------------------------------" >> ../installAIManager.log
+    echo $currentDate" - "$USER" - "$MESSAGE  >> ../installAIManager.log
+  ignore_errors: yes
+
+
 - name: ELK -                🚀 Create Elasticsearch
   kubernetes.core.k8s:
     state: present

@@ -9,7 +9,7 @@
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------------------------------------------------------"
-#  CP4WAIOPS 3.2 - Monitor Kafka Topics
+#  CP4WAIOPS v3.3 - Monitor Kafka Topics
 #
 #
 #  ©2022 nikh@ch.ibm.com
@@ -24,7 +24,7 @@ echo "**************************************************************************
 echo "***************************************************************************************************************************************************"
 echo "***************************************************************************************************************************************************"
 echo "  "
-echo "  🚀 CloudPak for Watson AIOps 3.2 - Monitor Kafka Topics"
+echo "  🚀 CloudPak for Watson AIOps v3.3 - Monitor Kafka Topics"
 echo "  "
 echo "***************************************************************************************************************************************************"
 echo "***************************************************************************************************************************************************"
@@ -39,7 +39,7 @@ echo "  Initializing......"
 
 export WAIOPS_NAMESPACE=$(oc get po -A|grep aimanager-operator |awk '{print$1}')
 
-export LOG_TYPE=humio   # humio, elk, splunk, ...
+export LOG_TYPE=elk   # humio, elk, splunk, ...
 export EVENT_TYPE=noi   # humio, elk, splunk, ...
 
 
@@ -130,6 +130,36 @@ menu_option_5() {
 
 }
 
+
+menu_option_6() {
+  echo "Monitor Metrics Ingestion"
+  
+  echo "	Press CTRL-C to stop "
+
+  ${KAFKACAT_EXE} -v -X security.protocol=SASL_SSL -X ssl.ca.location=./ca.crt -X sasl.mechanisms=SCRAM-SHA-512 -X sasl.username=$SASL_USER -X sasl.password=$SASL_PASSWORD -b $BROKER -C -t cp4waiops-cartridge.analyticsorchestrator.metrics.itsm.raw
+
+}
+
+
+menu_option_7() {
+  echo "Monitor Alerts"
+  
+  echo "	Press CTRL-C to stop "
+
+  ${KAFKACAT_EXE} -v -X security.protocol=SASL_SSL -X ssl.ca.location=./ca.crt -X sasl.mechanisms=SCRAM-SHA-512 -X sasl.username=$SASL_USER -X sasl.password=$SASL_PASSWORD -b $BROKER -C -t cp4waiops-cartridge.lifecycle.input.alerts
+
+}
+
+menu_option_8() {
+  echo "Instana Connector Response"
+  
+  echo "	Press CTRL-C to stop "
+
+  ${KAFKACAT_EXE} -v -X security.protocol=SASL_SSL -X ssl.ca.location=./ca.crt -X sasl.mechanisms=SCRAM-SHA-512 -X sasl.username=$SASL_USER -X sasl.password=$SASL_PASSWORD -b $BROKER -C -t cp4waiops-cartridge.connector-instana.infra_topology.connector_response
+
+}
+
+
 menu_option_9() {
   echo "Monitor Specific Topic"
   oc get kafkatopic -n $WAIOPS_NAMESPACE
@@ -150,7 +180,7 @@ echo "**************************************************************************
 echo "***************************************************************************************************************************************************"
 echo "***************************************************************************************************************************************************"
 echo "  "
-echo "  🚀 CloudPak for Watson AIOps 3.2 - Monitor Kafka Topics"
+echo "  🚀 CloudPak for Watson AIOps v3.3 - Monitor Kafka Topics"
 echo "  "
 echo "***************************************************************************************************************************************************"
 echo "***************************************************************************************************************************************************"
@@ -195,6 +225,9 @@ until [ "$selection" = "0" ]; do
   echo "    	3  - Monitor Stories"
   echo "    	4  - Monitor Events $EVENTS_TOPIC"
   echo "    	5  - Monitor Logs $LOGS_TOPIC"
+  echo "    	6  - Monitor Metrics Ingestion"
+  echo "    	7  - Monitor Alerts"
+  echo "    	8  - Monitor Instana Connector Response"
   echo "    	9  - Monitor Specific Topic"
   echo "      "
   echo "    	0  -  Exit"
@@ -209,6 +242,9 @@ until [ "$selection" = "0" ]; do
     3 ) clear ; menu_option_3  ;;
     4 ) clear ; menu_option_4  ;;
     5 ) clear ; menu_option_5  ;;
+    6 ) clear ; menu_option_6  ;;
+    7 ) clear ; menu_option_7  ;;
+    8 ) clear ; menu_option_8  ;;
     9 ) clear ; menu_option_9  ;;
 
     0 ) clear ; exit ;;

@@ -38,7 +38,7 @@ do
       cp $WORKING_DIR_LOGS/$actFile /tmp/training-files-logs/timestampedErrorFile.json
       cd /tmp/training-files-logs/
 
-      export my_timestamp=$(date $DATE_FORMAT_LOGS| cut -c1-8)
+      export my_timestamp=$(date $DATE_FORMAT_LOGS)
       #echo "DATE:"$my_timestamp"72000"
       sed -i -e "s/MY_TIMESTAMP/$my_timestamp/g" timestampedErrorFile.json
 

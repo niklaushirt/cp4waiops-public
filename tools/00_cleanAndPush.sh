@@ -13,7 +13,7 @@ mkdir -p ../ARCHIVE/aiops-ansible-$gitCommitMessage
 
 cp -r * ../ARCHIVE/aiops-ansible-$gitCommitMessage
 cp .gitignore ../ARCHIVE/aiops-ansible-$gitCommitMessage
-
+ 
 
 echo "--------------------------------------------------------------------------------------------------------------------------------"
 echo "    🚀  Find File Copies"
@@ -52,7 +52,14 @@ echo "--------------------------------------------------------------------------
 cp ./tools/patches/templates/13_reset-slack.sh ./tools/98_reset/13_reset-slack.sh
 cp ./tools/patches/templates/14_reset-slack-changerisk.sh ./tools/98_reset/14_reset-slack-changerisk.sh
 cp ./tools/patches/templates/incident_robotshop-noi.sh ./tools/01_demo/incident_robotshop-noi.sh
-mv -f ./LOGINS.txt ./DO_NOT_DELIVER
+mkdir -p ./DO_NOT_DELIVER/LOGINS
+mkdir -p ./DO_NOT_DELIVER/LOGS
+mv -f ./LOGINS.txt ./DO_NOT_DELIVER/LOGINS/LOGINS-$gitCommitMessage.txt
+mv -f ./installAIManager.log ./DO_NOT_DELIVER/LOGS/installAIManager-$gitCommitMessage.log
+
+rm -f ./installAIManager* 
+rm -f ./LOGINS* 
+
 
 
 echo "--------------------------------------------------------------------------------------------------------------------------------"

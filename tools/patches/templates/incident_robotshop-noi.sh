@@ -9,7 +9,7 @@
 export NETCOOL_WEBHOOK_GENERIC=not_configured
 
 export APP_NAME=robot-shop
-export LOG_TYPE=humio   # humio, elk, splunk, ...
+export LOG_TYPE=elk   # humio, elk, splunk, ...
 export EVENTS_TYPE=noi
 
 

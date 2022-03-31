@@ -5,7 +5,7 @@ export SLACK_TOKEN=not_configured
 
 # SLACK CHANNELS TO EMPTY
 # Adapt to your needs
-export SLACK_PROACTIVE="cp4waiops32_changerisk"
+export SLACK_PROACTIVE="cp4waiops33_changerisk"
 
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

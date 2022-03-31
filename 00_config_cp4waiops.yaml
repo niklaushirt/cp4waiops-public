@@ -9,7 +9,7 @@
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------------------------------------------------------------"
-#  CP4WAIOPS 3.2 - Ansible Install Parameters
+#  CP4WAIOPS v3.3 - Ansible Install Parameters
 #
 #  CloudPak for Watson AIOps
 #
@@ -33,7 +33,7 @@ WAIOPS_NAMESPACE: cp4waiops
 WAIOPS_SIZE: small # Leave at small unless you know what you're doing
 
 # Version of the catalog subscription
-SUBSCRIPTION_CHANNEL: v3.2
+SUBSCRIPTION_CHANNEL: 3.3-rc
 
 
 
@@ -65,7 +65,7 @@ STORAGECLASS_BLOCK_OVERRIDE: not_configured
 # CP4WAIOPS Namespace for installation
 EVTMGR_NAMESPACE: cp4waiops-evtmgr
 
-
+EVTMGR_CHANNEL: v1.5
 
 
 
@@ -75,17 +75,10 @@ EVTMGR_NAMESPACE: cp4waiops-evtmgr
 # --------------------------------------------------------------------------------------------------------------------------------------
 # *************************************************************************************************************************************************
 
-# Create a demo user in the OCP cluster
-CREATE_DEMO_USER: true
-
-# Install Demo Applications
-INSTALL_DEMO_APPS: true
-
 # Print all credentials at the end of the installation
 PRINT_LOGINS: true
 
-# Install Bastion Server for Runbook Automation
-INSTALL_RUNBOOK_BASTION: true
+
 
 
 
@@ -100,8 +93,6 @@ INSTALL_RUNBOOK_BASTION: true
 ROOK_CEPH_INSTALL_MODE: automatic
 
 
-# Install LDAP Server
-INSTALL_LDAP: true
 # LDAP Domain
 LDAP_DOMAIN: ibm.com
 # LDAP Base
@@ -110,36 +101,11 @@ LDAP_BASE: dc=ibm,dc=com
 LDAP_ADMIN_PASSWORD: P4ssw0rd!
 
 
-# Install Turbonomic (experimental - needs separate license)
-INSTALL_TURBONOMIC: false
 # Turbonomic Storage Class (ibmc-block-gold, rook-cephfs, nfs-client, ...)
 STORAGE_CLASS_TURBO: ibmc-block-gold
-# Install Turbonomic Metrics simulation (highly experimental!)
-INSTALL_TURBONOMIC_METRICS: false
-# Install Turbonomic --> Event Manager Gateway (highly experimental!)
-INSTALL_TURBONOMIC_GATEWAY: false
 
-
-# Install Humio (needs separate license)
-INSTALL_HUMIO: false
 # Humio Storage Class (ibmc-block-gold, rook-cephfs, nfs-client, ...)
 STORAGE_CLASS_HUMIO: ibmc-block-gold
-
-
-# Install ELK Stack
-INSTALL_ELK: false
-
-
-# Install ServiceMesh/Istio
-INSTALL_ISTIO: false
-
-
-# Install AWX (Open Source Ansible Tower)
-INSTALL_AWX: false
-
-
-# Install ManageIQ (Open Source CloudForms)
-INSTALL_MANAGEIQ: false
 
 
 
@@ -236,6 +202,7 @@ OCP_MAJOR_VERSION: automatic
 
 # Name of the CP4WAIOPS instance
 WAIOPS_NAME: ibm-aiops
+#WAIOPS_NAME: ibm-cp-watson-aiops
 # Create externally accessible Route for Topology
 CREATE_TOPO_ROUTE: true
 # Create externally accessible Routes  (security risk!)
@@ -244,14 +211,14 @@ CREATE_TOPO_ROUTE: true
 # Datalayer API
 CREATE_EXTERNAL_ROUTES: true
 
-# Install the EvtManager --> AI Manegr Gateway
+# Install the EvtManager --> AI Manager Gateway
 INSTALL_GATEWAY: true
 # Number of Pods to be expected in final CP4WAIOPS Namespace
 WAIOPS_NS_MIN_PODS_FINAL: 110
 # Number of Pods to be expected in final AI Manager Namespace
 CS_NS_MIN_PODS: 35
 # Number of Pods to be expected in final RookCeph Namespace
-ROOK_NS_MIN_PODS: 38
+ROOK_NS_MIN_PODS: 34
 # Number of Pods to be expected in final Event MAnager Namespace
 EVTMGR_NS_MIN_PODS_FINAL: 70
 
@@ -265,39 +232,31 @@ EVTMGR_NS_MIN_PODS_FINAL: 70
 # --------------------------------------------------------------------------------------------------------------------------------------
 # *************************************************************************************************************************************************
 # IBM Entitled Registry
-ENTITLED_REGISTRY: cp.icr.io
-ENTITLED_REGISTRY_USER: cp
+#ENTITLED_REGISTRY: cp.icr.io
+#ENTITLED_REGISTRY_USER: cp
 ENTITLED_REGISTRY_KEY: TOKEN
+#CATALOG_IMAGE: icr.io/cpopen/ibm-operator-catalog:latest
+
+ENTITLED_REGISTRY: cp.stg.icr.io
+ENTITLED_REGISTRY_USER: cp
+CATALOG_IMAGE: cp.stg.icr.io/cp/ibm-watson-aiops-catalog:v3.3.0-20220318.1607-5b33fc8b1
 
 
+#ENTITLED_REGISTRY: hyc-katamari-cicd-team-docker-local.artifactory.swg-devops.com
+#ENTITLED_REGISTRY_USER: nikh@ch.ibm.com
+#CATALOG_IMAGE: hyc-katamari-cicd-team-docker-local.artifactory.swg-devops.com/katamari/relatedimages/ibm-watson-aiops-catalog:v3.3.0-20220318.1607-5b33fc8b1
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# ENTITLED_REGISTRY: hyc-katamari-cicd-team-docker-local.artifactory.swg-devops.com
-# ENTITLED_REGISTRY_USER: nikh@ch.ibm.com
+#CATALOG_IMAGE: hyc-katamari-cicd-team-docker-local.artifactory.swg-devops.com/katamari/relatedimages/ibm-watson-aiops-catalog:v3.3.0-20220302.0400-3b4003642
+#CATALOG_IMAGE: hyc-katamari-cicd-team-docker-local.artifactory.swg-devops.com/katamari/relatedimages/ibm-watson-aiops-catalog:v0.1.0-20220228.0226-9683f80a9
+#CATALOG_IMAGE: hyc-katamari-cicd-team-docker-local.artifactory.swg-devops.com/katamari/relatedimages/ibm-watson-aiops-catalog:v3.3.0-20220301.1845-1cebcbd5b
+#CATALOG_IMAGE: hyc-katamari-cicd-team-docker-local.artifactory.swg-devops.com/katamari/relatedimages/ibm-watson-aiops-catalog:v3.3.0-20220303.1400-02e39a2b9
+#CATALOG_IMAGE: hyc-katamari-cicd-team-docker-local.artifactory.swg-devops.com/katamari/relatedimages/ibm-watson-aiops-catalog:v3.3.0-20220303.1400-02e39a2b9
+#CATALOG_IMAGE: hyc-katamari-cicd-team-docker-local.artifactory.swg-devops.com/katamari/relatedimages/ibm-watson-aiops-catalog:v3.3.0-20220309.0801-8a3d96276
+#CATALOG_IMAGE: hyc-katamari-cicd-team-docker-local.artifactory.swg-devops.com/katamari/relatedimages/ibm-watson-aiops-catalog:v3.3.0-20220311.0001-1e48dd0ee
+#CATALOG_IMAGE: hyc-katamari-cicd-team-docker-local.artifactory.swg-devops.com/katamari/relatedimages/ibm-watson-aiops-catalog:v3.3.0-20220314.0002-6cff8f7de
+#CATALOG_IMAGE: hyc-katamari-cicd-team-docker-local.artifactory.swg-devops.com/katamari/relatedimages/ibm-watson-aiops-catalog:v3.3.0-20220315.0601-eecf75781
+#CATALOG_IMAGE: hyc-katamari-cicd-team-docker-local.artifactory.swg-devops.com/katamari/relatedimages/ibm-watson-aiops-catalog:v3.3.0-20220318.0201-4cf4ed59c
+#CATALOG_IMAGE: hyc-katamari-cicd-team-docker-local.artifactory.swg-devops.com/katamari/relatedimages/ibm-watson-aiops-catalog:v3.3.0-20220318.1607-d6d1da13a
 
 # CATALOG_IMAGE: hyc-katamari-cicd-team-docker-local.artifactory.swg-devops.com/katamari/relatedimages/ibm-watson-aiops-catalog:v3.2.0-20211029.0822-d63ba3a42
 #CATALOG_IMAGE: hyc-katamari-cicd-team-docker-local.artifactory.swg-devops.com/katamari/relatedimages/ibm-watson-aiops-catalog:v3.2.0-20211022.0601-4c62759e2  <-- worked
@@ -307,6 +266,5 @@ ENTITLED_REGISTRY_KEY: TOKEN
 #SUBSCRIPTION_CHANNEL: 3.2-dev
 
 #CATALOG_IMAGE: icr.io/cpopen/aiops-orchestrator-catalog:3.2-latest
-
 
 

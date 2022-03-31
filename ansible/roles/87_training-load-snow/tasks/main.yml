@@ -1,5 +1,17 @@
 
 
+- name: TIMESTAMP -              🟢 START - LOAD SNOW TRAINING DATA
+  debug: 
+    msg="{{ lookup('pipe','date +%d.%m.%Y---%H:%M:%S') }}"
+
+- name: LOGGING -              🟢 WRITE TO LOGFILE
+  shell: |
+    export MESSAGE="Load SNOW Training Data into ElasticSearch"
+    export currentDate=$(date +%Y-%m-%d_%H:%M)
+    echo "---------------------------------------------------------------------------------------------------------------------------------------------------" >> ../installAIManager.log
+    echo $currentDate" - "$USER" - "$MESSAGE  >> ../installAIManager.log
+  ignore_errors: yes
+
 
 
 - name: TRAINING LOAD SNOW -       🚀 CREATE CLUSTERROLE
@@ -15,35 +27,3 @@
     namespace: default
     src: ./templates/training/load-job-snow.yaml
   
-
-- name: TRAINING LOAD SNOW -       🕦 WAIT FOR COMPLETION
-  shell: |
-    while : ; do
-          READY=$(oc get jobs -n default load-snow-indexes)
-          if [[ ! $READY  =~ "1/1" ]]; then
-                echo "        Load Job not completed. Waiting 30 seconds"
-                sleep 30
-          else
-                break
-          fi
-    done
-    echo "      ✅ OK"
-  register: ES_READY
-  args:
-    executable: /bin/bash
-
-
-- name: TRAINING LOAD SNOW -       🧻 CLEANUP JOB
-  kubernetes.core.k8s:
-    state: absent
-    namespace: turbonomic
-    src: ./templates/training/load-job-snow.yaml
-  
-
-
-- name: TRAINING LOAD SNOW -       🧻 CLEANUP COMPLETED JOBS
-  shell: |
-    oc delete pod  -n default --ignore-not-found $(oc get po -n default|grep load-snow-indexes|awk '{print$1}')
-  register: ES_READY
-  ignore_errors: yes
-

@@ -1,0 +1,113 @@
+
+
+- name: TIMESTAMP -              🟢 START - WAIT FOR TRAINING DATA TO LOAD
+  debug: 
+    msg="{{ lookup('pipe','date +%d.%m.%Y---%H:%M:%S') }}"
+
+
+- name: LOGGING -              🟢 WRITE TO LOGFILE
+  shell: |
+    export MESSAGE="Wait for Training Data to finish loading"
+    export currentDate=$(date +%Y-%m-%d_%H:%M)
+    echo "---------------------------------------------------------------------------------------------------------------------------------------------------" >> ../installAIManager.log
+    echo $currentDate" - "$USER" - "$MESSAGE  >> ../installAIManager.log
+  ignore_errors: yes
+
+
+
+
+- name: TRAINING LOAD METRICS -       🕦 WAIT FOR COMPLETION
+  shell: |
+    while : ; do
+          READY=$(oc get jobs -n default load-metric-cassandra)
+          if [[ ! $READY  =~ "1/1" ]]; then
+                echo "        Load Job not completed. Waiting 30 seconds"
+                sleep 30
+          else
+                break
+          fi
+    done
+    echo "      ✅ OK"
+  register: ES_READY
+  args:
+    executable: /bin/bash
+
+
+- name: TRAINING LOAD METRICS -       🧻 CLEANUP JOB
+  kubernetes.core.k8s:
+    state: absent
+    src: ./templates/training/load-job-metric.yaml
+  
+
+
+- name: TRAINING LOAD SNOW -       🧻 CLEANUP COMPLETED JOBS
+  shell: |
+    oc delete pod  -n default --ignore-not-found $(oc get po -n default|grep load-snow-indexes|awk '{print$1}')
+  register: ES_READY
+  ignore_errors: yes
+
+
+- name: TRAINING LOAD SNOW -       🕦 WAIT FOR COMPLETION
+  shell: |
+    while : ; do
+          READY=$(oc get jobs -n default load-snow-indexes)
+          if [[ ! $READY  =~ "1/1" ]]; then
+                echo "        Load Job not completed. Waiting 30 seconds"
+                sleep 30
+          else
+                break
+          fi
+    done
+    echo "      ✅ OK"
+  register: ES_READY
+  args:
+    executable: /bin/bash
+
+
+- name: TRAINING LOAD SNOW -       🧻 CLEANUP JOB
+  kubernetes.core.k8s:
+    state: absent
+    src: ./templates/training/load-job-snow.yaml
+  
+
+
+- name: TRAINING LOAD SNOW -       🧻 CLEANUP COMPLETED JOBS
+  shell: |
+    oc delete pod  -n default --ignore-not-found $(oc get po -n default|grep load-snow-indexes|awk '{print$1}')
+  register: ES_READY
+  ignore_errors: yes
+
+
+
+
+
+- name: TRAINING LOAD LAD -       🕦 WAIT FOR COMPLETION
+  shell: |
+    while : ; do
+          READY=$(oc get jobs -n default load-log-indexes)
+          if [[ ! $READY  =~ "1/1" ]]; then
+                echo "        Load Job not completed. Waiting 30 seconds"
+                sleep 30
+          else
+                break
+          fi
+    done
+    echo "      ✅ OK"
+  register: ES_READY
+  args:
+    executable: /bin/bash
+
+
+- name: TRAINING LOAD SNOW -       🧻 CLEANUP JOB
+  kubernetes.core.k8s:
+    state: absent
+    src: ./templates/training/load-job-snow.yaml
+  
+
+
+- name: TRAINING LOAD SNOW -       🧻 CLEANUP COMPLETED JOBS
+  shell: |
+    oc delete pod  -n default --ignore-not-found $(oc get po -n default|grep load-log-indexes|awk '{print$1}')
+  register: ES_READY
+  ignore_errors: yes
+

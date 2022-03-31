@@ -4,10 +4,9 @@ metadata:
   name: noi-operator
   namespace: {{EVTMGR_NAMESPACE}}
 spec:
-  channel: v1.5
+  channel: {{EVTMGR_CHANNEL}}
   installPlanApproval: Automatic
-  name: noi-operator
-  source: ibm-noi-catalog
+  name: noi
+  source: ibm-operator-catalog
   sourceNamespace: openshift-marketplace
-  startingCSV: noi-operator.v1.3.2
-
+  startingCSV: noi.v1.3.5

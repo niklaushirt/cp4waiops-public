@@ -1,0 +1,125 @@
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#       __________  __ ___       _____    ________            
+#      / ____/ __ \/ // / |     / /   |  /  _/ __ \____  _____
+#     / /   / /_/ / // /| | /| / / /| |  / // / / / __ \/ ___/
+#    / /___/ ____/__  __/ |/ |/ / ___ |_/ // /_/ / /_/ (__  ) 
+#    \____/_/      /_/  |__/|__/_/  |_/___/\____/ .___/____/  
+#                                              /_/            
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------------------------------------------------------"
+#  Installing CP4WAIOPS v3.3
+#
+#  CloudPak for Watson AIOps
+#
+#  ©2022 nikh@ch.ibm.com
+# ---------------------------------------------------------------------------------------------------------------------------------------------------"
+# ---------------------------------------------------------------------------------------------------------------------------------------------------"
+# ---------------------------------------------------------------------------------------------------------------------------------------------------"
+# ---------------------------------------------------------------------------------------------------------------------------------------------------"
+# Installs:
+#
+#  - AWX (Open Source Ansible Tower) with preloaded Playbooks
+#  - Disables ASM Service match rule 
+#  - Train Models
+#    - Create Training Definitions (TG, LAD, CR, SI. Turn off RSA) 
+#    - Create Training Data (LAD, SNOW) 
+#    - Train Models (TG, LAD, CR, SI) 
+#  - Topology
+#    - Create K8s Observer
+#    - Create ASM merge rules
+#    - Load ASM merge Topology
+#    - Create AI Manager Application
+#  - Creates valid certificate for Ingress (Slack) 
+
+#  
+# ---------------------------------------------------------------------------------------------------------------------------------------------------"
+# ---------------------------------------------------------------------------------------------------------------------------------------------------"
+
+
+- hosts: localhost
+  #become: true
+  vars_files: ../00_config_cp4waiops.yaml
+
+  roles:  
+
+# Start block
+    - role: 98-log-start-02
+
+# Placeholder for customization
+    - role: 00_pre
+
+
+# Run Prerequisites
+    - role: 01_initialization
+  
+    - role: 03_aiops-get-storage-class
+      
+
+# Wait for CP4WAIOPS being completely installed
+    - role: 99_aiops-wait-cp4waiops
+
+# Create Training definitions, load data
+    - role: 85_training-check-exists
+    - role: 86_training-create-tg
+      when: TRAINING_EXISTS==false
+    - role: 86_training-create-metric
+      when: TRAINING_EXISTS==false
+    - role: 86_training-create-snow
+      when: TRAINING_EXISTS==false
+    - role: 86_training-create-logs
+      when: TRAINING_EXISTS==false
+    - role: 87_training-load-snow
+      when: TRAINING_EXISTS==false
+    - role: 87_training-load-logs
+      when: TRAINING_EXISTS==false
+    - role: 87_training-load-metric
+      when: TRAINING_EXISTS==false
+
+# Load Topology
+    #- role: 81_create-observers
+    - role: 82_load-topology-merge
+    - role: 83_load-topology-data
+    - role: 84_create-aiops-application
+
+# Install Add-Ons while CP4WAIOPS is coming up
+      
+    - role: 23_aiops-addons-awx      
+
+    - role: 99_aiops-wait-awx
+
+    - role: 47_aiops-load-awx-runbooks
+
+    - role: 31_aiops-patch-ingress
+      
+    - role: 32_aiops-disable-match-token-rule
+
+# Train models
+    - role: 87_training-load-wait
+      when: TRAINING_EXISTS==false
+    - role: 88_training-run-snow
+      when: TRAINING_EXISTS==false
+    - role: 88_training-run-logs
+      when: TRAINING_EXISTS==false
+    - role: 88_training-run-metric
+      when: TRAINING_EXISTS==false
+      
+
+# Open Post installation docs
+    - role: 99_aiops-open-aimanager-usermgt
+    
+# Open Post installation docs
+    - role: 99_aiops-open-doc-post-02
+
+# Get all login credentials
+    - role: 90_aiops-logins
+      when: PRINT_LOGINS
+
+
+
+# End block
+    - role: 98-log-end-02
+
+
+

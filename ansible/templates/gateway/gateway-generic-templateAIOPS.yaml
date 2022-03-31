@@ -25,7 +25,7 @@ spec:
     - INSERTS
     - UPDATES
   virtualPairName: AGG_V
-  imagePullSecret: ibm-aiops-pull-secret
+  imagePullSecret: ibm-entitlement-key
   objectServerPrimaryIducHost: evtmanager-objserv-agg-primary
   omniSecretName: evtmanager-omni-secret
   objectServerBackupIducHost: evtmanager-objserv-agg-backup

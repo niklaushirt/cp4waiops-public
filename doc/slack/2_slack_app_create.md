@@ -12,7 +12,7 @@
 
 3. Select the appropriate workspace that you have created before and click `Next`
 
-4. Copy and paste the content of this file [./tools/3_slack/slack-app-manifest.yaml](./slack-app-manifest.yaml).
+4. Copy and paste the content of this file [./doc/slack/slack-app-manifest.yaml](./slack-app-manifest.yaml).
 
 	Don't bother with the URLs just yet, we will adapt them as needed.
 

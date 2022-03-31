@@ -9,8 +9,8 @@ CLUSTER_FQDN=$( echo $CLUSTER_ROUTE | awk '{print $2}')
 CLUSTER_NAME=${CLUSTER_FQDN##*console.}
 
 
-export EVTMGR_REST_USR=$(oc get secret evtmanager-topology-asm-credentials -n $EVTMGR_NAMESPACE -o=template --template={{.data.username}} | base64 --decode)
-export EVTMGR_REST_PWD=$(oc get secret evtmanager-topology-asm-credentials -n $EVTMGR_NAMESPACE -o=template --template={{.data.password}} | base64 --decode)
+export EVTMGR_REST_USR=$(oc get secret evtmanager-topology-asm-credentials -n $EVTMGR_NAMESPACE -o jsonpath='{.data.username}' | base64 --decode)
+export EVTMGR_REST_PWD=$(oc get secret evtmanager-topology-asm-credentials -n $EVTMGR_NAMESPACE -o jsonpath='{.data.password}' | base64 --decode)
 export LOGIN="$EVTMGR_REST_USR:$EVTMGR_REST_PWD"
 
 oc create route passthrough topology-merge -n $EVTMGR_NAMESPACE --insecure-policy="Redirect" --service=evtmanager-topology-merge --port=https-merge-api

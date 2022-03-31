@@ -1,0 +1,51 @@
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Waiting for CP4WAIOPS installation to finish
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+    
+- name: LOGGING -              🟢 WRITE TO LOGFILE
+  shell: |
+    export MESSAGE=" 🕦 Wait for AWX to become ready"
+    export currentDate=$(date +%Y-%m-%d_%H:%M)
+    echo "---------------------------------------------------------------------------------------------------------------------------------------------------" >> ../installAIManager.log
+    echo $currentDate" - "$USER" - "$MESSAGE  >> ../installAIManager.log
+  ignore_errors: yes
+
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Wait for awx Namespace to be ready
+# --------------------------------------------------------------------------------------------------------------------------------------
+
+- name: CHECK -          🕦 Wait for pods in namespace awx ready
+  shell: |
+    NUM_PODS=$(oc get pods -n awx| grep postgres|grep 1/1 | wc -l| tr -d ' ')
+    echo $NUM_PODS
+  register: kubectl_num_pods
+  until: kubectl_num_pods.stdout|int == 1
+  retries: 500
+  delay: 15
+
+
+
+- name: CHECK -          🕦 Wait for awx UI to become ready
+  shell: |
+    export AWX_ROUTE=$(oc get route -n awx awx -o jsonpath={.spec.host})
+    export AWX_URL=$(echo "https://$AWX_ROUTE")
+
+    READY=$(curl -s $AWX_URL|grep "Application is not available")
+    echo $READY
+  register: ready
+  until:  ("Application is not available" not in ready.stdout)
+  retries: 500
+  delay: 15
+
+
+
+- name: LOGGING -              🟢 WRITE TO LOGFILE
+  shell: |
+    export MESSAGE=" ✅ AWX is ready"
+    export currentDate=$(date +%Y-%m-%d_%H:%M)
+    echo $currentDate" - "$USER" - "$MESSAGE  >> ../installAIManager.log
+  ignore_errors: yes

@@ -9,7 +9,7 @@
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------------------"
-#  CP4WAIOPS 3.2 - Debug WAIOPS Installation
+#  CP4WAIOPS v3.3 - Debug WAIOPS Installation
 #
 #
 #  ©2022 nikh@ch.ibm.com
@@ -24,7 +24,7 @@ echo "**************************************************************************
 echo "*****************************************************************************************************************************"
 echo "*****************************************************************************************************************************"
 echo "  "
-echo "  🚀 CloudPak for Watson AIOps 3.2 - Debug WAIOPS Installation"
+echo "  🚀 CloudPak for Watson AIOps v3.3 - Debug WAIOPS Installation"
 echo "  "
 echo "*****************************************************************************************************************************"
 echo "*****************************************************************************************************************************"
@@ -32,7 +32,7 @@ echo "**************************************************************************
 echo "  "
 echo "  "
 
-. ./tools/99_uninstall/3.2/uninstall-cp4waiops-resource-groups.props
+. ./tools/99_uninstall/3.3/uninstall-cp4waiops-resource-groups.props
 export TEMP_PATH=~/aiops-install
 
 # ---------------------------------------------------------------------------------------------------------------"
@@ -98,14 +98,8 @@ function check_array(){
 
 export WAIOPS_NAMESPACE=$(oc get po -A|grep aimanager-operator |awk '{print$1}')
 
-EVTMGR_PARAMETER=$(cat ./00_config_cp4waiops.yaml|grep EVTMGR_NAMESPACE:)
-EVTMGR_NAMESPACE=${EVTMGR_PARAMETER##*:}
-EVTMGR_NAMESPACE=$(echo $EVTMGR_NAMESPACE|tr -d '[:space:]')
-
-
-CLUSTER_ROUTE=$(oc get routes console -n openshift-console | tail -n 1 2>&1 ) 
-CLUSTER_FQDN=$( echo $CLUSTER_ROUTE | awk '{print $2}')
-CLUSTER_NAME=${CLUSTER_FQDN##*console.}
+export WAIOPS_NAMESPACE=$(oc get po -A|grep aimanager-operator |awk '{print$1}')
+export EVTMGR_NAMESPACE=$(oc get po -A|grep noi-operator |awk '{print$1}')
 
 
 echo "  Initializing......"
@@ -233,8 +227,8 @@ menu_check_install_aimgr () {
 
             echo ""
             echo ""
-            echo "ibm-aiops-pull-secret Pull Secret"
-            oc get secret/ibm-aiops-pull-secret -n $WAIOPS_NAMESPACE --template='{{index .data ".dockerconfigjson" | base64decode}}'
+            echo "ibm-entitlement-key Pull Secret"
+            oc get secret/ibm-entitlement-key -n $WAIOPS_NAMESPACE --template='{{index .data ".dockerconfigjson" | base64decode}}'
 
       else
             echo "      ✅ OK: All images can be pulled"; 
@@ -245,7 +239,7 @@ menu_check_install_aimgr () {
       echo ""
       echo ""
       echo "--------------------------------------------------------------------------------------------"
-      echo "🔎 Check Camel-K Handlers (Hack for 3.2 GA)"
+      echo "🔎 Check Camel-K Handlers (Hack for v3.3 GA)"
       echo "--------------------------------------------------------------------------------------------"
 
     
@@ -265,7 +259,7 @@ menu_check_install_aimgr () {
       echo ""
       echo ""
       echo "--------------------------------------------------------------------------------------------"
-      echo "🔎 Check Cassandra Pull Secret (Hack for 3.2 GA)"
+      echo "🔎 Check Cassandra Pull Secret (Hack for v3.3 GA)"
       echo "--------------------------------------------------------------------------------------------"
 
     
@@ -289,7 +283,7 @@ menu_check_install_aimgr () {
       echo ""
       echo ""
       echo "--------------------------------------------------------------------------------------------"
-      echo "🔎 Check IR Analytics Pull Secret (Hack for 3.2 GA)"
+      echo "🔎 Check IR Analytics Pull Secret (Hack for v3.3 GA)"
       echo "--------------------------------------------------------------------------------------------"
 
       CP4AIOPS_CHECK_LIST=(
@@ -641,8 +635,8 @@ menu_check_INSTALL_EVTMGR () {
 
             echo ""
             echo ""
-            echo "ibm-aiops-pull-secret Pull Secret"
-            oc get secret/ibm-aiops-pull-secret -n $EVTMGR_NAMESPACE --template='{{index .data ".dockerconfigjson" | base64decode}}'
+            echo "ibm-entitlement-key Pull Secret"
+            oc get secret/ibm-entitlement-key -n $EVTMGR_NAMESPACE --template='{{index .data ".dockerconfigjson" | base64decode}}'
 
       else
             echo "      ✅ OK: All images can be pulled"; 
@@ -1178,23 +1172,29 @@ menu_ssl_certs() {
       echo "    🚀  Patching Certs, new method" 
       echo "   --------------------------------------------------------------------------------------------"
 
-IAF_STORAGE=$(oc get install ibm-aiops -n $WAIOPS_NAMESPACE -o jsonpath='{ .spec.storageClass }'"
-#IAF_STORAGE=$(oc get AutomationUIConfig -n $WAIOPS_NAMESPACE -o jsonpath='{ .items[*].spec.storage.class }')
-oc get -n $WAIOPS_NAMESPACE AutomationUIConfig iaf-system -oyaml > iaf-system-backup.yaml
-oc delete -n $WAIOPS_NAMESPACE AutomationUIConfig iaf-system
+            oc project $WAIOPS_NAMESPACE
+            AUTO_UI_INSTANCE=$(oc get AutomationUIConfig -n $WAIOPS_NAMESPACE --no-headers -o custom-columns=":metadata.name")
+            IAF_STORAGE=$(oc get AutomationUIConfig -n $WAIOPS_NAMESPACE -o jsonpath='{ .items[*].spec.zenService.storageClass }')
+            ZEN_STORAGE=$(oc get AutomationUIConfig -n $WAIOPS_NAMESPACE -o jsonpath='{ .items[*].spec.zenService.zenCoreMetaDbStorageClass }')
+            oc get -n $WAIOPS_NAMESPACE AutomationUIConfig $AUTO_UI_INSTANCE --ignore-not-found -o yaml > /tmp/AutomationUIConfig-backup-$(date +%Y%m%d-%H%M).yaml
+            oc delete -n $WAIOPS_NAMESPACE AutomationUIConfig $AUTO_UI_INSTANCE
+
 cat <<EOF | oc apply -f -
 apiVersion: core.automation.ibm.com/v1beta1
 kind: AutomationUIConfig
 metadata:
-  name: iaf-system
+  name: $AUTO_UI_INSTANCE
   namespace: $WAIOPS_NAMESPACE
 spec:
   description: AutomationUIConfig for cp4waiops
   license:
     accept: true
-  version: v1.0
-  storage:
-    class: $IAF_STORAGE
+  version: v1.3
+  zen: true
+  zenService:
+    iamIntegration: true
+    storageClass: $IAF_STORAGE
+    zenCoreMetaDbStorageClass: $ZEN_STORAGE
   tls:
     caSecret:
       key: ca.crt
@@ -1202,43 +1202,46 @@ spec:
     certificateSecret:
       secretName: external-tls-secret
 EOF
-rm iaf-system-backup.yaml
+
 
 
       echo "   --------------------------------------------------------------------------------------------"
       echo "    🚀  Patching Certs, old method first" 
       echo "   --------------------------------------------------------------------------------------------"
 
-# collect certificate from OpenShift ingress
-ingress_pod=$(oc get secrets -n openshift-ingress | grep tls | grep -v router-metrics-certs-default | awk '{print $1}')
-oc get secret -n openshift-ingress -o 'go-template={{index .data "tls.crt"}}' ${ingress_pod} | base64 -d > cert.crt
-oc get secret -n openshift-ingress -o 'go-template={{index .data "tls.key"}}' ${ingress_pod} | base64 -d > cert.key
-oc get secret -n $WAIOPS_NAMESPACE iaf-system-automationui-aui-zen-ca -o 'go-template={{index .data "ca.crt"}}'| base64 -d > ca.crt
-# backup existing secret
-oc get secret -n $WAIOPS_NAMESPACE external-tls-secret -o yaml > external-tls-secret$(date +%Y-%m-%dT%H:%M:%S).yaml
-# delete existing secret
-oc delete secret -n $WAIOPS_NAMESPACE external-tls-secret
-# create new secret
-oc create secret generic -n $WAIOPS_NAMESPACE external-tls-secret --from-file=ca.crt=ca.crt --from-file=cert.crt=cert.crt --from-file=cert.key=cert.key --dry-run=client -o yaml | oc apply -f -
-#oc create secret generic -n $WAIOPS_NAMESPACE external-tls-secret --from-file=cert.crt=cert.crt --from-file=cert.key=cert.key --dry-run=client -o yaml | oc apply -f -
-# scale down nginx
-REPLICAS=2
-oc scale Deployment/ibm-nginx --replicas=0
-# scale up nginx
-sleep 3
-oc scale Deployment/ibm-nginx --replicas=${REPLICAS}
-rm cert.crt
-rm cert.key
-rm ca.crt
-rm external-tls-secret
 
-NGINX_READY=$(oc get pod -n $WAIOPS_NAMESPACE | grep "ibm-nginx" | grep "0/1" || true) 
-while  ([[  $NGINX_READY =~ "0/1" ]]); do 
-    NGINX_READY=$(oc get pod -n $WAIOPS_NAMESPACE | grep "ibm-nginx" | grep "0/1" || true) 
-    echo "      ⭕ Nginx not ready. Waiting for 10 seconds...." && sleep 10; 
-done
+            ingress_pod=$(oc get secrets -n openshift-ingress | grep tls | grep -v router-metrics-certs-default | awk '{print $1}')
+            oc get secret -n openshift-ingress -o jsonpath='{.data.tls\.crt}' ${ingress_pod} | base64 -d > /tmp/cert.crt
+            oc get secret -n openshift-ingress -o jsonpath='{.data.tls\.key}' ${ingress_pod} | base64 -d > /tmp/cert.key
+            oc get secret -n $WAIOPS_NAMESPACE iaf-system-automationui-aui-zen-ca -o jsonpath='{.data.ca\.crt}' | base64 -d > /tmp/ca.crt
 
-oc delete pod $(oc get po -n $WAIOPS_NAMESPACE|grep slack|awk '{print$1}') -n $WAIOPS_NAMESPACE --grace-period 0 --force
+            oc get secret -n $WAIOPS_NAMESPACE external-tls-secret --ignore-not-found -o yaml > /tmp/external-tls-secret-backup-$(date +%Y%m%d-%H%M).yaml
+            oc delete secret -n $WAIOPS_NAMESPACE --ignore-not-found external-tls-secret
+            oc create secret generic -n $WAIOPS_NAMESPACE external-tls-secret --from-file=ca.crt=/tmp/ca.crt --from-file=cert.crt=/tmp/cert.crt --from-file=cert.key=/tmp/cert.key --dry-run=client -o yaml | oc apply -f -
+            REPLICAS=2
+            oc scale Deployment/ibm-nginx --replicas=0
+            sleep 3
+            oc scale Deployment/ibm-nginx --replicas=${REPLICAS}
+            rm /tmp/cert.crt
+            rm /tmp/cert.key
+            rm /tmp/ca.crt
+            rm /tmp/external-tls-secret.yaml
+
+
+
+            NGINX_READY=$(oc get pod -n $WAIOPS_NAMESPACE | grep "ibm-nginx" | grep "0/1" || true) 
+            while  ([[  $NGINX_READY =~ "0/1" ]]); do 
+            NGINX_READY=$(oc get pod -n $WAIOPS_NAMESPACE | grep "ibm-nginx" | grep "0/1" || true) 
+            echo "      ⭕ Nginx not ready. Waiting for 10 seconds...." && sleep 10; 
+            done
+
+            oc delete pod $(oc get po -n $WAIOPS_NAMESPACE|grep slack|awk '{print$1}') -n $WAIOPS_NAMESPACE --grace-period 0 --force
+
+            SLACK_READY=$(oc get pod -n $WAIOPS_NAMESPACE | grep "slack" | grep "0/1" || true) 
+            while  ([[  $SLACK_READY =~ "0/1" ]]); do 
+            SLACK_READY=$(oc get pod -n $WAIOPS_NAMESPACE | grep "slack" | grep "0/1" || true) 
+            echo "      ⭕ Slack not ready. Waiting for 10 seconds...." && sleep 10; 
+            done
 
       else
         echo "    ⚠️  Skipping"
@@ -1271,7 +1274,7 @@ menu_patch_evtmanager_inference_noi() {
             echo ""
 
              echo "Patch evtmanager-ibm-hdm-analytics-dev-inferenceservice"
-                 oc patch deployment evtmanager-ibm-hdm-analytics-dev-inferenceservice -n noi --patch-file ./tools/patches/evtmanager-inferenceservice-patch.yaml || true 
+                 oc patch deployment evtmanager-ibm-hdm-analytics-dev-inferenceservice -n $EVTMGR_NAMESPACE --patch-file ./tools/patches/evtmanager-inferenceservice-patch.yaml || true 
                  echo "      ✅ OK"
              echo ""
 
@@ -1308,27 +1311,27 @@ menu_patch_merge_noi() {
 
 
             # echo "Patch evtmanager-ibm-hdm-analytics-dev-inferenceservice"
-            #     oc patch deployment evtmanager-ibm-hdm-analytics-dev-inferenceservice -n noi --patch-file ./yaml/waiops/patches/evtmanager-inferenceservice-patch.yaml || true 
+            #     oc patch deployment evtmanager-ibm-hdm-analytics-dev-inferenceservice -n $EVTMGR_NAMESPACE --patch-file ./yaml/waiops/patches/evtmanager-inferenceservice-patch.yaml || true 
             #     echo "      ✅ OK"
             # echo ""
 
             echo "Patch evtmanager-topology-merge"
-                oc patch deployment evtmanager-topology-merge -n noi --patch-file ./tools/patches/evtmanager-topology-merge-patch.yaml || true 
+                oc patch deployment evtmanager-topology-merge -n $EVTMGR_NAMESPACE --patch-file ./tools/patches/evtmanager-topology-merge-patch.yaml || true 
                 echo "      ✅ OK"
             echo
 
             echo "Patch evtmanager-topology-status"
-                oc patch deployment evtmanager-topology-status -n noi --patch-file ./tools/patches/evtmanager-topology-status-patch.yaml || true 
+                oc patch deployment evtmanager-topology-status -n $EVTMGR_NAMESPACE --patch-file ./tools/patches/evtmanager-topology-status-patch.yaml || true 
                 echo "      ✅ OK"
             echo
 
             echo "Patch evtmanager-topology-search"
-                oc patch deployment evtmanager-topology-search -n noi --patch-file ./tools/patches/evtmanager-topology-search-patch.yaml || true 
+                oc patch deployment evtmanager-topology-search -n $EVTMGR_NAMESPACE --patch-file ./tools/patches/evtmanager-topology-search-patch.yaml || true 
                 echo "      ✅ OK"
             echo
 
             echo "Patch evtmanager-topology-layout"
-                oc patch deployment evtmanager-topology-layout -n noi --patch-file ./tools/patches/evtmanager-topology-layout-patch.yaml || true 
+                oc patch deployment evtmanager-topology-layout -n $EVTMGR_NAMESPACE --patch-file ./tools/patches/evtmanager-topology-layout-patch.yaml || true 
                 echo "      ✅ OK"
             echo
 

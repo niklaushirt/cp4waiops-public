@@ -1,0 +1,471 @@
+{
+    "_executionTime": 39,
+    "_offset": 0,
+    "_limit": 50,
+    "_items": [
+      {
+        "keyIndexName": "restTopology",
+        "_id": "YlE3xV6bQuVAOw7dU6_ghQ",
+        "vertexType": "mgmtArtifact",
+        "createTime": 1646834313111,
+        "providerId": "YlE3xV6bQuVAOw7dU6_ghQ",
+        "_observedAt": "2022-03-09T13:58:33.111Z",
+        "_createdAt": "2022-03-09T13:58:33.111Z",
+        "name": "restTopology",
+        "entityTypes": [
+          "provider"
+        ],
+        "observedTime": 1646834313111
+      },
+      {
+        "_id": "n2PfbBxGQRqp3XRO6eMJmw",
+        "vertexType": "mgmtArtifact",
+        "observationId": "KKNMnE_11us04b2rKKfk0w",
+        "createTime": 1646834313489,
+        "_observedAt": "2022-03-09T14:57:40.543Z",
+        "_createdAt": "2022-03-09T13:58:33.489Z",
+        "name": "rest-observer:restTopology",
+        "entityTypes": [
+          "observation"
+        ],
+        "observerName": "rest-observer",
+        "observedTime": 1646837860543,
+        "uniqueId": "restTopology.bak"
+      },
+      {
+        "keyIndexName": "rest-observer:restTopology",
+        "_id": "ehNKSnfvQVKkmK84OeY_gQ",
+        "_observedAt": "2022-03-09T15:04:26.120Z",
+        "matchTokens": [
+          "rest-observer"
+        ],
+        "description": "",
+        "hasState": "RUNNING",
+        "observedTime": 1646838266120,
+        "tags": [
+          "LISTEN_JOB",
+          "rest-observer"
+        ],
+        "schedule": {
+          "lastRunTime": 1646834312227
+        },
+        "path": "/jobs/bulk_replace",
+        "vertexType": "mgmtArtifact",
+        "createTime": 1646838266120,
+        "_createdAt": "2022-03-09T15:04:26.120Z",
+        "name": "restTopology",
+        "entityTypes": [
+          "ASM_OBSERVER_JOB"
+        ],
+        "observerName": "rest-observer",
+        "parameters": {
+          "provider": "restTopology"
+        }
+      },
+      {
+        "keyIndexName": "kubernetes-observer:robot-shop",
+        "_id": "cRexKYgXSUyERyw5uZx60g",
+        "_observedAt": "2022-03-09T14:37:36.223Z",
+        "matchTokens": [
+          "kubernetes-observer"
+        ],
+        "description": "",
+        "observedTime": 1646836656223,
+        "tags": [
+          "OBSERVATION_JOB",
+          "kubernetes-observer"
+        ],
+        "schedule": {
+          "interval": 5,
+          "units": "minutes"
+        },
+        "path": "/jobs/local",
+        "vertexType": "mgmtArtifact",
+        "createTime": 1646836656223,
+        "_createdAt": "2022-03-09T14:37:36.223Z",
+        "name": "robot-shop",
+        "entityTypes": [
+          "ASM_OBSERVER_JOB"
+        ],
+        "observerName": "kubernetes-observer",
+        "parameters": {
+          "connect_read_timeout_ms": 5000,
+          "hide_terminated_pods": true,
+          "namespaceGroupParameters": {
+            "correlate": true
+          },
+          "role_token": false,
+          "namespace": "robot-shop",
+          "data_center": "robot-shop"
+        }
+      },
+      {
+        "_id": "oiVofOTRTzOvBW4e3rx0BQ",
+        "vertexType": "mgmtArtifact",
+        "createTime": 1646835970674,
+        "_observedAt": "2022-03-09T14:26:10.674Z",
+        "_createdAt": "2022-03-09T14:26:10.674Z",
+        "name": "kubernetes-observer:robot-shop",
+        "entityTypes": [
+          "observation"
+        ],
+        "observerName": "kubernetes-observer",
+        "observedTime": 1646835970674,
+        "uniqueId": "robot-shop::robot-shop"
+      },
+      {
+        "_id": "O4SdeTFkTneSeBsu5TvV-g",
+        "vertexType": "mgmtArtifact",
+        "observationId": "xtCbrVyzVUmlnxNKxuetfg",
+        "createTime": 1646837265196,
+        "_observedAt": "2022-03-09T14:47:45.250Z",
+        "_createdAt": "2022-03-09T14:47:45.196Z",
+        "name": "rest-observer:restTopology",
+        "entityTypes": [
+          "observation"
+        ],
+        "observerName": "rest-observer",
+        "observedTime": 1646837265250,
+        "uniqueId": "restTopology1"
+      },
+      {
+        "keyIndexName": "_8y526gvRnu3liV_Qm3Z1Q",
+        "_id": "aW_mYHxjsX3qBp-3PaDjpQ",
+        "vertexType": "mgmtArtifact",
+        "createTime": 1646835962168,
+        "providerId": "aW_mYHxjsX3qBp-3PaDjpQ",
+        "_observedAt": "2022-03-09T14:26:02.168Z",
+        "_createdAt": "2022-03-09T14:26:02.168Z",
+        "name": "_8y526gvRnu3liV_Qm3Z1Q",
+        "entityTypes": [
+          "provider"
+        ],
+        "observedTime": 1646835962168
+      },
+      {
+        "keyIndexName": "restTopology1",
+        "_id": "kQv78xHzo4wnhNHGb0ZQLg",
+        "vertexType": "mgmtArtifact",
+        "createTime": 1646837265052,
+        "providerId": "kQv78xHzo4wnhNHGb0ZQLg",
+        "_observedAt": "2022-03-09T14:47:45.052Z",
+        "_createdAt": "2022-03-09T14:47:45.052Z",
+        "name": "restTopology1",
+        "entityTypes": [
+          "provider"
+        ],
+        "observedTime": 1646837265052
+      },
+      {
+        "_id": "MysS3t_3TcCncf_ttIUM7g",
+        "vertexType": "mgmtArtifact",
+        "observationId": "wFfI28V4xl9B1GFUxPHzAQ",
+        "createTime": 1646837254621,
+        "_observedAt": "2022-03-09T14:57:40.351Z",
+        "_createdAt": "2022-03-09T14:47:34.621Z",
+        "name": "rest-observer:restTopology",
+        "entityTypes": [
+          "observation"
+        ],
+        "observerName": "rest-observer",
+        "observedTime": 1646837860351,
+        "uniqueId": "restTopology"
+      },
+      {
+        "keyIndexName": "defaultProvider",
+        "_id": "Hiu22D0yDbtu8V_DfWi3yA",
+        "vertexType": "mgmtArtifact",
+        "createTime": 1646827459184,
+        "providerId": "Hiu22D0yDbtu8V_DfWi3yA",
+        "_observedAt": "2022-03-09T12:04:19.184Z",
+        "_createdAt": "2022-03-09T12:04:19.184Z",
+        "name": "defaultProvider",
+        "entityTypes": [
+          "provider"
+        ],
+        "observedTime": 1646827459184
+      },
+      {
+        "keyIndexName": "INSTANA.OBSERVER:instana",
+        "_id": "8loz8Ay8JHllagTIjgPA5w",
+        "vertexType": "mgmtArtifact",
+        "createTime": 1646827550562,
+        "providerId": "8loz8Ay8JHllagTIjgPA5w",
+        "_observedAt": "2022-03-09T12:05:50.562Z",
+        "_createdAt": "2022-03-09T12:05:50.562Z",
+        "name": "INSTANA.OBSERVER:instana",
+        "entityTypes": [
+          "provider"
+        ],
+        "observedTime": 1646827550562
+      },
+      {
+        "keyIndexName": "cp4waiops-cartridge.github-observer-provider",
+        "_id": "Pz1dQCTBIF1IpMVMqQSm-A",
+        "vertexType": "mgmtArtifact",
+        "createTime": 1646827688498,
+        "providerId": "Pz1dQCTBIF1IpMVMqQSm-A",
+        "_observedAt": "2022-03-09T12:08:08.499Z",
+        "_createdAt": "2022-03-09T12:08:08.498Z",
+        "name": "cp4waiops-cartridge.github-observer-provider",
+        "entityTypes": [
+          "provider"
+        ],
+        "observedTime": 1646827688499
+      },
+      {
+        "keyIndexName": "cp4waiops-instana-observer:listen_instana",
+        "_id": "ToKk621iTLi_AEmILP3JAg",
+        "hasStateDescription": "Job Started",
+        "_observedAt": "2022-03-09T12:05:54.977Z",
+        "matchTokens": [
+          "cp4waiops-instana-observer"
+        ],
+        "hasState": "RUNNING",
+        "observedTime": 1646827554977,
+        "observationStart": 1646827549269,
+        "tags": [
+          "LISTEN_JOB",
+          "cp4waiops-instana-observer"
+        ],
+        "schedule": {},
+        "path": "/jobs/listen",
+        "vertexType": "mgmtArtifact",
+        "createTime": 1646827548763,
+        "_createdAt": "2022-03-09T12:05:48.763Z",
+        "name": "listen_instana",
+        "entityTypes": [
+          "ASM_OBSERVER_JOB"
+        ],
+        "observerName": "cp4waiops-instana-observer",
+        "parameters": {
+          "provider": "INSTANA.OBSERVER:instana"
+        }
+      },
+      {
+        "keyIndexName": "cp4waiops-cartridge.github-observer",
+        "_id": "PMzS5kmGQaSVyIuFgqwQlw",
+        "vertexType": "mgmtArtifact",
+        "path": "https://172.30.94.184:9162/1.0/cp4waiops-cartridge.github-observer",
+        "podPerJobEnabled": false,
+        "createTime": 1646827689523,
+        "getText": "The IBM GitHub Observer provides a listening job to process cloud events generated by the GitHub connector.<br>The cloud events are used to update the topology within Agile Service Manager.<br>",
+        "_observedAt": "2022-03-09T12:08:09.523Z",
+        "_createdAt": "2022-03-09T12:08:09.523Z",
+        "name": "cp4waiops-cartridge.github-observer",
+        "needText": "The name of the data provider of the data to Agile Service Mananger. The uniqueId of each loaded resource is considered unique within the context of the data provider.",
+        "entityTypes": [
+          "observer"
+        ],
+        "observedTime": 1646827689523
+      },
+      {
+        "keyIndexName": "cp4waiops-cartridge.github-observer:listen_github",
+        "_id": "ohC8blUKSGa6HQdJgwhrPg",
+        "hasStateDescription": "Job Started",
+        "_observedAt": "2022-03-09T12:08:09.780Z",
+        "matchTokens": [
+          "cp4waiops-cartridge.github-observer"
+        ],
+        "description": "listens for github graph related changes",
+        "hasState": "RUNNING",
+        "observedTime": 1646827689780,
+        "observationStart": 1646827688853,
+        "tags": [
+          "LISTEN_JOB",
+          "cp4waiops-cartridge.github-observer"
+        ],
+        "schedule": {},
+        "path": "/jobs/listen",
+        "vertexType": "mgmtArtifact",
+        "createTime": 1646827688548,
+        "_createdAt": "2022-03-09T12:08:08.548Z",
+        "name": "listen_github",
+        "entityTypes": [
+          "ASM_OBSERVER_JOB"
+        ],
+        "observerName": "cp4waiops-cartridge.github-observer",
+        "parameters": {
+          "provider": "GITHUB.OBSERVER:github"
+        }
+      },
+      {
+        "keyIndexName": "kubernetes-observer-provider",
+        "_id": "cHgjZW2ENQLS8qUYDPm5qw",
+        "vertexType": "mgmtArtifact",
+        "createTime": 1646835775402,
+        "providerId": "cHgjZW2ENQLS8qUYDPm5qw",
+        "_observedAt": "2022-03-09T14:22:55.402Z",
+        "_createdAt": "2022-03-09T14:22:55.402Z",
+        "name": "kubernetes-observer-provider",
+        "entityTypes": [
+          "provider"
+        ],
+        "observedTime": 1646835775402
+      },
+      {
+        "keyIndexName": "KUBERNETES.OBSERVER:robot-shop",
+        "_id": "3UMEuO4wFP9DgENPzHX2og",
+        "vertexType": "mgmtArtifact",
+        "createTime": 1646835775794,
+        "providerId": "3UMEuO4wFP9DgENPzHX2og",
+        "_observedAt": "2022-03-09T14:22:55.794Z",
+        "_createdAt": "2022-03-09T14:22:55.794Z",
+        "name": "KUBERNETES.OBSERVER:robot-shop",
+        "entityTypes": [
+          "provider"
+        ],
+        "observedTime": 1646835775794
+      },
+      {
+        "keyIndexName": "cp4waiops-instana-observer:load_instana",
+        "_id": "zhWT-dTETsCiuIP_8RbNsw",
+        "hasStateDescription": "Job finished",
+        "_observedAt": "2022-03-09T14:58:24.690Z",
+        "matchTokens": [
+          "cp4waiops-instana-observer"
+        ],
+        "hasState": "FINISHED",
+        "observedTime": 1646837904690,
+        "tags": [
+          "OBSERVATION_JOB",
+          "cp4waiops-instana-observer"
+        ],
+        "schedule": {},
+        "path": "/jobs/load",
+        "vertexType": "mgmtArtifact",
+        "createTime": 1646827549584,
+        "_createdAt": "2022-03-09T12:05:49.584Z",
+        "name": "load_instana",
+        "entityTypes": [
+          "ASM_OBSERVER_JOB"
+        ],
+        "observerName": "cp4waiops-instana-observer",
+        "parameters": {
+          "include_data": true
+        }
+      },
+      {
+        "keyIndexName": "kubernetes-observer",
+        "_id": "l9MPHGWwRt-IiMMsIPRFRg",
+        "vertexType": "mgmtArtifact",
+        "path": "https://172.30.185.181:9108/1.0/kubernetes-observer",
+        "podPerJobEnabled": false,
+        "createTime": 1646835775812,
+        "getText": "The Kubernetes Observer has four job types - load, local, kubeconfig or weave_scope.<br>When a Kubernetes load job is run, it will gather and read data about workloads in a Kubernetes cluster and namespace of your choice. When a Kubernetes local job is run, it will gather and read data about workloads in the local Kubernetes cluster and namespace of your choice. When a load job is run, it will load baseline topology data such as Pods, Worker Nodes and Containers as well as their status from Kubernetes via its REST APIs.<br>When a Kubernetes kubeconfig job is run, it will gather and read data about workloads in the Kubernetes cluster and namespace of your choice. When a kubeconfig job is run, it will load baseline topology data such as Pods, Worker Nodes and Containers as well as their status from Kubernetes via its REST APIs.The job accepts only a kubeconfig json that has a single cluster and and its user needs to be of token type. The kubeconfig json needs to be base64 encoded.<br>When a Kubernetes weave scope job runs, it continuously gathers and reads data about workloads in a Kubernetes cluster and namespace of your choice. As a listen job type, it can provide data about pods, worker nodes and containers as well as their status in close to real time.",
+        "_observedAt": "2022-03-09T14:22:55.812Z",
+        "_createdAt": "2022-03-09T14:22:55.812Z",
+        "name": "kubernetes-observer",
+        "needText": "To configure a Kubernetes job, you will need to provide parameters for its REST API or Weave Scope. If you are configuring a load job, have the Kubernetes service details to hand. If you are configuring a listen job, you will need to install Weave Scope and then use the Weave Scope Master IP and Node port parameters.",
+        "entityTypes": [
+          "observer"
+        ],
+        "observedTime": 1646835775812
+      },
+      {
+        "keyIndexName": "GITHUB.OBSERVER:github",
+        "_id": "vHPVZQeFme-Gfe4kgxydAg",
+        "vertexType": "mgmtArtifact",
+        "createTime": 1646827689496,
+        "providerId": "vHPVZQeFme-Gfe4kgxydAg",
+        "_observedAt": "2022-03-09T12:08:09.496Z",
+        "_createdAt": "2022-03-09T12:08:09.496Z",
+        "name": "GITHUB.OBSERVER:github",
+        "entityTypes": [
+          "provider"
+        ],
+        "observedTime": 1646827689496
+      },
+      {
+        "keyIndexName": "observer-service-provider",
+        "_id": "J_UI6pCWUv5blpNc3ffMKg",
+        "vertexType": "mgmtArtifact",
+        "createTime": 1646834311998,
+        "providerId": "J_UI6pCWUv5blpNc3ffMKg",
+        "_observedAt": "2022-03-09T13:58:31.998Z",
+        "_createdAt": "2022-03-09T13:58:31.998Z",
+        "name": "observer-service-provider",
+        "entityTypes": [
+          "provider"
+        ],
+        "observedTime": 1646834311998
+      },
+      {
+        "_id": "lohQBqyOTma7u_6dpObHiQ",
+        "vertexType": "mgmtArtifact",
+        "observationId": "BgIrDTDZkWwHaVUQWIzrIw",
+        "createTime": 1646827689989,
+        "_observedAt": "2022-03-09T12:08:10.172Z",
+        "_createdAt": "2022-03-09T12:08:09.989Z",
+        "name": "cp4waiops-cartridge.github-observer:listen_github",
+        "entityTypes": [
+          "observation"
+        ],
+        "observerName": "cp4waiops-cartridge.github-observer",
+        "observedTime": 1646827690172,
+        "uniqueId": "GITHUB.OBSERVER:github"
+      },
+      {
+        "keyIndexName": "cp4waiops-instana-observer-provider",
+        "_id": "cdYPlrvntrIRSMcHrBuqQg",
+        "vertexType": "mgmtArtifact",
+        "createTime": 1646827548741,
+        "providerId": "cdYPlrvntrIRSMcHrBuqQg",
+        "_observedAt": "2022-03-09T12:05:48.741Z",
+        "_createdAt": "2022-03-09T12:05:48.741Z",
+        "name": "cp4waiops-instana-observer-provider",
+        "entityTypes": [
+          "provider"
+        ],
+        "observedTime": 1646827548741
+      },
+      {
+        "keyIndexName": "cp4waiops-instana-observer",
+        "_id": "EB2bB8SxQ6ieVAwf0RI9rQ",
+        "vertexType": "mgmtArtifact",
+        "path": "https://172.30.220.171:9164/1.0/cp4waiops-instana-observer",
+        "podPerJobEnabled": false,
+        "createTime": 1646827550583,
+        "getText": "The IBM Instana Observer provides a listening job to process cloud events generated by the Instana connector.<br>The cloud events are used to update the topology within Agile Service Manager.<br>",
+        "_observedAt": "2022-03-09T12:05:50.583Z",
+        "_createdAt": "2022-03-09T12:05:50.583Z",
+        "name": "cp4waiops-instana-observer",
+        "needText": "The name of the data provider of the data to Agile Service Mananger. The uniqueId of each loaded resource is considered unique within the context of the data provider.",
+        "entityTypes": [
+          "observer"
+        ],
+        "observedTime": 1646827550583
+      },
+      {
+        "keyIndexName": "rest-observer-provider",
+        "_id": "HwpuXSUWVingLt6AZx8hDw",
+        "vertexType": "mgmtArtifact",
+        "createTime": 1646834312418,
+        "providerId": "HwpuXSUWVingLt6AZx8hDw",
+        "_observedAt": "2022-03-09T13:58:32.418Z",
+        "_createdAt": "2022-03-09T13:58:32.418Z",
+        "name": "rest-observer-provider",
+        "entityTypes": [
+          "provider"
+        ],
+        "observedTime": 1646834312418
+      },
+      {
+        "keyIndexName": "rest-observer",
+        "_id": "kRsZo1elS5KKdvp8Caz5mw",
+        "vertexType": "mgmtArtifact",
+        "path": "https://172.30.185.154:9104/1.0/rest-observer",
+        "podPerJobEnabled": false,
+        "createTime": 1646834313189,
+        "getText": "The REST Observer has two job types - bulk_replace and listen.<br>When a REST bulk_replace job is run, it will gather and read data about an environment of your choice, by providing APIs. When a bulk_replace job is run, it will replace existing topology data and remove data that is no longer current.<br>When a REST listen job runs, it gathers and reads data about an environment of your choice by providing APIs. As a listen job type, it can not replace all existing topology data.",
+        "_observedAt": "2022-03-09T13:58:33.189Z",
+        "_createdAt": "2022-03-09T13:58:33.189Z",
+        "name": "rest-observer",
+        "needText": "To configure a REST job, you’ll need to specify the provider. This identifies the source of the data provided to Topology Service through REST and which entries can be deleted in the bulk_replace case.",
+        "entityTypes": [
+          "observer"
+        ],
+        "observedTime": 1646834313189
+      }
+    ]
+  }

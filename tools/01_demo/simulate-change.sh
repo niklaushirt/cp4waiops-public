@@ -7,7 +7,7 @@
 
 
 export APP_NAME=robot-shop
-export SNOW_ID=dev56805
+export SNOW_ID=dev44994
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -179,9 +179,12 @@ FILES="$WORKING_DIR_CR/*.json"
 
 export NUM_FILES=$(ls $WORKING_DIR_CR| wc -l)
 
-for FILE in $FILES 
+for TMPL_FILE in $FILES 
 do 
       ACT_COUNT=`expr $ACT_COUNT + 1`
+
+      export FILE=/tmp/temp_ticket.json
+      cp $TMPL_FILE $FILE
 
       echo "     "
       echo "     "
@@ -190,8 +193,10 @@ do
       echo "      -------------------------------------------------------------------------------------------------------------------------------------"
       echo "     "
       
+
+
       export TICKET_number_old=$(cat $FILE | jq ".data.number")
-      export TICKET_number_only_old=$(cat $FILE | jq ".data.number"| cut -c7-11)
+      export TICKET_number_only_old=$(cat $FILE | jq ".data.number"| cut -c7-11| tr -d ' ')
       #echo "Actual: $TICKET_number_old"
       #echo "Actual: $TICKET_number_only_old"
 
@@ -200,6 +205,7 @@ do
       TICKET_number_new="CHG06$TICKET_number_only_new"
       #echo "New TI: $TICKET_number_new"
       sed -i -e "s/$TICKET_number_old/\"$TICKET_number_new\"/g" $FILE
+      sed -i -e "s/$TICKET_number_old/\"$TICKET_number_new\"/g" $TMPL_FILE
       sed -i -e "s/dev99999/$SNOW_ID/g" $FILE
 
       export TICKET_number=$(cat $FILE | jq ".data.number")

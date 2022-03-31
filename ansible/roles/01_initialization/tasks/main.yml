@@ -31,6 +31,22 @@
   include_vars: ../00_config_cp4waiops.yaml
 
 
+- name: TIMESTAMP -              🟢 START - INITIALIZATION
+  debug: 
+    msg="{{ lookup('pipe','date +%d.%m.%Y---%H:%M:%S') }}"
+
+
+
+
+- name: LOGGING -              🟢 WRITE TO LOGFILE
+  shell: |
+    export MESSAGE="Initializing Installer"
+    export currentDate=$(date +%Y-%m-%d_%H:%M)
+    echo "---------------------------------------------------------------------------------------------------------------------------------------------------" >> ../installAIManager.log
+    echo $currentDate" - "$USER" - "$MESSAGE  >> ../installAIManager.log
+  ignore_errors: yes
+
+
 
 - name: PREREQUISITES -      📥  Installing in Namespace "{{ WAIOPS_NAMESPACE }}" with size "{{ WAIOPS_SIZE }}"
   set_fact: WAIOPS_NAMESPACE_GLOBAL={{ WAIOPS_NAMESPACE }} 
@@ -54,17 +70,11 @@
     - " Storage Class Block Override:     {{STORAGECLASS_BLOCK_OVERRIDE}}"
     - ""
     - "** Additional Content *************************************************************************"
-    - " Create a demo user:               {{CREATE_DEMO_USER}}"
-    - " Install Demo Applications:        {{INSTALL_DEMO_APPS}}"
-    - " Install Bastion Server (RBA):     {{INSTALL_RUNBOOK_BASTION}}"
-    - " Install LDAP Server:              {{INSTALL_LDAP}}"
     - "  LDAP Domain:                     {{LDAP_DOMAIN}}"
     - "  LDAP Base:                       {{LDAP_BASE}}"
     - "  LDAP Admin Password:             {{LDAP_ADMIN_PASSWORD}}"
-    - " Install Turbonomic:               {{INSTALL_TURBONOMIC}}"
+    - " Install Turbonomic:               "
     - "     Turbonomic Storage Class:      {{STORAGE_CLASS_TURBO}}"
-    - " Install Humio:                    {{INSTALL_HUMIO}}"
-    - " Install OCP ELK Stack:            {{INSTALL_ELK}}"
 
 
 
@@ -110,6 +120,14 @@
     CLUSTER_FQDN=$( echo $CLUSTER_ROUTE | awk '{print $2}')
     echo ${CLUSTER_FQDN##*console.}
   register: CLUSTER_NAME
+
+
+- name: PLATFORM -           🌏 Check Cluster Connectivity
+  fail: msg="You must be logged in to the server!"
+  when: CLUSTER_NAME.stdout==""
+
+
+
 
 - name: ROOKCEPH -           💾 Set Global Cluster Name={{ CLUSTER_NAME.stdout_lines[0] }} 
   set_fact: CLUSTER_NAME_GLOBAL={{ CLUSTER_NAME.stdout_lines[0] }} 

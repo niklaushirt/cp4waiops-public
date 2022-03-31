@@ -25,7 +25,7 @@ spec:
               #!/bin/bash
               set -x
 
-              export AWX_REPO=https://github.com/niklaushirt/awx-waiops.git
+              export AWX_REPO=https://github.com/niklaushirt/aiops-install-awx-33.git
               git clone $AWX_REPO
               cd awx-waiops
               ./tools/02_training/robotshop-load-logs-for-training.sh

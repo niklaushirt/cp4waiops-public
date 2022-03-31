@@ -38,8 +38,8 @@ echo "  🔐  Getting credentials"
 echo "***************************************************************************************************************************************************"
 oc project $WAIOPS_NAMESPACE
 
-export username=$(oc get secret $(oc get secrets | grep ibm-aiops-elastic-secret | awk '!/-min/' | awk '{print $1;}') -o jsonpath="{.data.username}"| base64 --decode)
-export password=$(oc get secret $(oc get secrets | grep ibm-aiops-elastic-secret | awk '!/-min/' | awk '{print $1;}') -o jsonpath="{.data.password}"| base64 --decode)
+export username=$(oc get secret $(oc get secrets | grep aiops-elastic-secret | awk '!/-min/' | awk '{print $1;}') -o jsonpath="{.data.username}"| base64 --decode)
+export password=$(oc get secret $(oc get secrets | grep aiops-elastic-secret | awk '!/-min/' | awk '{print $1;}') -o jsonpath="{.data.password}"| base64 --decode)
 
 
 

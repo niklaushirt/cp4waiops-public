@@ -5,6 +5,14 @@
 # Generic Event Webhook 
 # --------------------------------------------------------------------------------------------------------------------------------------
 # *************************************************************************************************************************************************
+
+- name: TIMESTAMP -              🟢 START - AIOPS WEBHOOK
+  debug: 
+    msg="{{ lookup('pipe','date +%d.%m.%Y---%H:%M:%S') }}"
+
+
+
+
 - name: EVENTS-WEBHOOK -      👓 Load parameters
   include_vars: ../00_config_cp4waiops.yaml
 
@@ -73,7 +81,7 @@
 
 - name: EVENTS-WEBHOOK -      🌏 Get KAFKA_USER
   shell: |
-    KAFKA_USER=$(oc get secret ibm-aiops-kafka-secret -n {{ WAIOPS_NAMESPACE }}  --template=\{\{.data.username\}\} | base64 --decode)
+    KAFKA_USER=$(oc get secret ibm-aiops-kafka-secret -n {{ WAIOPS_NAMESPACE }}  -o jsonpath='{.data.username}' | base64 --decode)
     echo ${KAFKA_USER}
   register: KAFKA_USER
 
@@ -82,7 +90,7 @@
 
 - name: EVENTS-WEBHOOK -      🌏 Get KAFKA_PWD
   shell: |
-    KAFKA_PWD=$(oc get secret ibm-aiops-kafka-secret -n {{ WAIOPS_NAMESPACE }}  --template=\{\{.data.password\}\} | base64 --decode)
+    KAFKA_PWD=$(oc get secret ibm-aiops-kafka-secret -n {{ WAIOPS_NAMESPACE }}  -o jsonpath='{.data.password}' | base64 --decode)
     echo ${KAFKA_PWD}
   register: KAFKA_PWD
 

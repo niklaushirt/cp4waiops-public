@@ -8,11 +8,28 @@
 # --------------------------------------------------------------------------------------------------------------------------------------
 # Install RobotShop
 # --------------------------------------------------------------------------------------------------------------------------------------
+- name: TIMESTAMP -              🟢 START - INSTALL DEMO APPS
+  debug: 
+    msg="{{ lookup('pipe','date +%d.%m.%Y---%H:%M:%S') }}"
+
+
+- name: LOGGING -              🟢 WRITE TO LOGFILE
+  shell: |
+    export MESSAGE="Installing Demo Apps"
+    export currentDate=$(date +%Y-%m-%d_%H:%M)
+    echo "---------------------------------------------------------------------------------------------------------------------------------------------------" >> ../installAIManager.log
+    echo $currentDate" - "$USER" - "$MESSAGE  >> ../installAIManager.log
+  ignore_errors: yes
+
+
 - name: DEMO -               🔎 Check RobotShop
-  k8s_info:
-    kind: Namespace
-    name: "robot-shop"
-  register: DEMO_EXISTS 
+  shell: |
+    oc get namespace --ignore-not-found robot-shop
+  ignore_errors: yes
+  register: OBJECT_EXISTS
+
+
+
 
 - name: DEMO -               🚀 Install RobotShop
   block:
@@ -48,6 +65,9 @@
       namespace: robot-shop
       src: ./templates/demo_apps/robotshop/load-deployment.yaml
     #when: INSTALL_DEMO_APPS == true
-  when: DEMO_EXISTS.resources|length == 0
+  when: OBJECT_EXISTS.stdout|length == 0
+
+
+
 
 

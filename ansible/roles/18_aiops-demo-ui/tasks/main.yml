@@ -5,10 +5,25 @@
 # Generic Event Webhook 
 # --------------------------------------------------------------------------------------------------------------------------------------
 # *************************************************************************************************************************************************
+
+- name: TIMESTAMP -              🟢 START - AIOPS DEMO UI
+  debug: 
+    msg="{{ lookup('pipe','date +%d.%m.%Y---%H:%M:%S') }}"
+
+
+
+
 - name: DEMO-UI -      👓 Load parameters
   include_vars: ../00_config_cp4waiops.yaml
 
 
+- name: DEMO-UI -      🚀 Delete old instance (ignore errors))
+  shell: |
+    oc delete deployment -n {{ WAIOPS_NAMESPACE }} ibm-aiops-demo-ui
+    oc delete job -n {{ WAIOPS_NAMESPACE }} demo-ui-create-config
+    oc delete cm -n {{ WAIOPS_NAMESPACE }} demo-ui-config
+  register: CERT_ELEMENT
+  ignore_errors: yes
 
 
 - name: DEMO-UI -      🚀 Create CP4WAIOPS Demo UI Configuration

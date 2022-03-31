@@ -12,7 +12,7 @@ echo ""
 echo "***************************************************************************************************************************************************"
 echo "***************************************************************************************************************************************************"
 echo ""
-echo " 🚀  CP4WAIOPS 3.2 Reset Alerts and Stories for Demo Environment"
+echo " 🚀  CP4WAIOPS v3.3 Reset Alerts and Stories for Demo Environment"
 echo ""
 echo "***************************************************************************************************************************************************"
 echo "***************************************************************************************************************************************************"
@@ -28,15 +28,23 @@ echo "**************************************************************************
 
 echo ""
 echo ""
+echo ""
+echo ""
 echo "   ------------------------------------------------------------------------------------------------------------------------------"
-echo "   🚀  ❎ Closing existing Alerts..."
+echo "   🚀  ❎ Closing existing Stories and Alerts..."
 echo "   ------------------------------------------------------------------------------------------------------------------------------"
 export USER_PASS="$(oc get secret aiops-ir-core-ncodl-api-secret -o jsonpath='{.data.username}' | base64 --decode):$(oc get secret aiops-ir-core-ncodl-api-secret -o jsonpath='{.data.password}' | base64 --decode)"
-oc create route reencrypt datalayer-api -n $WAIOPS_NAMESPACE  --service=aiops-ir-core-ncodl-api --port=secure-port --insecure-policy=Redirect --wildcard-policy=None
+oc apply -n $WAIOPS_NAMESPACE -f ./tools/01_demo/scripts/datalayer-api-route.yaml >/tmp/demo.log 2>&1  || true
 sleep 2
 export DATALAYER_ROUTE=$(oc get route  -n $WAIOPS_NAMESPACE datalayer-api  -o jsonpath='{.status.ingress[0].host}')
-export result=$(curl "https://$DATALAYER_ROUTE/irdatalayer.aiops.io/active/v1/alerts" --insecure --silent -X PATCH -u "${USER_PASS}" -d '{"state": "closed"}' -H 'Content-Type: application/json' -H "x-username:admin" -H "x-subscription-id:cfd95b7e-3bc7-4006-a4a8-a73a79c71255")
+export result=$(curl "https://$DATALAYER_ROUTE/irdatalayer.aiops.io/active/v1/stories" --insecure --silent -X PATCH -u "${USER_PASS}" -d '{"state": "resolved"}' -H 'Content-Type: application/json' -H "x-username:admin" -H "x-subscription-id:cfd95b7e-3bc7-4006-a4a8-a73a79c71255")
+echo "       Stories closed: "$(echo $result | jq ".affected")
+
+export result=$(curl "https://$DATALAYER_ROUTE/irdatalayer.aiops.io/active/v1/alerts?filter=type.classification%20%3D%20%27robot-shop%27" --insecure --silent -X PATCH -u "${USER_PASS}" -d '{"state": "closed"}' -H 'Content-Type: application/json' -H "x-username:admin" -H "x-subscription-id:cfd95b7e-3bc7-4006-a4a8-a73a79c71255")
 echo "       Alerts closed: "$(echo $result | jq ".affected")
+#curl "https://$DATALAYER_ROUTE/irdatalayer.aiops.io/active/v1/alerts" -X GET -u "${USER_PASS}" -H "x-username:admin" -H "x-subscription-id:cfd95b7e-3bc7-4006-a4a8-a73a79c71255" | grep '"state": "open"' | wc -l
+
+curl "https://$DATALAYER_ROUTE/irdatalayer.aiops.io/active/v1/stories" -X GET --silent -u "${USER_PASS}" -H "x-username:admin" -H "x-subscription-id:cfd95b7e-3bc7-4006-a4a8-a73a79c71255" | grep '"state": "open"' | wc -l
 curl "https://$DATALAYER_ROUTE/irdatalayer.aiops.io/active/v1/alerts" -X GET --silent -u "${USER_PASS}" -H "x-username:admin" -H "x-subscription-id:cfd95b7e-3bc7-4006-a4a8-a73a79c71255" | grep '"state": "open"' | wc -l
 
 

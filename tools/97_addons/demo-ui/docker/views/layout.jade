@@ -1,0 +1,74 @@
+doctype html
+html(lang='en')
+  head
+    meta(charset='utf-8')
+    meta(http-equiv='X-UA-Compatible' content='IE=edge')
+    meta(name='viewport' content='width=device-width, initial-scale=1')
+
+    // Bootstrap
+    link(rel='stylesheet' href='./css/bootstrap.min.css')
+    // Optional theme
+    link(rel='stylesheet' href='./css/bootstrap-theme.min.css')
+    link(rel='stylesheet' href='./css/style.css')
+    link(rel='icon' type='image/x-icon' href='/favicon.ico')
+    style.
+      .navbar-brand img {
+      height: 42px;
+      margin-top: -12px;
+      }
+      .navbar-brand-right img {
+      height: 42px;
+      margin-top: 2px;
+      }
+      .logo-text {
+      padding-left: 5px;
+      }
+      .tools-style {
+      font-size: medium;
+      }
+      html {
+      background: url(./images/waiops.svg) no-repeat center center fixed;
+      background-color: black;
+      -webkit-background-size: cover;
+      -moz-background-size: cover;
+      -o-background-size: cover;
+      background-size: cover;
+      }
+      body {
+      background-color: transparent;
+      }
+      .jumbotron {
+      opacity: 0.92;
+      }
+
+    title IBM Automation
+
+  body
+    nav.navbar.navbar-default
+      .container
+        .navbar-header
+          a.navbar-brand(href='/')
+            img(alt='Brand' src='./images/ibm_watson.png')
+          a.navbar-brand.logo-text     IBM Automation
+        .collapse.navbar-collapse
+          ul.nav.navbar-nav.navbar-right
+            li
+              a(target='_blank' href='https://www.ibm.com/cloud/cloud-pak-for-watson-aiops') IBM Cloud Pak for Watson AIOps
+            a.navbar-brand-right(target='_blank' href='https://www.ibm.com/cloud/cloud-pak-for-watson-aiops')
+    .container.theme-showcase(role='main')
+      .jumbotron.container
+        table
+          tbody
+            tr
+              td(style='width:10%; vertical-align:top')
+                h3 Navigation
+                block navigation
+              td(style='width:100%; padding-left:50px;')
+                p(style='font-size:2.5em;') IBM Cloud Pak for Watson AIOps
+                block title
+                hr
+                p
+                block content
+                p
+                p
+

@@ -1,0 +1,39 @@
+
+  {
+    "name": "Mitigate RobotShop Problem1",
+    "description": "",
+    "tags": [],
+    "steps": [
+      {
+        "title": "",
+        "number": 1,
+        "type": "automation",
+        "automationId": "AWX:job:CP4WAIOPS Mitigate Robotshop Ratings Outage",
+        "mappings": [
+          {
+            "automationParameterName": "extraVariables",
+            "parameterMappingType": "parameter",
+            "parameterValue": "extraVariables"
+          }
+        ]
+      }
+    ],
+    "parameters": [
+      {
+        "name": "cluster",
+        "description": "Extra variables and values required by the job template encoded as JSON.",
+        "type": "string",
+        "minLength": 0,
+        "format": "multiline",
+        "default": "{ \"my_k8s_apiurl\": \"https://c108-e.eu-gb.containers.cloud.ibm.com:32678\", \"my_k8s_apikey\": \"eyJhbGciOiJSUzI1NiIsImtpZCI6Ik1BaFFkakhacFl1QzVIaUthRnJlZlJTcWUySlh1MjNET2J1NHJUV3UweG8ifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZWZhdWx0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6ImRlbW8tYWRtaW4tdG9rZW4tZmp3ZmoiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoiZGVtby1hZG1pbiIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6IjcwMWM3ZDg1LWQ4NzUtNGEyMC1hNTc3LTIxOGFhZDI3NzRhNiIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDpkZWZhdWx0OmRlbW8tYWRtaW4ifQ.RPmcgzFUgyuRxKmgCJZjCPkcu81TWNKKGMzMzqBMAiTVzjykN80aZZwpsZ31hqzTG9L05YtjaYz2O7QPrUQyofBxLyXOEMU4648LLDqUnipzasdn-SZJYYRJ2nt5aD6oOGmjDw06el-DnRVSZ86n68qGYyiAix7DGPuu6hAS_OxhK0jVi8OQgPjGHBG7shGHDeFhkvcBk6Uh2zGq1Mspw3sM2tvkTJsNsCYht1CpMS1xTdFfTLOTvqpR7udb12pg5W_IbSr61L_kUe3vGyyZ6cBKL-aSTh9ICE724xEiO4wWwNv8o5jQACcq6fWcxf-yRxM8KG0yWwXxLGWVU3CBBg\" }"
+      },
+      {
+        "name": "extraVariables",
+        "description": "Extra variables and values required by the job template encoded as JSON.",
+        "type": "string",
+        "minLength": 0,
+        "format": "multiline",
+        "default": "{ \"my_k8s_apiurl\": \"https://c108-e.eu-gb.containers.cloud.ibm.com:32678\", \"my_k8s_apikey\": \"eyJhbGciOiJSUzI1NiIsImtpZCI6Ik1BaFFkakhacFl1QzVIaUthRnJlZlJTcWUySlh1MjNET2J1NHJUV3UweG8ifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZWZhdWx0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6ImRlbW8tYWRtaW4tdG9rZW4tZmp3ZmoiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoiZGVtby1hZG1pbiIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6IjcwMWM3ZDg1LWQ4NzUtNGEyMC1hNTc3LTIxOGFhZDI3NzRhNiIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDpkZWZhdWx0OmRlbW8tYWRtaW4ifQ.RPmcgzFUgyuRxKmgCJZjCPkcu81TWNKKGMzMzqBMAiTVzjykN80aZZwpsZ31hqzTG9L05YtjaYz2O7QPrUQyofBxLyXOEMU4648LLDqUnipzasdn-SZJYYRJ2nt5aD6oOGmjDw06el-DnRVSZ86n68qGYyiAix7DGPuu6hAS_OxhK0jVi8OQgPjGHBG7shGHDeFhkvcBk6Uh2zGq1Mspw3sM2tvkTJsNsCYht1CpMS1xTdFfTLOTvqpR7udb12pg5W_IbSr61L_kUe3vGyyZ6cBKL-aSTh9ICE724xEiO4wWwNv8o5jQACcq6fWcxf-yRxM8KG0yWwXxLGWVU3CBBg\" }"
+      }
+    ]
+  }

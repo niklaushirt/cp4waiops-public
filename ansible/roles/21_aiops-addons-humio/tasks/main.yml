@@ -9,6 +9,13 @@
 # Install HUMIO
 # --------------------------------------------------------------------------------------------------------------------------------------
 
+- name: LOGGING -              🟢 WRITE TO LOGFILE
+  shell: |
+    export MESSAGE="Installing HUMIO"
+    export currentDate=$(date +%Y-%m-%d_%H:%M)
+    echo "---------------------------------------------------------------------------------------------------------------------------------------------------" >> ../installAIManager.log
+    echo $currentDate" - "$USER" - "$MESSAGE  >> ../installAIManager.log
+  ignore_errors: yes
 
 
 - name: HUMIO -              🚀 Create humio-logging namespace

@@ -13,6 +13,10 @@
 - name: PREREQUISITES -      👓 Load parameters
   include_vars: ../00_config_cp4waiops.yaml
 
+- name: TIMESTAMP -              🟢 START - INSTALL EVENT MANAGER
+  debug: 
+    msg="{{ lookup('pipe','date +%d.%m.%Y---%H:%M:%S') }}"
+
 
 - name: PREREQUISITES -      📥  Installation Parameters"
   debug:
@@ -103,7 +107,7 @@
 - name: EVENTMANAGER -       🔐 Create Pull Secret for {{ EVTMGR_NAMESPACE }} Namespace
   shell: |
     oc create secret docker-registry 'ibm-entitlement-key' --docker-server={{ ENTITLED_REGISTRY }} --docker-username={{ ENTITLED_REGISTRY_USER }} --docker-password={{ ENTITLED_REGISTRY_KEY }} --namespace={{ EVTMGR_NAMESPACE }}
-    oc create secret docker-registry 'ibm-aiops-pull-secret' --docker-server={{ ENTITLED_REGISTRY }} --docker-username={{ ENTITLED_REGISTRY_USER }} --docker-password={{ ENTITLED_REGISTRY_KEY }} --namespace={{ EVTMGR_NAMESPACE }}
+    oc create secret docker-registry 'ibm-entitlement-key' --docker-server={{ ENTITLED_REGISTRY }} --docker-username={{ ENTITLED_REGISTRY_USER }} --docker-password={{ ENTITLED_REGISTRY_KEY }} --namespace={{ EVTMGR_NAMESPACE }}
   ignore_errors: yes
 
 
@@ -113,7 +117,7 @@
 - name: EVENTMANAGER -       🚀 Install Catalog
   kubernetes.core.k8s:
     state: present
-    src: ./templates/eventmanager/1_cat-ibm-eventmanager.yaml
+    template: ./templates/eventmanager/1_cat-ibm-eventmanager.j2
 
 
 

@@ -429,7 +429,7 @@ For example, on the *CI Classes* column, click on *Hardware*, select the CI List
 
 #### ServiceNow Observer Job
 
-In WAIOPS vV3.2there are two ways to enable a ServiceNow observer job: the first way is inside the ServiceNow main integration form and the second way is as a regular observer job. In this cookbook, we will follow the second option. 
+In CP4WAIOPS v3.3 there are two ways to enable a ServiceNow observer job: the first way is inside the ServiceNow main integration form and the second way is as a regular observer job. In this cookbook, we will follow the second option. 
 
 From the WAIOPS home page, click on *Data and tool integrations*, then click on the *Advanced* tab and finally select *Manage observer jobs*. You will see the list of available observers after you click on the *Add a new job* card as shown below (note that the number of observer cards will vary depending on what observers are enabled in your WAIOPS instance)
 

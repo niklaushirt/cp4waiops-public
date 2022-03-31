@@ -11,7 +11,7 @@
 #---------------------------------------------------------------------------------------------------------------------------------------------------"
 # Installing Mac prerequisites for CP4WAIOPS 3.1
 #
-# VWatson AIOps 3.2
+# VWatson AIOps v3.3
 #
 # ©2022 nikh@ch.ibm.com
 # ---------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -25,7 +25,7 @@ echo "**************************************************************************
 echo "***************************************************************************************************************************************************"
 echo "***************************************************************************************************************************************************"
 echo "  "
-echo "  🚀 CloudPak for Watson AI OPS 3.2 - Install Mac Prerequisites"
+echo "  🚀 CloudPak for Watson AI OPS v3.3 - Install Mac Prerequisites"
 echo "  "
 echo "***************************************************************************************************************************************************"
 echo "***************************************************************************************************************************************************"
@@ -82,10 +82,10 @@ echo ""
     echo ""  
     echo "   🧰 Install OpenShift Client"
     echo ""  
-        wget https://github.com/openshift/okd/releases/download/4.8.0-0.okd-2021-11-14-052418/openshift-client-mac-4.8.0-0.okd-2021-11-14-052418.tar.gz -O oc.tar.gz
+        wget https://github.com/openshift/okd/releases/download/4.7.0-0.okd-2021-07-03-190901/openshift-client-mac-4.7.0-0.okd-2021-07-03-190901.tar.gz -O oc.tar.gz
         tar xfzv oc.tar.gz
         sudo mv oc /usr/local/bin
-        sudo mv kubectl /usr/local/bin  #(this is optional)
+        sudo mv kubectl /usr/local/bin.  (this is optional)
         rm oc.tar.gz
         rm README.md
 
@@ -95,7 +95,7 @@ echo ""
     echo "   🧰 Install K9s"
     echo ""  
         wget https://github.com/derailed/k9s/releases/download/v0.24.15/k9s_Darwin_x86_64.tar.gz
-        tar xfzv k9s_Darwin_x86_64.tar.gz
+        tar xfzv k9s_Linux_x86_64.tar.gz
         sudo mv k9s /usr/local/bin
         rm LICENSE
         rm README.md

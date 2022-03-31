@@ -9,7 +9,7 @@
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------------------"
-#  CP4WAIOPS 3.2 - CP4WAIOPS Installation
+#  CP4WAIOPS v3.3 - CP4WAIOPS Installation
 #
 #
 #  ©2022 nikh@ch.ibm.com
@@ -17,6 +17,18 @@
 # ---------------------------------------------------------------------------------------------------------------"
 # ---------------------------------------------------------------------------------------------------------------"
 # ---------------------------------------------------------------------------------------------------------------"
+
+export DOC_URL="https://github.ibm.com/NIKH/aiops-install-ansible-fvt-33#2-ai-manager-installation"
+export SHOW_MORE="false"
+export WAIOPS_PODS_MIN=115
+# ---------------------------------------------------------------------------------------------------------------"
+# ---------------------------------------------------------------------------------------------------------------"
+# Do Not Modify Below
+# ---------------------------------------------------------------------------------------------------------------"
+# ---------------------------------------------------------------------------------------------------------------"
+
+
+
 clear
 
 echo "*****************************************************************************************************************************"
@@ -24,7 +36,7 @@ echo "**************************************************************************
 echo "*****************************************************************************************************************************"
 echo "*****************************************************************************************************************************"
 echo "  "
-echo "  🐥 CloudPak for Watson AIOps 3.2 - Easy Install"
+echo "  🐥 CloudPak for Watson AIOps v3.3 - Easy Install"
 echo "  "
 echo "*****************************************************************************************************************************"
 echo "*****************************************************************************************************************************"
@@ -98,11 +110,102 @@ echo ""
 
 export TEMP_PATH=~/aiops-install
 
-# ---------------------------------------------------------------------------------------------------------------"
-# ---------------------------------------------------------------------------------------------------------------"
-# Do Not Edit Below
-# ---------------------------------------------------------------------------------------------------------------"
-# ---------------------------------------------------------------------------------------------------------------"
+
+CHECK_RUNBOOKS () {
+      ZEN_API_HOST=$(oc get route --ignore-not-found -n $WAIOPS_NAMESPACE cpd -o jsonpath='{.spec.host}')
+      if [[ ! $ZEN_API_HOST == "" ]]; then
+
+            ZEN_LOGIN_URL="https://${ZEN_API_HOST}/v1/preauth/signin"
+            LOGIN_USER=admin
+            LOGIN_PASSWORD="$(oc get secret admin-user-details -n $WAIOPS_NAMESPACE -o jsonpath='{ .data.initial_admin_password }' | base64 --decode)"
+
+            ZEN_LOGIN_RESPONSE=$(
+            curl -k \
+            -H 'Content-Type: application/json' \
+            -XPOST \
+            "${ZEN_LOGIN_URL}" \
+            -d '{
+                  "username": "'"${LOGIN_USER}"'",
+                  "password": "'"${LOGIN_PASSWORD}"'"
+            }' 2> /dev/null
+            )
+
+            ZEN_TOKEN=$(echo "${ZEN_LOGIN_RESPONSE}" | jq -r .token)
+            export ROUTE=$(oc get route -n $WAIOPS_NAMESPACE cpd -o jsonpath={.spec.host})
+
+            export result=$(curl -X "GET" -s -k "https://$ROUTE/aiops/api/story-manager/rba/v1/runbooks" \
+                  -H "Authorization: bearer $ZEN_TOKEN" \
+                  -H 'Content-Type: application/json; charset=utf-8')
+            export RUNBOOKS_EXISTS=$(echo "$result"| jq ".[]._runbookId"|wc -l|tr -d ' ')
+      else
+            export TRAINING_EXISTS=0
+      fi
+}
+
+
+CHECK_TRAINING () {
+    export ROUTE=""
+    export WAIOPS_NAMESPACE=$(oc get po -A|grep aimanager-operator |awk '{print$1}')
+
+      ZEN_API_HOST=$(oc get route --ignore-not-found -n $WAIOPS_NAMESPACE cpd -o jsonpath='{.spec.host}')
+      if [[ ! $ZEN_API_HOST == "" ]]; then
+
+            oc create route passthrough ai-platform-api -n $WAIOPS_NAMESPACE  --service=aimanager-aio-ai-platform-api-server --port=4000 --insecure-policy=Redirect --wildcard-policy=None>/dev/null 2>/dev/null
+            export ROUTE=$(oc get route -n $WAIOPS_NAMESPACE ai-platform-api  -o jsonpath={.spec.host})
+
+
+
+            ZEN_API_HOST=$(oc get route -n $WAIOPS_NAMESPACE cpd -o jsonpath='{.spec.host}')
+            ZEN_LOGIN_URL="https://${ZEN_API_HOST}/v1/preauth/signin"
+            LOGIN_USER=admin
+            LOGIN_PASSWORD="$(oc get secret admin-user-details -n $WAIOPS_NAMESPACE -o jsonpath='{ .data.initial_admin_password }' | base64 --decode)"
+
+            ZEN_LOGIN_RESPONSE=$(
+            curl -k \
+            -H 'Content-Type: application/json' \
+            -XPOST \
+            "${ZEN_LOGIN_URL}" \
+            -d '{
+                  "username": "'"${LOGIN_USER}"'",
+                  "password": "'"${LOGIN_PASSWORD}"'"
+            }' 2> /dev/null
+            )
+
+            ZEN_LOGIN_MESSAGE=$(echo "${ZEN_LOGIN_RESPONSE}" | jq -r .message)
+
+            if [ "${ZEN_LOGIN_MESSAGE}" != "success" ]; then
+            echo "Login failed: ${ZEN_LOGIN_MESSAGE}"
+
+            exit 2
+            fi
+
+            ZEN_TOKEN=$(echo "${ZEN_LOGIN_RESPONSE}" | jq -r .token)
+
+
+
+      QUERY="$(cat ./tools/02_training/training-definitions/checkLAD.graphql)"
+      JSON_QUERY=$(echo "${QUERY}" | jq -sR '{"operationName": null, "variables": {}, "query": .}')
+      export result=$(curl -XPOST -k -s "https://$ROUTE/graphql" -k \
+      -H 'Accept-Encoding: gzip, deflate, br'  \
+      -H 'Content-Type: application/json'  \
+      -H 'Accept: application/json'  \
+      -H 'Connection: keep-alive'  \
+      -H 'DNT: 1'  \
+      -H "Origin: $ROUTE"  \
+      -H "authorization: Bearer $ZEN_TOKEN"  \
+      --data-binary "${JSON_QUERY}"  \
+      --compressed)
+      export TRAINING_DEFINITIONS=$(echo $result| jq ".data.getTrainingDefinitions")
+      if [[  $TRAINING_DEFINITIONS == "[]" ]]; then
+            export TRAINING_EXISTS=false
+      else
+            export TRAINING_EXISTS=true
+      fi
+    else
+            export TRAINING_EXISTS=false
+    fi
+}
+
 
 echo ""
 echo ""
@@ -156,30 +259,37 @@ else
 fi
 
 
-printf "  🐥🐥🐣🥚🥚🥚🥚🥚🥚🥚🥚🥚🥚 - Getting AI Manager Namespace                                    "
+printf "  🐥🐥🐣🥚🥚🥚🥚🥚🥚🥚🥚🥚🥚🥚🥚 - Getting AI Manager Namespace                                    "
 export WAIOPS_NAMESPACE=$(oc get po -A|grep aimanager-operator |awk '{print$1}')
-printf "\r  🐥🐥🐥🐣🥚🥚🥚🥚🥚🥚🥚🥚🥚 -  Getting Event Manager Namespace                              "
-export EVTMGR_NAMESPACE=$(oc get po -A|grep noi-operator |awk '{print$1}')
-printf "\r  🐥🐥🐥🐥🐣🥚🥚🥚🥚🥚🥚🥚🥚 - Getting RobotShop Status                                      "
-export RS_NAMESPACE=$(oc get ns robot-shop  --ignore-not-found|awk '{print$1}')
-printf "\r  🐥🐥🐥🐥🐥🐣🥚🥚🥚🥚🥚🥚🥚 - Getting Turbonomic Status                                     "
-export TURBO_NAMESPACE=$(oc get ns turbonomic  --ignore-not-found|awk '{print$1}')
-printf "\r  🐥🐥🐥🐥🐥🐥🐣🥚🥚🥚🥚🥚🥚 - Getting AWX Status                                            "
-export AWX_NAMESPACE=$(oc get ns awx  --ignore-not-found|awk '{print$1}')
-printf "\r  🐥🐥🐥🐥🐥🐥🐥🐣🥚🥚🥚🥚🥚 - Getting LDAP Status                                           "
-export LDAP_NAMESPACE=$(oc get po -n default --ignore-not-found| grep ldap |awk '{print$1}')
-printf "\r  🐥🐥🐥🐥🐥🐥🐥🐥🐣🥚🥚🥚🥚 - Getting Aiops Toolbox Status                                       "
-export TOOLBOX_READY=$(oc get po -n default|grep cp4waiops-tools| grep 1/1 |awk '{print$1}')
-printf "\r  🐥🐥🐥🐥🐥🐥🐥🐥🐥🐣🥚🥚🥚 - Getting ELK Status                                            "
-export ELK_NAMESPACE=$(oc get ns openshift-logging  --ignore-not-found|awk '{print$1}')
-printf "\r  🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐣🥚🥚 - Getting Istio Status                                          "
-export ISTIO_NAMESPACE=$(oc get ns istio-system  --ignore-not-found|awk '{print$1}')
-printf "\r  🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐣🥚 - Getting Humio Status                                          "
-export HUMIO_NAMESPACE=$(oc get ns humio-logging  --ignore-not-found|awk '{print$1}')
-printf "\r  🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐣 - GettingDEMO UI Status                                          "
-export DEMOUI_READY=$(oc get pods -n $WAIOPS_NAMESPACE |grep ibm-aiops-demo-ui|awk '{print$1}')
-printf "\r  🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥 - Done ✅                                                        "
+export WAIOPS_PODS=$(oc get pods -n $WAIOPS_NAMESPACE |grep -v Completed|grep -v "0/"|wc -l|tr -d ' ')
 
+if [[ $WAIOPS_PODS -gt $WAIOPS_PODS_MIN ]]; then
+      printf "\r  🐥🐥🐥🐣🥚🥚🥚🥚🥚🥚🥚🥚🥚🥚🥚 -  Getting Event Manager Namespace                              "
+      export EVTMGR_NAMESPACE=$(oc get po -A|grep noi-operator |awk '{print$1}')
+      printf "\r  🐥🐥🐥🐥🐣🥚🥚🥚🥚🥚🥚🥚🥚🥚🥚 - Getting RobotShop Status                                      "
+      export RS_NAMESPACE=$(oc get ns robot-shop  --ignore-not-found|awk '{print$1}')
+      printf "\r  🐥🐥🐥🐥🐥🐣🥚🥚🥚🥚🥚🥚🥚🥚🥚 - Check if models have been trained                             "
+      CHECK_TRAINING
+      printf "\r  🐥🐥🐥🐥🐥🐥🐣🥚🥚🥚🥚🥚🥚🥚🥚 - Check if Runbooks exist                                       "
+      CHECK_RUNBOOKS
+      printf "\r  🐥🐥🐥🐥🐥🐥🐥🐣🥚🥚🥚🥚🥚🥚🥚 - Getting Turbonomic Status                                     "
+      export TURBO_NAMESPACE=$(oc get ns turbonomic  --ignore-not-found|awk '{print$1}')
+      printf "\r  🐥🐥🐥🐥🐥🐥🐥🐥🐣🥚🥚🥚🥚🥚🥚 - Getting AWX Status                                            "
+      export AWX_NAMESPACE=$(oc get ns awx  --ignore-not-found|awk '{print$1}')
+      printf "\r  🐥🐥🐥🐥🐥🐥🐥🐥🐥🐣🥚🥚🥚🥚🥚 - Getting LDAP Status                                           "
+      export LDAP_NAMESPACE=$(oc get po -n default --ignore-not-found| grep ldap |awk '{print$1}')
+      printf "\r  🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐣🥚🥚🥚🥚 - Getting Aiops Toolbox Status                                  "
+      export TOOLBOX_READY=$(oc get po -n default|grep cp4waiops-tools| grep 1/1 |awk '{print$1}')
+      printf "\r  🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐣🥚🥚🥚 - Getting ELK Status                                            "
+      export ELK_NAMESPACE=$(oc get ns openshift-logging  --ignore-not-found|awk '{print$1}')
+      printf "\r  🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐣🥚🥚 - Getting Istio Status                                          "
+      export ISTIO_NAMESPACE=$(oc get ns istio-system  --ignore-not-found|awk '{print$1}')
+      printf "\r  🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐣🥚 - Getting Humio Status                                          "
+      export HUMIO_NAMESPACE=$(oc get ns humio-logging  --ignore-not-found|awk '{print$1}')
+      printf "\r  🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐣 - GettingDEMO UI Status                                          "
+      export DEMOUI_READY=$(oc get pods -n $WAIOPS_NAMESPACE |grep ibm-aiops-demo-ui|awk '{print$1}')
+      printf "\r  🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥 - Done ✅                                                        "
+fi
 
 
 
@@ -189,6 +299,130 @@ printf "\r  🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥 - Done ✅     
 # Patch IAF Resources for ROKS
 # ------------------------------------------------------------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------------------------------------------------------------
+
+menu_EASY_03 () {
+      echo "--------------------------------------------------------------------------------------------"
+      echo " 🚀  Finalize Install for AI Manager" 
+      echo "--------------------------------------------------------------------------------------------"
+      echo ""
+      if [[ $WAIOPS_PODS -gt $WAIOPS_PODS_MIN ]]; then
+            cd ansible
+            ansible-playbook 03_AIManager-finalize.yaml
+            cd -
+      else
+            echo "❗ I told you that this is not yet available. Wait for step 01 to complete."
+      fi
+}
+
+menu_EASY_02 () {
+      echo "--------------------------------------------------------------------------------------------"
+      echo " 🚀  Post Install for AI Manager" 
+      echo "--------------------------------------------------------------------------------------------"
+      echo ""
+
+      if [[ $WAIOPS_PODS -gt $WAIOPS_PODS_MIN ]]; then
+            cd ansible
+            ansible-playbook 02_AIManager-post.yaml
+            cd -
+            echo "*****************************************************************************************************************************"
+            echo "*****************************************************************************************************************************"
+            echo "*****************************************************************************************************************************"
+            echo "*****************************************************************************************************************************"
+            echo "  "
+            echo "  ✅ Ai Manager Post Installation done"
+            echo "  "
+            echo "  🐥 Please restart Easy Installer"
+            echo "  🐥 And launch Option 03"
+            echo "  "
+            echo "*****************************************************************************************************************************"
+            echo "*****************************************************************************************************************************"
+
+            exit 0
+      else
+            echo "❗ I told you that this is not yet available. Wait for step 01 to complete."
+      fi
+
+}
+
+
+menu_EASY_01 () {
+      echo "--------------------------------------------------------------------------------------------"
+      echo " 🚀  Base Install for AI Manager" 
+      echo "--------------------------------------------------------------------------------------------"
+      echo ""
+
+      # Check if already installed
+      if [[ ! $WAIOPS_NAMESPACE == "" ]]; then
+            echo "⚠️  CP4WAIOPS AI Manager seems to be installed already"
+
+            read -p "   Are you sure you want to continue❓ [y,N] " DO_COMM
+            if [[ $DO_COMM == "y" ||  $DO_COMM == "Y" ]]; then
+                  echo ""
+                  echo "   ✅ Ok, continuing..."
+                  echo ""
+            else
+                  echo ""
+                  echo "    ❌  Aborting"
+                  echo "--------------------------------------------------------------------------------------------"
+                  echo  ""    
+                  echo  ""
+                  return
+            fi
+      fi
+
+      #Get Pull Token
+      if [[ $ENTITLED_REGISTRY_KEY == "" ]];
+      then
+            echo ""
+            echo ""
+            echo "  Enter CP4WAIOPS Pull token: "
+            read TOKEN
+      else
+            TOKEN=$ENTITLED_REGISTRY_KEY
+      fi
+
+      echo ""
+      echo "  🔐 You have provided the following Token:"
+      echo "    "$TOKEN
+      echo ""
+
+      # Install
+      read -p "  Are you sure that this is correct❓ [y,N] " DO_COMM
+      if [[ $DO_COMM == "y" ||  $DO_COMM == "Y" ]]; then
+            echo ""
+
+            cd ansible
+            ansible-playbook -e ENTITLED_REGISTRY_KEY=$TOKEN 01_AIManager-install.yaml
+            cd -
+
+
+
+
+      else
+            echo "    ⚠️  Skipping"
+            echo "--------------------------------------------------------------------------------------------"
+            echo  ""    
+            echo  ""
+      fi
+
+      echo "*****************************************************************************************************************************"
+      echo "*****************************************************************************************************************************"
+      echo "*****************************************************************************************************************************"
+      echo "*****************************************************************************************************************************"
+      echo "  "
+      echo "  ✅ Ai Manager Base Installation done"
+      echo "  "
+      echo "  🐥 Please restart Easy Installer"
+      echo "  🐥 And launch Option 02"
+      echo "  "
+      echo "*****************************************************************************************************************************"
+      echo "*****************************************************************************************************************************"
+
+      exit 0
+
+}
+
+
 menu_INSTALL_AIMGR () {
       echo "--------------------------------------------------------------------------------------------"
       echo " 🚀  Install CP4WAIOPS AI Manager" 
@@ -233,36 +467,20 @@ menu_INSTALL_AIMGR () {
       # Install
       read -p "  Are you sure that this is correct❓ [y,N] " DO_COMM
       if [[ $DO_COMM == "y" ||  $DO_COMM == "Y" ]]; then
-            read -p "  Do you want to install demo content (highly recommended - OpenLdap and RobotShop)❓ [Y,n] " DO_COMM
-            if [[ $DO_COMM == "n" ||  $DO_COMM == "N" ]]; then
-                  echo ""
-                  echo "   ✅ Ok, continuing without demo content..."
-                  echo ""
-                  echo ""
-                  echo "--------------------------------------------------------------------------------------------"
-                  echo " ❗  Installation can take up to one hour!" 
-                  echo "--------------------------------------------------------------------------------------------"
+           
+            echo ""
+            echo "   ✅ Ok, continuing without demo content..."
+            echo ""
+            echo ""
+            echo "--------------------------------------------------------------------------------------------"
+            echo " ❗  Installation can take up to one hour!" 
+            echo "--------------------------------------------------------------------------------------------"
 
-                  echo ""
-                  cd ansible
-                  ansible-playbook -e ENTITLED_REGISTRY_KEY=$TOKEN 10_install-cp4waiops_ai_manager_only
-                  cd -
-            else
-                  echo ""
-                  echo "   ✅ Ok, continuing with demo content..."
-                  echo ""
-                  echo ""
-
-                  echo ""
-
-                  cd ansible
-                  ansible-playbook -e ENTITLED_REGISTRY_KEY=$TOKEN 10_install-cp4waiops_ai_manager_only_with_demo.yaml
-                  cd -
-
-            fi
-
-
-
+            echo ""
+            cd ansible
+            ansible-playbook -e ENTITLED_REGISTRY_KEY=$TOKEN 10_install-cp4waiops_ai_manager_only
+            cd -
+         
             echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
             echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
             echo "    🚀 AI Manager Login"
@@ -377,6 +595,20 @@ menuDEMO_OPEN () {
 
 }
      
+
+
+menuAWX_OPENDOC () {
+      echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+      echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+      echo "    🚀 Opening Documentation "
+      echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+      echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+      echo "    "
+      open $DOC_URL
+
+}
+
+
 
 
 menuAWX_OPENAWX () {
@@ -918,117 +1150,39 @@ echo "**************************************************************************
 echo "  "
 
 
+      echo "  🐥 CP4WAIOPS - Guided Install"
+      echo "         00  - Open Documentation                                      - Open the AI Manager installation Documentation"
 
-
-
-
-
-
-      echo "  🐥 CP4WAIOPS - Base Install"
-      if [[ $WAIOPS_NAMESPACE == "" ]]; then
-            echo "         11  - Install AI Manager                                      - Install CP4WAIOPS AI Manager Component"
+      if [[ $WAIOPS_PODS -lt $WAIOPS_PODS_MIN ]]; then
+            echo "     🚀  01  - Step 1: Install Base AI Manager   <-- Start here        - Install Base AI Manager"
       else
-            echo "         11 ✅ Install AI Manager                                      - Already installed "
+            echo "         01 ✅ Step 1: Install Base AI Manager                         - Already installed "
       fi
 
-      if [[ $EVTMGR_NAMESPACE == "" ]]; then
-            echo "         12  - Install Event Manager                                   - Install CP4WAIOPS Event Manager Component"
-      else
-            echo "         12 ✅ Install Event Manager                                   - Already installed "
-      fi
-
-
-
-      echo "  "
-      echo "  🐥 CP4WAIOPS Addons"
-      if [[  $DEMOUI_READY == "" ]]; then
-            echo "         17  - Install CP4WAIOPS Demo Application                      - Install CP4WAIOPS Demo Application"
-      else
-            echo "         17 ✅ Install CP4WAIOPS Demo Application                      - Already installed "
-      fi
-
-      if [[  $TOOLBOX_READY == "" ]]; then
-            echo "         18  - Install CP4WAIOPS Toolbox                               - Install Toolbox pod with all important tools (oc, kubectl, kafkacat, ...)"
-      else
-            echo "         18 ✅ Install CP4WAIOPS Toolbox                               - Already installed "
-      fi
-
-
-
-      if [[  $LDAP_NAMESPACE == "" ]]; then
-            echo "         32  - Install OpenLdap                                        - Install OpenLDAP for CP4WAIOPS (should be installed by option 11)"
-      else
-            echo "         32 ✅ Install OpenLdap                                        - Already installed "
-      fi
-
-      if [[  $RS_NAMESPACE == "" ]]; then
-            echo "         33  - Install RobotShop                                       - Install RobotShop for CP4WAIOPS (should be installed by option 11)"
-      else
-            echo "         33 ✅ Install RobotShop                                       - Already installed  "
-      fi
-
-
-
-
-      echo "  "
-      echo "  🐥 Third Party Solutions"
-      if [[ $TURBO_NAMESPACE == "" ]]; then
-            echo "         21  - Install Turbonomic                                      - Install Turbonomic (needs a separate license)"
-      else
-            echo "         21 ✅ Install Turbonomic                                      - Already installed "
-      fi
-
-      if [[  $HUMIO_NAMESPACE == "" ]]; then
-            echo "         22  - Install Humio                                           - Install Humio (needs a separate license)"
-      else
-            echo "         22 ✅ Install Humio                                           - Already installed "
-      fi
-
-
-      if [[  $AWX_NAMESPACE == "" ]]; then
-            echo "         23  - Install AWX                                             - Install AWX (open source Ansible Tower)"
-      else
-            echo "         23 ✅ Install AWX                                             - Already installed "
-      fi
-
-      if [[  $ISTIO_NAMESPACE == "" ]]; then
-            echo "         24  - Install OpenShift Mesh                                  - Install OpenShift Mesh (Istio)"
+      if [[ $WAIOPS_PODS -gt $WAIOPS_PODS_MIN ]]; then
+            if [[ $TRAINING_EXISTS == "false" ]]; then
+                  echo "         02  - Step 2: Post Install Base AI Manager                    - Post Install Steps for AI Manager"
             else
-            echo "         24 ✅ Install OpenShift Mesh                                  - Already installed "
+                  echo "         02 ✅ Step 2: Post Install Base AI Manager                    - Already installed (Models trained: $TRAINING_EXISTS)"
             fi
-
-
-
-      if [[  $ELK_NAMESPACE == "" ]]; then
-            echo "         25  - Install OpenShift Logging                               - Install OpenShift Logging (ELK)"
-            else
-            echo "         25 ✅ Install OpenShift Logging                               - Already installed "
-            fi
-
-
-
-
-
-            #       echo "    	25  - Install OpenShift Logging                               - Install OpenShift Logging (ELK)"
-      echo "  "
-      echo "  🐥 Demo Configuration"
-      echo "         51  - AI Manager Topology                                     - Create RobotShop Topology for AI Manager (must create Observers before - documentation 4.)"
-      echo "         52  - Event Manager Topology                                  - Create RobotShop Topology for Event Manager (must create Observers before - documentation 11.1)"
-      echo "         55  - Train RobotShop Models                                  - Loads training data, creates definitions and launches training (skip if index exists: $SILENT_SKIP)"
-      
-      echo "  "
-      echo "  🐥 Ansible AWX"
-      if [[  $AWX_NAMESPACE == "" ]]; then
-            echo "         61  - Install AWX and Jobs                                    - Create AWX and preload Jobs for a complete installation"
       else
-            echo "         61 ✅ Install AWX and Jobs                                    - Already installed "
+            echo "      ❗ 02  - Step 2: Post Install Base AI Manager                    - Not yet available. Wait for step 01 to complete."
       fi
 
+      if [[ $WAIOPS_PODS -gt $WAIOPS_PODS_MIN ]]; then
+            if [[ $RUNBOOKS_EXISTS == "0" ]]; then
+                  echo "         03  - Step 3: Finalize Install Base AI Manager                - Finalize Install for AI Manager"
+            else
+                  echo "         03 ✅ Step 3: Finalize Install Base AI Manager                - Already installed (Runbooks created: $CHECK_RUNBOOKS)"
+            fi
+      else
+            echo "      ❗ 03  - Step 3: Finalize Install Base AI Manager                - Not yet available. Wait for step 01 to complete."
 
+      fi
       echo "  "
-      echo "  🐥 Prerequisites Install"
-      echo "         71  - Install Prerequisites Mac                               - Install Prerequisites for Mac"
-      echo "         72  - Install Prerequisites Ubuntu                            - Install Prerequisites for Ubuntu"
+      echo "  "
+      echo "  "
+
 
 
       echo "  "
@@ -1076,73 +1230,197 @@ echo "  "
       if [[ ! $AWX_NAMESPACE == "" ]]; then
             echo "         99  - Open AWX                                                - Open AWX Instance (Open Source Ansible Tower)"
       fi
-
-
-
-
-
       echo "  "
-      echo "  🦟 Debug"
-      echo "         999  - Debug Patch                                             - Patches if your AI Manager install is hanging"
       echo "  "
 
+
+      if [[ $SHOW_MORE == "true" ]]; then
+
+
+            echo "  🐥 CP4WAIOPS - Base Install Only (without any demo content)"
+            if [[ $WAIOPS_NAMESPACE == "" ]]; then
+                  echo "         11  - Install AI Manager                                      - Install CP4WAIOPS AI Manager Component Only"
+            else
+                  echo "         11 ✅ Install AI Manager                                      - Already installed "
+            fi
+
+            if [[ $EVTMGR_NAMESPACE == "" ]]; then
+                  echo "         12  - Install Event Manager                                   - Install CP4WAIOPS Event Manager Component Only"
+            else
+                  echo "         12 ✅ Install Event Manager                                   - Already installed "
+            fi
+
+
+
+            echo "  "
+            echo "  🐥 CP4WAIOPS Addons"
+            if [[  $DEMOUI_READY == "" ]]; then
+                  echo "         17  - Install CP4WAIOPS Demo Application                      - Install CP4WAIOPS Demo Application"
+            else
+                  echo "         17 ✅ Install CP4WAIOPS Demo Application                      - Already installed "
+            fi
+
+            if [[  $TOOLBOX_READY == "" ]]; then
+                  echo "         18  - Install CP4WAIOPS Toolbox                               - Install Toolbox pod with all important tools (oc, kubectl, kafkacat, ...)"
+            else
+                  echo "         18 ✅ Install CP4WAIOPS Toolbox                               - Already installed "
+            fi
+
+
+
+            if [[  $LDAP_NAMESPACE == "" ]]; then
+                  echo "         32  - Install OpenLdap                                        - Install OpenLDAP for CP4WAIOPS (should be installed by option 11)"
+            else
+                  echo "         32 ✅ Install OpenLdap                                        - Already installed "
+            fi
+
+            if [[  $RS_NAMESPACE == "" ]]; then
+                  echo "         33  - Install RobotShop                                       - Install RobotShop for CP4WAIOPS (should be installed by option 11)"
+            else
+                  echo "         33 ✅ Install RobotShop                                       - Already installed  "
+            fi
+
+
+
+
+            echo "  "
+            echo "  🐥 Third Party Solutions"
+            if [[ $TURBO_NAMESPACE == "" ]]; then
+                  echo "         21  - Install Turbonomic                                      - Install Turbonomic (needs a separate license)"
+            else
+                  echo "         21 ✅ Install Turbonomic                                      - Already installed "
+            fi
+
+            if [[  $HUMIO_NAMESPACE == "" ]]; then
+                  echo "         22  - Install Humio                                           - Install Humio (needs a separate license)"
+            else
+                  echo "         22 ✅ Install Humio                                           - Already installed "
+            fi
+
+
+            if [[  $AWX_NAMESPACE == "" ]]; then
+                  echo "         23  - Install AWX                                             - Install AWX (open source Ansible Tower)"
+            else
+                  echo "         23 ✅ Install AWX                                             - Already installed "
+            fi
+
+            if [[  $ISTIO_NAMESPACE == "" ]]; then
+                  echo "         24  - Install OpenShift Mesh                                  - Install OpenShift Mesh (Istio)"
+                  else
+                  echo "         24 ✅ Install OpenShift Mesh                                  - Already installed "
+                  fi
+
+
+
+            if [[  $ELK_NAMESPACE == "" ]]; then
+                  echo "         25  - Install OpenShift Logging                               - Install OpenShift Logging (ELK)"
+                  else
+                  echo "         25 ✅ Install OpenShift Logging                               - Already installed "
+                  fi
+
+
+
+
+
+                  #       echo "    	25  - Install OpenShift Logging                               - Install OpenShift Logging (ELK)"
+            echo "  "
+            echo "  🐥 Demo Configuration"
+            echo "         51  - AI Manager Topology                                     - Create RobotShop Topology for AI Manager (must create Observers before - documentation 4.)"
+            echo "         52  - Event Manager Topology                                  - Create RobotShop Topology for Event Manager (must create Observers before - documentation 11.1)"
+            echo "         55  - Train RobotShop Models                                  - Loads training data, creates definitions and launches training (skip if index exists: $SILENT_SKIP)"
+            
+            echo "  "
+            echo "  🐥 Ansible AWX - WAIOPS Installer"
+            if [[  $AWX_NAMESPACE == "" ]]; then
+                  echo "         61  - Install AWX and Jobs                                    - Create AWX and preload Jobs for a complete installation"
+            else
+                  echo "         61 ✅ Install AWX and Jobs                                    - Already installed "
+            fi
+
+
+            echo "  "
+            echo "  🐥 Prerequisites Install"
+            echo "         71  - Install Prerequisites Mac                               - Install Prerequisites for Mac"
+            echo "         72  - Install Prerequisites Ubuntu                            - Install Prerequisites for Ubuntu"
+
+
+
+
+            echo "  "
+            echo "  🦟 Debug"
+            echo "         999  - Debug Patch                                             - Patches if your AI Manager install is hanging"
+            echo "  "
+      else 
+            echo "  "
+            echo "  "
+            echo "      🚀  m  -  Show more options                                      - Show advanced options"
+
+      fi
 
 
 
 
 
   echo "      "
-echo "      ❌  0  -  Exit"
+  echo "      ❌  0  -  Exit"
   echo ""
   echo ""
   echo "  Enter selection: "
   read selection
   echo ""
   case $selection in
-    11 ) clear ; menu_INSTALL_AIMGR  ;;
-    12 ) clear ; menu_INSTALL_EVTMGR  ;;
+      00 ) clear ; menuAWX_OPENDOC  ;;
+      01 ) clear ; menu_EASY_01  ;;
+      02 ) clear ; menu_EASY_02  ;;
+      03 ) clear ; menu_EASY_03  ;;
 
-    21 ) clear ; menu_INSTALL_TURBO  ;;
-    22 ) clear ; menu_INSTALL_HUMIO  ;;
-    23 ) clear ; menu_INSTALL_AWX  ;;
-    24 ) clear ; menu_INSTALL_ISTIO  ;;
-    25 ) clear ; menu_INSTALL_ELK  ;;
+      11 ) clear ; menu_INSTALL_AIMGR  ;;
+      12 ) clear ; menu_INSTALL_EVTMGR  ;;
 
-    17 ) clear ; menu_INSTALL_AIOPSDEMO  ;;
-    18 ) clear ; menu_INSTALL_TOOLBOX  ;;
-    32 ) clear ; menu_INSTALL_LDAP  ;;
-    33 ) clear ; menu_INSTALL_ROBOTSHOP  ;;
+      21 ) clear ; menu_INSTALL_TURBO  ;;
+      22 ) clear ; menu_INSTALL_HUMIO  ;;
+      23 ) clear ; menu_INSTALL_AWX  ;;
+      24 ) clear ; menu_INSTALL_ISTIO  ;;
+      25 ) clear ; menu_INSTALL_ELK  ;;
 
-
-
-    51 ) clear ; menuLOAD_TOPOLOGY  ;;
-    52 ) clear ; menuLOAD_TOPOLOGYNOI  ;;
-    55 ) clear ; menuTRAIN_AIOPSDEMO  ;;
-
-    61 ) clear ; menuINSTALL_AWX_EASY  ;;
-
-    71 ) clear ; ./13_install_prerequisites_mac.sh  ;;
-    72 ) clear ; ./14_install_prerequisites_ubuntu.sh  ;;
-
-    81 ) clear ; ./tools/20_get_logins.sh  ;;
-    82 ) clear ; ./tools/20_get_logins.sh > LOGINS.txt  ;;
-
-    90 ) clear ; menuAIMANAGER_OPEN  ;;
-    91 ) clear ; menuDEMO_OPEN  ;;
-    92 ) clear ; menuEVENTMANAGER_OPEN  ;;
-    93 ) clear ; menuAWX_OPENTURBO  ;;
-    94 ) clear ; menuAWX_OPENELK  ;;
-    95 ) clear ; menuAWX_OPENHUMIO  ;;
-    96 ) clear ; menuAWX_OPENISTIO  ;;
-    97 ) clear ; menuAWX_OPENLDAP  ;;
-    98 ) clear ; menuAWX_OPENRS  ;;
-    99 ) clear ; menuAWX_OPENAWX  ;;
-
-    999 ) clear ; menuDEBUG_PATCH  ;;
+      17 ) clear ; menu_INSTALL_AIOPSDEMO  ;;
+      18 ) clear ; menu_INSTALL_TOOLBOX  ;;
+      32 ) clear ; menu_INSTALL_LDAP  ;;
+      33 ) clear ; menu_INSTALL_ROBOTSHOP  ;;
 
 
-    0 ) clear ; exit ;;
-    * ) clear ; incorrect_selection  ;;
+
+      51 ) clear ; menuLOAD_TOPOLOGY  ;;
+      52 ) clear ; menuLOAD_TOPOLOGYNOI  ;;
+      55 ) clear ; menuTRAIN_AIOPSDEMO  ;;
+
+      61 ) clear ; menuINSTALL_AWX_EASY  ;;
+
+      71 ) clear ; ./13_install_prerequisites_mac.sh  ;;
+      72 ) clear ; ./14_install_prerequisites_ubuntu.sh  ;;
+
+      81 ) clear ; ./tools/20_get_logins.sh  ;;
+      82 ) clear ; ./tools/20_get_logins.sh > LOGINS.txt  ;;
+
+      90 ) clear ; menuAIMANAGER_OPEN  ;;
+      91 ) clear ; menuDEMO_OPEN  ;;
+      92 ) clear ; menuEVENTMANAGER_OPEN  ;;
+      93 ) clear ; menuAWX_OPENTURBO  ;;
+      94 ) clear ; menuAWX_OPENELK  ;;
+      95 ) clear ; menuAWX_OPENHUMIO  ;;
+      96 ) clear ; menuAWX_OPENISTIO  ;;
+      97 ) clear ; menuAWX_OPENLDAP  ;;
+      98 ) clear ; menuAWX_OPENRS  ;;
+      99 ) clear ; menuAWX_OPENAWX  ;;
+
+      999 ) clear ; menuDEBUG_PATCH  ;;
+
+      m ) clear ; SHOW_MORE=true  ;;
+
+
+
+      0 ) clear ; exit ;;
+      * ) clear ; incorrect_selection  ;;
   esac
   read -p "Press Enter to continue..."
   clear 

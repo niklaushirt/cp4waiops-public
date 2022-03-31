@@ -16,7 +16,7 @@ Return to the browser tab for the Slack app.
 
 	![slacki3](images/slacki3.png)
 
-	If you get an error please check that you have followed [this](../../README_INSTALLATION.md#if-the-integration-is-not-working)
+	If you get an error please check that you have followed [this](../../README_INSTALLATION.md#62-create-valid-cp4waiops-certificate-optional)
 
 5. Verify that on the `Subscribe to bot events` section you got:
 

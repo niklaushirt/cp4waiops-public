@@ -15,6 +15,14 @@ cat ./tools/02_training/TRAINING_FILES/ELASTIC/robot-shop/logs/temp/$JSON_NAME|j
 
 
 
+
+export JSON_NAME=1000-1000-20211214-logtrain.json
+cat ./$JSON_NAME| grep -v "mysql"| grep -v "load"| grep -v "mongodb"| grep -v "rabbitmq"| grep -v "redis"| grep -v "shipping"| grep -v "user"| grep -v "cart"| grep -v "dispatch"| grep -v "payment" > ./$JSON_NAME-new
+cat ./$JSON_NAME-new|jq '._source.instance_id' | sort | uniq -c
+
+
+
+
         # fix sed issue on mac
         OS=$(uname -s | tr '[:upper:]' '[:lower:]')
         SED="sed"

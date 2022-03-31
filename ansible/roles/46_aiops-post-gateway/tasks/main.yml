@@ -7,6 +7,10 @@
 # *************************************************************************************************************************************************
     
 
+- name: TIMESTAMP -              🟢 START - INSTALL EVENT MANAGER GATEWAY
+  debug: 
+    msg="{{ lookup('pipe','date +%d.%m.%Y---%H:%M:%S') }}"
+
 
 
 
@@ -21,12 +25,24 @@
 
 
 - name: GATEWAY -            🔎 Check Gateway
-  k8s_info:
-    api_version: ai-manager.watson-aiops.ibm.com/v1beta1
-    kind: EventManagerGateway
-    name: event-gateway-generic
-    namespace: "{{ WAIOPS_NAMESPACE }}"
-  register: GATEWAY_EXISTS 
+  shell: |
+    oc get EventManagerGateway --ignore-not-found -n {{ WAIOPS_NAMESPACE }} event-gateway-generic
+  ignore_errors: yes
+  register: OBJECT_EXISTS
+
+
+
+- name: GATEWAY -            🌏 Get NOI Kafka Topic
+  shell: |
+    EVENTS_TOPIC=$(oc get kafkatopics.ibmevents.ibm.com -n {{ WAIOPS_NAMESPACE }} | grep -v noi-integration| grep -v cp4waiopscp4waiops | grep alerts-noi| awk '{print $1;}')
+    echo $EVENTS_TOPIC
+  ignore_errors: yes
+  register: RES_NOI_KAFKA_TOPIC 
+
+- name: GATEWAY -            📥 Set  NOI Kafka Topic {{RES_NOI_KAFKA_TOPIC.stdout}}
+  set_fact: NOI_KAFKA_TOPIC={{ RES_NOI_KAFKA_TOPIC.stdout }} 
+
+
 
 
 - name: GATEWAY -            🚀 Install Gateway
@@ -50,4 +66,4 @@
   #   shell: oc delete pod -n {{ WAIOPS_NAMESPACE }} $(oc get po -n {{ WAIOPS_NAMESPACE }}|grep event-gateway-generic|awk '{print$1}') 
   #   ignore_errors: yes
   #   when: INSTALL_GATEWAY == true
-  # when: GATEWAY_EXISTS.resources|length == 0
+  when: OBJECT_EXISTS.stdout|length == 0

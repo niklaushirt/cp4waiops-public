@@ -5,7 +5,7 @@ export SLACK_TOKEN=not_configured
 
 # SLACK CHANNELS TO EMPTY
 # Adapt to your needs
-export SLACK_REACTIVE="cp4waiops32"
+export SLACK_REACTIVE="cp4waiops33"
 
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

@@ -12,6 +12,10 @@
 # ---------------------------------------------------------------------------------------------------------------------------------------------------"
 # ---------------------------------------------------------------------------------------------------------------------------------------------------"
 
+- name: TIMESTAMP -              🟢 START - STORAGE CLASS
+  debug: 
+    msg="{{ lookup('pipe','date +%d.%m.%Y---%H:%M:%S') }}"
+
 
 # *************************************************************************************************************************************************
 # --------------------------------------------------------------------------------------------------------------------------------------
@@ -34,6 +38,9 @@
     echo ${CLUSTER_FQDN##*console.}
   register: CLUSTER_NAME
 
+- name: PLATFORM -           🌏 Check Cluster Connectivity
+  fail: msg="You must be logged in to the server!"
+  when: CLUSTER_NAME.stdout==""
 
 # --------------------------------------------------------------------------------------------------------------------------------------
 # If Storage Classes are overridden
@@ -176,3 +183,12 @@
     - " CP4WAIOPS Storage Class File:          {{WAIOPS_STORAGE_CLASS_FILE}}"
     - " CP4WAIOPS Storage Class Large Block:   {{WAIOPS_STORAGE_CLASS_LARGE_BLOCK}}"
 
+- name: LOGGING -              🟢 WRITE TO LOGFILE
+  shell: |
+    export currentDate=$(date +%Y-%m-%d_%H:%M)
+    echo "---------------------------------------------------------------------------------------------------------------------------------------------------" >> ../installAIManager.log
+    echo $currentDate" - "$USER" - ""Global Storage Classes for CP4WAIOPS installation:"  >> ../installAIManager.log
+    echo $currentDate" - "$USER" - "" CP4WAIOPS Storage Class File:          {{WAIOPS_STORAGE_CLASS_FILE}}"  >> ../installAIManager.log
+    echo $currentDate" - "$USER" - "" CP4WAIOPS Storage Class Large Block:   {{WAIOPS_STORAGE_CLASS_LARGE_BLOCK}}"  >> ../installAIManager.log
+
+  ignore_errors: yes

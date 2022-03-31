@@ -1,0 +1,187 @@
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Patches
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+
+- name: TIMESTAMP -              🟢 START - CREATE ROUTES
+  debug: 
+    msg="{{ lookup('pipe','date +%d.%m.%Y---%H:%M:%S') }}"
+
+
+- name: LOGGING -              🟢 WRITE TO LOGFILE
+  shell: |
+    export MESSAGE="Create External Routes"
+    export currentDate=$(date +%Y-%m-%d_%H:%M)
+    echo "---------------------------------------------------------------------------------------------------------------------------------------------------" >> ../installAIManager.log
+    echo $currentDate" - "$USER" - "$MESSAGE  >> ../installAIManager.log
+  ignore_errors: yes
+
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Patch Ingress
+# --------------------------------------------------------------------------------------------------------------------------------------
+- name: PATCH    -             🩹 Patch Ingress policy-group
+  shell: oc patch namespace default --type=json -p '[{"op":"add","path":"/metadata/labels","value":{"network.openshift.io/policy-group":"ingress"}}]'
+  register: ingress_patched
+
+
+# - name: HACK    -             🩹 Patch AIOpsAnalyticsOrchestrator Pull Secret
+#   shell: oc patch AIOpsAnalyticsOrchestrator aiops -n {{ WAIOPS_NAMESPACE }} --type merge  --patch-file ./templates/waiops/patches/analytics-pull-patch.yaml
+#   ignore_errors: yes
+#   register: irorchestrator_patched
+
+
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Create Topology Routes
+# --------------------------------------------------------------------------------------------------------------------------------------
+- name: ROUTES -               🔎 Check Topology Routes
+  shell: |
+    oc get route --ignore-not-found -n {{ WAIOPS_NAMESPACE }} topology-merge
+  ignore_errors: yes
+  register: OBJECT_EXISTS
+
+
+
+- name: ROUTES    -             🚀 Create Topology Routes
+  block:
+  - name: ROUTES    -             🚀 Create Topology Route - topology-merge
+    shell: oc create route passthrough topology-merge -n {{ WAIOPS_NAMESPACE }} --insecure-policy="Redirect" --service=aiops-topology-merge --port=https-merge-api
+    ignore_errors: yes
+    when: CREATE_TOPO_ROUTE == true
+
+  - name: ROUTES    -             🚀 Create Topology Route - topology-rest
+    shell: oc create route passthrough topology-rest -n {{ WAIOPS_NAMESPACE }} --insecure-policy="Redirect" --service=aiops-topology-rest-observer --port=https-rest-observer-admin
+    ignore_errors: yes
+    when: CREATE_TOPO_ROUTE == true
+
+  - name: ROUTES    -             🚀 Create Topology Route - topology-file
+    shell: oc create route passthrough topology-file -n {{ WAIOPS_NAMESPACE }} --insecure-policy="Redirect" --service=aiops-topology-file-observer --port=https-file-observer-admin
+    ignore_errors: yes
+    when: CREATE_TOPO_ROUTE == true
+
+  - name: ROUTES    -             🚀 Create Topology Route - topology-manage
+    shell: oc create route passthrough topology-manage -n {{ WAIOPS_NAMESPACE }} --service=aiops-topology-topology --port=https-topology-api
+    ignore_errors: yes
+    when: CREATE_TOPO_ROUTE == true
+  when: OBJECT_EXISTS.stdout|length == 0
+
+
+
+- name: ROUTES    -             🚀 Create external Routes
+  block:
+  - name: ROUTES    -             🚀 Create external Flink Job Manager Route (you can ignore errors in this step)
+    shell: oc create route edge job-manager -n {{ WAIOPS_NAMESPACE }} --service=cp4waiops-eventprocessor-eve-29ee-ep-jobmanager --port=ui
+    ignore_errors: yes
+    when: CREATE_EXTERNAL_ROUTES == true
+        
+  - name: ROUTES    -             🚀 Create external AI Manager API Route (you can ignore errors in this step)
+    shell: oc create route passthrough ai-platform-api -n {{ WAIOPS_NAMESPACE }}  --service=aimanager-aio-ai-platform-api-server --port=4000 --insecure-policy=Redirect --wildcard-policy=None
+    ignore_errors: yes
+    when: CREATE_EXTERNAL_ROUTES == true
+
+
+  - name: ROUTES    -             🚀 Create external Datalayer API Route (you can ignore errors in this step)
+    shell: oc create route reencrypt datalayer-api -n {{ WAIOPS_NAMESPACE }}  --service=aiops-ir-core-ncodl-api --port=secure-port --insecure-policy=Redirect --wildcard-policy=None
+    ignore_errors: yes
+    when: CREATE_EXTERNAL_ROUTES == true
+
+
+  # - name: ROUTES    -             🚀 Create Spark Master UI Route (you can ignore errors in this step)
+  #   shell: oc expose svc aiops-ir-analytics-spark-master -n {{ WAIOPS_NAMESPACE }} --name spark
+  #   ignore_errors: yes
+  #   when: CREATE_EXTERNAL_ROUTES == true
+
+
+# # --------------------------------------------------------------------------------------------------------------------------------------
+# # Wait for Cassandra Pod
+# # --------------------------------------------------------------------------------------------------------------------------------------
+# - name: HACK    -             🕦 Wait for Cassandra Pod to become available - this can take up to 45 minutes (hack for v3.3)
+#   shell: oc get po -n {{ WAIOPS_NAMESPACE }} | grep aiops-topology-cassandra-0| grep 1/1| grep -c ""
+#   register: kubectl_get_pods
+#   until: kubectl_get_pods.stdout == "1"
+#   retries: 500
+#   delay: 15
+
+
+# # --------------------------------------------------------------------------------------------------------------------------------------
+# # Patch Service Account
+# # --------------------------------------------------------------------------------------------------------------------------------------
+# - name: HACK    -             🩹 Patch aiops-topology-service-account (hack for v3.3)
+#   shell: |
+#     oc patch -n {{ WAIOPS_NAMESPACE }} serviceaccount aiops-topology-service-account -p '{"imagePullSecrets": [{"name": "ibm-entitlement-key"}]}'
+#   ignore_errors: yes
+
+
+  
+
+# # --------------------------------------------------------------------------------------------------------------------------------------
+# # Wait for Topology Pods
+# # --------------------------------------------------------------------------------------------------------------------------------------
+# - name: HACK    -             🕦 Wait for Topology Pods to become available - this can take up to 45 minutes (hack for v3.3)
+#   shell: oc get po -n {{ WAIOPS_NAMESPACE }} | grep aiops-topology-merge| grep -c ""
+#   register: kubectl_get_pods
+#   until: kubectl_get_pods.stdout == "1"
+#   retries: 500
+#   delay: 15
+
+
+# # --------------------------------------------------------------------------------------------------------------------------------------
+# # Patch Topology Pods
+# # --------------------------------------------------------------------------------------------------------------------------------------
+# - name: HACK    -             🩹 Patch aiops-topology-merge (hack for v3.3)
+#   shell: oc patch deployment aiops-topology-merge -n {{ WAIOPS_NAMESPACE }} --patch-file ./templates/waiops/patches/aiops-topology-merge-patch.yaml
+#   ignore_errors: yes
+
+
+# - name: HACK    -             🩹 Patch aiops-topology-search (hack for v3.3)
+#   shell: oc patch deployment aiops-topology-search -n {{ WAIOPS_NAMESPACE }} --patch-file ./templates/waiops/patches/aiops-topology-search-patch.yaml
+#   ignore_errors: yes
+
+
+# - name: HACK    -             🩹 Patch aiops-topology-status (hack for v3.3)
+#   shell: oc patch deployment aiops-topology-status -n {{ WAIOPS_NAMESPACE }} --patch-file ./templates/waiops/patches/aiops-topology-status-patch.yaml
+#   ignore_errors: yes
+
+
+# - name: HACK    -             🩹 Patch aiops-topology-layout (hack for v3.3)
+#   shell: oc patch deployment aiops-topology-layout -n {{ WAIOPS_NAMESPACE }} --patch-file ./templates/waiops/patches/aiops-topology-layout-patch.yaml
+#   ignore_errors: yes
+
+
+# # --------------------------------------------------------------------------------------------------------------------------------------
+# # Wait for IR Analytics Pods
+# # --------------------------------------------------------------------------------------------------------------------------------------
+# - name: HACK    -             🕦 Wait for IR Analytics Pods to become available - this can take up to 45 minutes (hack for v3.3)
+#   shell: oc get po -n {{ WAIOPS_NAMESPACE }} | grep aiops-ir-analytics-|grep -c ""
+#   register: kubectl_get_pods
+#   until: kubectl_get_pods.stdout > "4"
+#   retries: 500
+#   delay: 15
+
+
+# # --------------------------------------------------------------------------------------------------------------------------------------
+# # Patch IR Analytics Pods
+# # --------------------------------------------------------------------------------------------------------------------------------------
+# - name: HACK    -             🩹 Patch IR Analytics Pods (hack for v3.3) (you can ignore errors in this step)
+#   shell: |
+#     oc patch -n {{ WAIOPS_NAMESPACE }} serviceaccount aiops-topology-service-account -p '{"imagePullSecrets": [{"name": "ibm-entitlement-key"}]}'
+#     oc patch -n {{ WAIOPS_NAMESPACE }} serviceaccount aiops-ir-analytics-spark-worker -p '{"imagePullSecrets": [{"name": "ibm-entitlement-key"}]}'
+#     oc patch -n {{ WAIOPS_NAMESPACE }} serviceaccount aiops-ir-analytics-spark-pipeline-composer -p '{"imagePullSecrets": [{"name": "ibm-entitlement-key"}]}'
+#     oc patch -n {{ WAIOPS_NAMESPACE }} serviceaccount aiops-ir-analytics-spark-master -p '{"imagePullSecrets": [{"name": "ibm-entitlement-key"}]}'
+#     oc patch -n {{ WAIOPS_NAMESPACE }} serviceaccount aiops-ir-analytics-probablecause -p '{"imagePullSecrets": [{"name": "ibm-entitlement-key"}]}'
+#     oc patch -n {{ WAIOPS_NAMESPACE }} serviceaccount aiops-ir-analytics-classifier -p '{"imagePullSecrets": [{"name": "ibm-entitlement-key"}]}'
+#     oc patch -n {{ WAIOPS_NAMESPACE }} serviceaccount aiops-ir-lifecycle-eventprocessor-ep -p '{"imagePullSecrets": [{"name": "ibm-entitlement-key"}]}'
+#     oc delete pod $(oc get po -n {{ WAIOPS_NAMESPACE }}|grep ImagePull|awk '{print$1}') -n {{ WAIOPS_NAMESPACE }}
+#   ignore_errors: yes
+
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Delete ImgPull error pods
+# --------------------------------------------------------------------------------------------------------------------------------------
+- name: HACK    -             🩹 Delete Pods with ImgPull Error  (you can ignore errors in this step)
+  shell: |
+    oc delete pod --ignore-not-found $(oc get po -n {{ WAIOPS_NAMESPACE }}|grep ImagePull|awk '{print$1}') -n {{ WAIOPS_NAMESPACE }}
+  ignore_errors: yes

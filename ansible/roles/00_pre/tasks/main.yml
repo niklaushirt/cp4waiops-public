@@ -31,6 +31,10 @@
   include_vars: ../00_config_cp4waiops.yaml
 
 
+- name: LOGGING -              🟢 START - GLOBAL
+  debug: 
+    msg="{{ lookup('pipe','date +%d.%m.%Y---%H:%M:%S') }}"
+
 
 
 

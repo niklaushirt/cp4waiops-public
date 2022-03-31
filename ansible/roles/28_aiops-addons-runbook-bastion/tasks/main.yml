@@ -6,11 +6,10 @@
     
 
 - name: BASTION -            🔎 Check Runbook Bastion Server
-  k8s_info:
-    kind: Deployment
-    name: bastion-host
-    namespace: default
-  register: BASTION_EXISTS 
+  shell: |
+    oc get deployment --ignore-not-found bastion-host -n default
+  ignore_errors: yes
+  register: OBJECT_EXISTS
 
 # --------------------------------------------------------------------------------------------------------------------------------------
 # Install Runbook Bastion Server
@@ -20,4 +19,4 @@
     state: present
     namespace: "default"
     template: ./templates/runbook_bastion/create-bastion.yaml
-  when: BASTION_EXISTS.resources|length == 0
+  when: OBJECT_EXISTS.stdout|length == 0

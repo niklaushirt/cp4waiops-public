@@ -1,0 +1,24 @@
+
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Open Doc
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+
+- name: LOGGING -              🟢 WRITE TO LOGFILE
+  shell: |
+    export MESSAGE=" 🌏 Open doc at https://github.ibm.com/NIKH/aiops-install-ansible-fvt-33#5-ai-manager-finalize-configuration"
+    export currentDate=$(date +%Y-%m-%d_%H:%M)
+    echo "---------------------------------------------------------------------------------------------------------------------------------------------------" >> ../installAIManager.log
+    echo $currentDate" - "$USER" - "$MESSAGE  >> ../installAIManager.log
+  ignore_errors: yes
+
+
+- name: DOCUMENTATION -          🌏 Open Documentation
+  shell: |
+    open https://github.ibm.com/NIKH/aiops-install-ansible-fvt-33#5-ai-manager-finalize-configuration
+  ignore_errors: yes
+
+
+

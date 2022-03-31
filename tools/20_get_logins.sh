@@ -9,7 +9,7 @@
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------------------------------------------------------"
-#  CP4WAIOPS 3.2 - Get Logins and URLs
+#  CP4WAIOPS v3.3 - Get Logins and URLs
 #
 #
 #  ©2022 nikh@ch.ibm.com
@@ -36,7 +36,7 @@ echo ""
 echo ""
 echo ""
 echo "  "
-echo "  🚀 CloudPak for Watson AIOps 3.2 - Logins and URLs "
+echo "  🚀 CloudPak for Watson AIOps v3.3 - Logins and URLs "
 echo "  "
 echo "***************************************************************************************************************************************************"
 echo "***************************************************************************************************************************************************"
@@ -154,6 +154,48 @@ then
     echo "    "
     echo "    "
 fi
+
+
+
+
+echo "***************************************************************************************************************************************************"
+echo "***************************************************************************************************************************************************"
+echo "🚀 Kafka Connections"
+echo "***************************************************************************************************************************************************"
+echo "***************************************************************************************************************************************************"
+echo "    "
+echo "    "
+echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+echo "    🚀 NOI"
+echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+echo "    "
+echo "      📥 Just create the Kafka connection"
+echo ""
+echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+echo "    🚀 ELK"
+echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+echo "    "
+echo "      ❗ Set 'Base parallelism' to 5"
+echo "    "
+echo "      📥 Use the following Mapping"
+echo ""
+echo "{ "
+echo "  \"codec\": \"elk\","
+echo "  \"message_field\": \"message\","
+echo "  \"log_entity_types\": \"kubernetes.container_image_id, kubernetes.host, kubernetes.pod_name, kubernetes.namespace_name\","
+echo "  \"instance_id_field\": \"kubernetes.container_name\","
+echo "  \"rolling_time\": 10,"
+echo "  \"timestamp_field\": \"@timestamp\""
+echo "}"
+echo "  "
+echo "    "
+echo "    "
+echo "    "
+echo "    "
 
 
 
@@ -441,6 +483,24 @@ echo "    "
 
 
 
+echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+echo "    🚀 Spark Master"
+echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+appURL=$(oc get routes -n $WAIOPS_NAMESPACE spark  -o jsonpath="{['spec']['host']}")
+echo "    " 
+echo "            📥 Spark Master:"
+echo "    " 
+echo "                🌏 APP URL:           http://$appURL/"
+echo "    "
+echo "    "
+echo "    "
+echo "    "
+echo "    "
+
+
+
 
 
 ELK_READY=$(oc get ns openshift-logging || true) 
@@ -476,7 +536,23 @@ then
     echo ""
     echo ""
     echo ""
-fi
+    echo "               🗺️  Filter                     : "
+    echo ""
+    echo "      {"
+    echo "        \"query\": {"
+    echo "          \"bool\": {"
+    echo "               \"must\": {"
+    echo "                  \"term\" : { \"kubernetes.namespace_name\" : \"robot-shop\" }"
+    echo "               }"
+    echo "              }"
+    echo "          }"
+    echo "      }"
+    echo "  "
+    echo ""
+    echo ""
+    echo ""
+
+ fi
 
 
 
@@ -541,3 +617,92 @@ echo ""
 echo ""
 echo ""
 
+
+
+echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+echo "    🚀 GRAPHQL Playground "
+echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+apiURL=$(oc get routes -n $WAIOPS_NAMESPACE ai-platform-api -o jsonpath="{['spec']['host']}")
+ZEN_API_HOST=$(oc get route -n $WAIOPS_NAMESPACE cpd -o jsonpath='{.spec.host}')
+ZEN_LOGIN_URL="https://${ZEN_API_HOST}/v1/preauth/signin"
+LOGIN_USER=admin
+LOGIN_PASSWORD="$(oc get secret admin-user-details -n $WAIOPS_NAMESPACE -o jsonpath='{ .data.initial_admin_password }' | base64 --decode)"
+
+ZEN_LOGIN_RESPONSE=$(
+curl -k \
+-H 'Content-Type: application/json' \
+-XPOST \
+"${ZEN_LOGIN_URL}" \
+-d '{
+    "username": "'"${LOGIN_USER}"'",
+    "password": "'"${LOGIN_PASSWORD}"'"
+}' 2> /dev/null
+)
+
+
+ZEN_TOKEN=$(echo "${ZEN_LOGIN_RESPONSE}" | jq -r .token)
+
+
+echo "    " 
+echo "            📥 Playground:"
+echo "    " 
+echo "                🌏 URL:                   https://$apiURL/graphql"
+echo ""
+echo ""
+echo "    " 
+echo "                🔐 HTTP HEADERS"
+echo "                        {"
+echo "                        \"authorization\": \"Bearer $ZEN_TOKEN\""
+echo "                        }"
+echo "    " 
+echo "    " 
+echo "    " 
+echo "                📥 Example Payload"
+echo "                        query {"
+echo "                            getTrainingDefinitions {"
+echo "                              definitionName"
+echo "                              algorithmName"
+echo "                              version"
+echo "                              deployedVersion"
+echo "                              description"
+echo "                              createdBy"
+echo "                              modelDeploymentDate"
+echo "                              promoteOption"
+echo "                              trainingSchedule {"
+echo "                                frequency"
+echo "                                repeat"
+echo "                                timeRangeValidStart"
+echo "                                timeRangeValidEnd"
+echo "                                noEndDate"
+echo "                              }"
+echo "                            }"
+echo "                          }"
+echo "    " 
+echo "    " 
+echo "    " 
+echo "                🔐 ZEN Token:             $ZEN_TOKEN"
+
+
+
+query {
+  getTrainingDefinitions {
+    definitionName
+    algorithmName
+    version
+    deployedVersion
+    description
+    createdBy
+    modelDeploymentDate
+    promoteOption
+    trainingSchedule {
+      frequency
+      repeat
+      timeRangeValidStart
+      timeRangeValidEnd
+      noEndDate
+    }
+    
+  }
+}

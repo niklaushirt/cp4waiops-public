@@ -1,0 +1,174 @@
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Connection Details
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+
+- name: TIMESTAMP -              🟢 START - CREATE OBSERVERS
+  debug: 
+    msg="{{ lookup('pipe','date +%d.%m.%Y---%H:%M:%S') }}"
+
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# WAIOPS
+# --------------------------------------------------------------------------------------------------------------------------------------
+- name: TOPOLOGY -        🚀 CREATE REST OBSERVER
+  shell: |
+    set -x
+        
+    # echo "Create Custom Topology - Starting..."
+    # export WAIOPS_NAMESPACE=$(oc get po -A|grep aimanager-operator |awk '{print$1}')
+
+
+
+    # export EVTMGR_REST_USR=$(oc get secret aiops-topology-asm-credentials -n $WAIOPS_NAMESPACE -o jsonpath='{.data.username}' | base64 --decode)
+    # export EVTMGR_REST_PWD=$(oc get secret aiops-topology-asm-credentials -n $WAIOPS_NAMESPACE -o jsonpath='{.data.password}' | base64 --decode)
+
+    # export TOPO_MGT_ROUTE="https://"$(oc get route -n $WAIOPS_NAMESPACE topology-manage -o jsonpath={.spec.host})
+
+
+    # export LOGIN="$EVTMGR_REST_USR:$EVTMGR_REST_PWD"
+
+    # echo "Wait 5 seconds"
+    # sleep 5
+
+    # echo "URL: $TOPO_MGT_ROUTE/1.0/rest-observer/rest/resources"
+    # echo "LOGIN: $LOGIN"
+
+
+
+    # # -------------------------------------------------------------------------------------------------------------------------------------------------
+    # # CREATE EDGES
+    # # -------------------------------------------------------------------------------------------------------------------------------------------------
+    
+    
+
+    # curl -X "POST" "$TOPO_MGT_ROUTE/1.0/topology/mgmt_artifacts" --insecure \
+    # -u $LOGIN \
+    # -H 'Content-Type: application/json' \
+    # -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' \
+    # -d '{
+    #     "keyIndexName": "rest-observer:restTopology",
+    #     "_id": "jMNvSs9-RTa2TP5GwvYyuQ",
+    #     "hasStateDescription": "Job Started",
+    #     "matchTokens": ["rest-observer"],
+    #     "description": "",
+    #     "hasState": "RUNNING",
+    #     "observedTime": 1647968787657,
+    #     "observationStart": 1647968787187,
+    #     "tags": ["LISTEN_JOB", "rest-observer"],
+    #     "schedule": {
+    #         "lastRunTime": 1647968785173
+    #     },
+    #     "path": "/jobs/bulk_replace",
+    #     "vertexType": "mgmtArtifact",
+    #     "_createdAt": "2022-03-22T17:06:23.752Z",
+    #     "name": "restTopology",
+    #     "entityTypes": ["ASM_OBSERVER_JOB"],
+    #     "observerName": "rest-observer",
+    #     "parameters": {
+    #         "provider": "restTopology"
+    #     }
+    # }'
+
+    # curl -X "POST" "$TOPO_MGT_ROUTE/1.0/topology/mgmt_artifacts" --insecure \
+    # -u $LOGIN \
+    # -H 'Content-Type: application/json' \
+    # -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' \
+    # -d '{
+    #     "keyIndexName": "rest-observer-provider",
+    #     "_id": "HwpuXSUWVingLt6AZx8hDw",
+    #     "vertexType": "mgmtArtifact",
+    #     "providerId": "HwpuXSUWVingLt6AZx8hDw",
+    #     "_observedAt": "2022-03-22T17:06:23.558Z",
+    #     "name": "rest-observer-provider",
+    #     "entityTypes": ["provider"],
+    #     "observedTime": 1647968783558
+    # }'
+
+
+
+    
+    
+    # echo "."
+
+
+  register: output_string
+  ignore_errors: yes
+
+
+
+
+
+- name: TOPOLOGY -        🚀 CREATE K8s OBSERVER (Takes 3-4 minutes)
+  shell: |
+    set -x
+        
+    # echo "Create Custom Topology - Starting..."
+    # export WAIOPS_NAMESPACE=$(oc get po -A|grep aimanager-operator |awk '{print$1}')
+
+    # export EVTMGR_REST_USR=$(oc get secret aiops-topology-asm-credentials -n $WAIOPS_NAMESPACE -o jsonpath='{.data.username}' | base64 --decode)
+    # export EVTMGR_REST_PWD=$(oc get secret aiops-topology-asm-credentials -n $WAIOPS_NAMESPACE -o jsonpath='{.data.password}' | base64 --decode)
+
+    # export TOPO_MGT_ROUTE="https://"$(oc get route -n $WAIOPS_NAMESPACE topology-manage -o jsonpath={.spec.host})
+
+
+    # export LOGIN="$EVTMGR_REST_USR:$EVTMGR_REST_PWD"
+
+    # echo "Wait 5 seconds"
+    # sleep 5
+
+    # echo "URL: $TOPO_MGT_ROUTE/1.0/rest-observer/rest/resources"
+    # echo "LOGIN: $LOGIN"
+
+
+
+    # # -------------------------------------------------------------------------------------------------------------------------------------------------
+    # # CREATE EDGES
+    # # -------------------------------------------------------------------------------------------------------------------------------------------------
+    
+    
+    # curl -X "POST" "$TOPO_MGT_ROUTE/1.0/topology/mgmt_artifacts" --insecure \
+    # -u $LOGIN \
+    # -H 'Content-Type: application/json' \
+    # -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' \
+    # -d '  {
+    #   "keyIndexName": "kubernetes-observer:robot-shop",
+    #   "matchTokens": [
+    #     "kubernetes-observer"
+    #   ],
+    #   "description": "",
+    #   "tags": [
+    #     "OBSERVATION_JOB",
+    #     "kubernetes-observer"
+    #   ],
+    #   "schedule": {
+    #     "interval": 2,
+    #     "units": "minutes"
+    #   },
+    #   "path": "/jobs/local",
+    #   "vertexType": "mgmtArtifact",
+    #   "name": "robot-shop",
+    #   "entityTypes": [
+    #     "ASM_OBSERVER_JOB"
+    #   ],
+    #   "observerName": "kubernetes-observer",
+    #   "parameters": {
+    #     "connect_read_timeout_ms": 5000,
+    #     "hide_terminated_pods": true,
+    #     "namespaceGroupParameters": {
+    #       "correlate": true
+    #     },
+    #     "role_token": false,
+    #     "namespace": "robot-shop",
+    #     "data_center": "robot-shop"
+    #   }
+    # }' 
+    
+    
+    echo "."
+    sleep 150
+
+  register: output_string
+  ignore_errors: yes

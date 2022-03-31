@@ -1,3 +1,3 @@
 spec:
   pullSecrets:
-  - ibm-aiops-pull-secret
+  - ibm-entitlement-key

@@ -3,7 +3,7 @@
 # Copyright 2020- IBM Inc. All rights reserved
 # SPDX-License-Identifier: Apache2.0
 #
-. ./tools/99_uninstall/main/uninstall-cp4waiops.props
+. ./tools/99_uninstall/3.2/uninstall-cp4waiops.props
 
 export OPERATORS_PROJECT=openshift-operators
 export IBM_COMMON_SERVICES_PROJECT=ibm-common-services
@@ -37,7 +37,7 @@ log () {
 display_help() {
    echo "**************************************** Usage ********************************************"
    echo ""
-   echo " This script is used to uninstall IBM Cloud Pak for Watson AIOps AI Manager version 3.2"
+   echo " This script is used to uninstall IBM Cloud Pak for Watson AIOps AI Manager version v3.3"
    echo " The following prereqs are required before you run this script: "
    echo " - oc CLI is installed and you have logged into the cluster using oc login"
    echo " - Update uninstall-cp4waiops.props with components that you want to uninstall"

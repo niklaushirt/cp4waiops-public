@@ -8,11 +8,30 @@
 # --------------------------------------------------------------------------------------------------------------------------------------
 # Install Rook-Ceph
 # --------------------------------------------------------------------------------------------------------------------------------------
+
+- name: TIMESTAMP -              🟢 START - ROOK CEPH
+  debug: 
+    msg="{{ lookup('pipe','date +%d.%m.%Y---%H:%M:%S') }}"
+
+
+
 - name: ROOKCEPH -           🔎 Check if Rook-Ceph should be installed
-  k8s_info:
-    kind: Namespace
-    name: rook-ceph
-  register: ROOK_EXISTS 
+  shell: |
+    oc get namespace --ignore-not-found rook-ceph
+  ignore_errors: yes
+  register: OBJECT_EXISTS
+
+
+
+- name: LOGGING -              🟢 WRITE TO LOGFILE
+  shell: |
+    export MESSAGE="Install Rook/Ceph: {{INSTALL_ROOK_CEPH}}"
+    export currentDate=$(date +%Y-%m-%d_%H:%M)
+    echo "---------------------------------------------------------------------------------------------------------------------------------------------------" >> ../installAIManager.log
+    echo $currentDate" - "$USER" - "$MESSAGE  >> ../installAIManager.log
+  ignore_errors: yes
+
+
 
 - name: ROOKCEPH -           🚀 Install Rook-Ceph
   block:
@@ -84,7 +103,7 @@
     ignore_errors: yes
     register: demo_robot_shop
     when: INSTALL_ROOK_CEPH
-  when: ROOK_EXISTS.resources|length == 0
+  when: OBJECT_EXISTS.stdout|length == 0
 
 # --------------------------------------------------------------------------------------------------------------------------------------
 # Wait for rook-ceph Namespace to be ready

@@ -1,7 +1,7 @@
 # Get the Integration URL for Private Cloud (Fyre, TEE, ...) - CP4WAIOPS Tunnel
 
 
-As the Slack integration requires a two-way communication and for Slack to communicate with the WAIOps server, you need to configure a tunnel, a feature that is included in CP4WAIOPS 3.2.  
+As the Slack integration requires a two-way communication and for Slack to communicate with the WAIOps server, you need to configure a tunnel, a feature that is included in CP4WAIOPS v3.3.  
 
 > ❗To use this feature, make sure the Secure Tunnel is enabled in the installtion definition.
 > 
@@ -13,7 +13,7 @@ metadata:
   name: {{ WAIOPS_NAME }}
   namespace: {{ WAIOPS_NAMESPACE }}
 spec:
-  imagePullSecret: ibm-aiops-pull-secret
+  imagePullSecret: ibm-entitlement-key
   license:
     accept: true
   pakModules:
