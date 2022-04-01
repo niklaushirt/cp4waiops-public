@@ -685,24 +685,3 @@ echo "    "
 echo "                🔐 ZEN Token:             $ZEN_TOKEN"
 
 
-
-query {
-  getTrainingDefinitions {
-    definitionName
-    algorithmName
-    version
-    deployedVersion
-    description
-    createdBy
-    modelDeploymentDate
-    promoteOption
-    trainingSchedule {
-      frequency
-      repeat
-      timeRangeValidStart
-      timeRangeValidEnd
-      noEndDate
-    }
-    
-  }
-}

@@ -32,7 +32,7 @@ echo "**************************************************************************
 echo "  "
 echo "  "
 
-export WAIOPS_NAMESPACE=$(oc get po -A|grep aimanager-operator |awk '{print$1}')
+export WAIOPS_NAMESPACE=$(oc get po -A|grep operator-controller |awk '{print$1}')
 
 while :
 do
@@ -54,6 +54,8 @@ do
       echo "  "
       echo "  "
       echo "  "
+      echo "*****************************************************************************************************************************"
+      echo "*****************************************************************************************************************************"
 
       
       NUM_PODS_MP=$(oc get pods -n openshift-marketplace --no-headers|grep -v Completed| wc -l)

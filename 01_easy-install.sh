@@ -18,9 +18,10 @@
 # ---------------------------------------------------------------------------------------------------------------"
 # ---------------------------------------------------------------------------------------------------------------"
 
-export DOC_URL="https://github.ibm.com/NIKH/aiops-install-ansible-fvt-33#2-ai-manager-installation"
 export SHOW_MORE="false"
 export WAIOPS_PODS_MIN=115
+export DOC_URL="https://github.ibm.com/NIKH/aiops-install-ansible-fvt-33#2-ai-manager-installation"
+
 # ---------------------------------------------------------------------------------------------------------------"
 # ---------------------------------------------------------------------------------------------------------------"
 # Do Not Modify Below
@@ -299,6 +300,25 @@ fi
 # Patch IAF Resources for ROKS
 # ------------------------------------------------------------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------------------------------------------------------------
+openTheUrl () {
+      if [[ ! $OPEN_URL == "" ]]; then
+            if [ -x "$(command -v open)" ]; then
+                  open $OPEN_URL
+            else 
+                  if [ -x "$(command -v firefox)" ]; then
+                        firefox $OPEN_URL
+                  else 
+                        if [ -x "$(command -v google-chrome)" ]; then
+                              google-chrome $OPEN_URL
+                        else
+                              echo "No executable to open URL $OPEN_URL. Skipping..."
+                        fi
+                  fi
+            fi
+    else
+      echo "URL undefined"
+    fi
+}
 
 menu_EASY_03 () {
       echo "--------------------------------------------------------------------------------------------"
@@ -590,9 +610,8 @@ menuDEMO_OPEN () {
       echo "                🔐 Token:         $appToken"
       echo ""
       echo ""
-      open "http://"$appURL
-
-
+      export OPEN_URL="http://$appURL"
+      openTheUrl
 }
      
 
@@ -604,8 +623,8 @@ menuAWX_OPENDOC () {
       echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
       echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
       echo "    "
-      open $DOC_URL
-
+      export OPEN_URL=$DOC_URL
+      openTheUrl
 }
 
 
@@ -626,8 +645,8 @@ menuAWX_OPENAWX () {
       echo "                🔐 Password: $(oc -n awx get secret awx-admin-password -o jsonpath='{.data.password}' | base64 --decode && echo)"
       echo "    "
       echo "    "
-
-      open $AWX_ROUTE
+      export OPEN_URL=$AWX_ROUTE
+      openTheUrl
 
 }
 
@@ -649,8 +668,8 @@ menuAIMANAGER_OPEN () {
       echo "                🔐 Password: $(oc -n ibm-common-services get secret platform-auth-idp-credentials -o jsonpath='{.data.admin_password}' | base64 --decode)"
       echo "    "
       echo "    "
-
-      open  $ROUTE
+      export OPEN_URL=$ROUTE
+      openTheUrl
 
 }
 
@@ -672,9 +691,8 @@ menuEVENTMANAGER_OPEN () {
       echo "            🔐 Password: $(oc get secret -n $EVTMGR_NAMESPACE  evtmanager-was-secret -o jsonpath='{.data.WAS_PASSWORD}'| base64 --decode && echo)"
       echo "    "
       echo "    "
-
-
-      open  $ROUTE
+      export OPEN_URL=$ROUTE
+      openTheUrl
 
 }
 
@@ -697,8 +715,8 @@ menuAWX_OPENELK () {
       echo "      "
       echo "               🌏 Kibana URL                  : https://$routeKIBANA"
       echo "               🚪 Kibana port                 : 443"
-
-      open  https://$routeKIBANA
+      export OPEN_URL=https://$routeKIBANA
+      openTheUrl
 
 }
 
@@ -728,9 +746,10 @@ menuAWX_OPENISTIO () {
       echo "    "
       echo "    "
       echo "    "
-
-      open  $KIALI_ROUTE      
-      open  $RS_ROUTE
+      export OPEN_URL=$KIALI_ROUTE
+      openTheUrl    
+      export OPEN_URL=$RS_ROUTE
+      openTheUrl
 
 }
 
@@ -749,8 +768,8 @@ menuAWX_OPENTURBO () {
       echo "                🔐 Password: As set at init step"
       echo "    "
       echo "    "
-
-      open  $ROUTE
+      export OPEN_URL=$ROUTE
+      openTheUrl
 
 }
 
@@ -770,8 +789,8 @@ menuAWX_OPENHUMIO () {
       echo "                🔐 Password: P4ssw0rd!"
       echo "    "
       echo "    "
-
-      open  $ROUTE
+      export OPEN_URL=$ROUTE
+      openTheUrl
 
 }
 
@@ -791,9 +810,8 @@ menuAWX_OPENLDAP () {
       echo "                🔐 Password: P4ssw0rd!"
       echo "    "
       echo "    "
-
-      open  $ROUTE
-
+      export OPEN_URL=$ROUTE
+      openTheUrl
 }
 
 
@@ -809,9 +827,8 @@ menuAWX_OPENRS () {
       echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
       echo "    "
       echo "    "
-
-
-      open  $ROUTE
+      export OPEN_URL=$ROUTE
+      openTheUrl
 
 }
 

@@ -69,6 +69,7 @@ sudo rm cloudctl-linux-amd64.tar.gz
 # Install stuff
 ansible-galaxy collection install community.kubernetes:1.2.1
 ansible-galaxy collection install kubernetes.core:2.2.3
+ansible-galaxy collection install cloud.common
 pip3 install openshift pyyaml kubernetes 
 sudo npm install elasticdump -g
 pip3 install slack-cleaner2

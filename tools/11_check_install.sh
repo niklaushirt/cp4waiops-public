@@ -181,7 +181,7 @@ echo "  Initializing......"
       echo "------------------------------------------------------------------------------------------------------------------------------------------------------"
       echo "   🛠️  Get Route"
       echo "------------------------------------------------------------------------------------------------------------------------------------------------------"
-      oc create route passthrough ai-platform-api -n $WAIOPS_NAMESPACE  --service=aimanager-aio-ai-platform-api-server --port=4000 --insecure-policy=Redirect --wildcard-policy=None
+      oc create route passthrough ai-platform-api -n $WAIOPS_NAMESPACE  --service=aimanager-aio-ai-platform-api-server --port=4000 --insecure-policy=Redirect --wildcard-policy=None>/dev/null 2>/dev/null
       export ROUTE=$(oc get route -n cp4waiops ai-platform-api  -o jsonpath={.spec.host})
       echo "       Route: $ROUTE"
       echo "------------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -193,11 +193,44 @@ echo "  Initializing......"
       echo "------------------------------------------------------------------------------------------------------------------------------------------------------"
 
 
+      echo "       🛠️  Getting ZEN Token"
+     
+      ZEN_API_HOST=$(oc get route -n $WAIOPS_NAMESPACE cpd -o jsonpath='{.spec.host}')
+      ZEN_LOGIN_URL="https://${ZEN_API_HOST}/v1/preauth/signin"
+      LOGIN_USER=admin
+      LOGIN_PASSWORD="$(oc get secret admin-user-details -n $WAIOPS_NAMESPACE -o jsonpath='{ .data.initial_admin_password }' | base64 --decode)"
+
+      ZEN_LOGIN_RESPONSE=$(
+      curl -k \
+      -H 'Content-Type: application/json' \
+      -XPOST \
+      "${ZEN_LOGIN_URL}" \
+      -d '{
+            "username": "'"${LOGIN_USER}"'",
+            "password": "'"${LOGIN_PASSWORD}"'"
+      }' 2> /dev/null
+      )
+
+      ZEN_LOGIN_MESSAGE=$(echo "${ZEN_LOGIN_RESPONSE}" | jq -r .message)
+
+      if [ "${ZEN_LOGIN_MESSAGE}" != "success" ]; then
+            echo "Login failed: ${ZEN_LOGIN_MESSAGE}"
+            exit 2
+      fi
+
+      ZEN_TOKEN=$(echo "${ZEN_LOGIN_RESPONSE}" | jq -r .token)
+      #echo "${ZEN_TOKEN}"
+      echo "Sucessfully logged in" 
+      echo ""
+
+
+
+
       echo "------------------------------------------------------------------------------------------------------------------------------------------------------"
       echo "   📥  LAD"
       echo "------------------------------------------------------------------------------------------------------------------------------------------------------"
       echo ""
-      export result=$(curl "https://$ROUTE/graphql" -k -s -H 'Accept-Encoding: gzip, deflate, br' -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'Connection: keep-alive' -H 'DNT: 1' -H 'Origin: https://ai-platform-api-cp4waiops.itzroks-270003bu3k-qd899z-6ccd7f378ae819553d37d5f2ee142bd6-0000.eu-de.containers.appdomain.cloud' --data-binary '{"query":"query {\n    getTrainingDefinitions(algorithmName:Log_Anomaly_Detection) {\n      definitionName\n      algorithmName\n      version\n      deployedVersion\n      description\n      createdBy\n      modelDeploymentDate\n      trainedModels(latest: true) {\n        modelStatus\n        trainingStartTimestamp\n        trainingEndTimestamp\n        precheckTrainingDetails {\n          dataQuality\n          dataQualityDetails {\n            report\n            languageInfo {\n              language\n            }\n          }\n        }\n        postcheckTrainingDetails {\n          aiCoverage\n          overallModelQuality\n          modelsCreatedList {\n            modelId\n          }\n        }\n      }\n    }\n  }"}' --compressed)
+      export result=$(curl "https://$ROUTE/graphql" -k -s -H "authorization: Bearer $ZEN_TOKEN" -H 'Accept-Encoding: gzip, deflate, br' -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'Connection: keep-alive' -H 'DNT: 1' -H 'Origin: https://ai-platform-api-cp4waiops.itzroks-270003bu3k-qd899z-6ccd7f378ae819553d37d5f2ee142bd6-0000.eu-de.containers.appdomain.cloud' --data-binary '{"query":"query {\n    getTrainingDefinitions(algorithmName:Log_Anomaly_Detection) {\n      definitionName\n      algorithmName\n      version\n      deployedVersion\n      description\n      createdBy\n      modelDeploymentDate\n      trainedModels(latest: true) {\n        modelStatus\n        trainingStartTimestamp\n        trainingEndTimestamp\n        precheckTrainingDetails {\n          dataQuality\n          dataQualityDetails {\n            report\n            languageInfo {\n              language\n            }\n          }\n        }\n        postcheckTrainingDetails {\n          aiCoverage\n          overallModelQuality\n          modelsCreatedList {\n            modelId\n          }\n        }\n      }\n    }\n  }"}' --compressed)
       #echo $result| jq ".data.getTrainingDefinitions[].definitionName,.data.getTrainingDefinitions[].deployedVersion, .data.getTrainingDefinitions[].trainedModels.precheckTrainingDetails.dataQuality, .data.getTrainingDefinitions[].trainedModels.precheckTrainingDetails.dataQuality.dataQualityDetails.report, .data.getTrainingDefinitions[].trainedModels.postcheckTrainingDetails    , .data.getTrainingDefinitions[].postcheckTrainingDetails.aiCoverage"
       echo "Name:          "$(echo $result| jq ".data.getTrainingDefinitions[]" | jq -r ".definitionName")
       echo "Deployed:      "$(echo $result| jq ".data.getTrainingDefinitions[]" | jq -r ".deployedVersion")
@@ -207,6 +240,25 @@ echo "  Initializing......"
       echo "Models:        "$(echo $result| jq ".data.getTrainingDefinitions[]" | jq -r ".trainedModels[].postcheckTrainingDetails.modelsCreatedList")
       echo "Deployed:      "$(echo $result| jq ".data.getTrainingDefinitions[]" | jq -r ".modelDeploymentDate")
       #echo $result| jq 
+
+
+      echo "------------------------------------------------------------------------------------------------------------------------------------------------------"
+      echo ""
+      echo ""
+      echo "------------------------------------------------------------------------------------------------------------------------------------------------------"
+      echo "   📥  METRIC ANOMALIES"
+      echo "------------------------------------------------------------------------------------------------------------------------------------------------------"
+      echo ""
+      export result=$(curl "https://$ROUTE/graphql" -k -s -H "authorization: Bearer $ZEN_TOKEN" -H 'Accept-Encoding: gzip, deflate, br' -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'Connection: keep-alive' -H 'DNT: 1' -H 'Origin: https://ai-platform-api-cp4waiops.itzroks-270003bu3k-qd899z-6ccd7f378ae819553d37d5f2ee142bd6-0000.eu-de.containers.appdomain.cloud' --data-binary '{"query":"  query {\n    getTrainingDefinitions (algorithmName:Metric_Anomaly_Detection){\n      definitionName\n      algorithmName\n      description\n      version\n      deployedVersion\n      lastTraining\n      trainingSchedule {\n        frequency\n        repeat\n        noEndDate\n      }\n      trainedModels(latest: true) {\n        trainingStartTimestamp\n        trainingEndTimestamp\n        modelStatus\n        postcheckTrainingDetails {\n            aiCoverage\n          \n          }\n      }\n    }\n  }"}' --compressed)
+      echo "Name:          "$(echo $result| jq ".data.getTrainingDefinitions[]" | jq -r ".definitionName")
+      echo "Deployed:      "$(echo $result| jq ".data.getTrainingDefinitions[]" | jq -r ".deployedVersion")
+      echo "Latest:        "$(echo $result| jq ".data.getTrainingDefinitions[]" | jq -r ".version")
+      echo "Schedule:      "$(echo $result| jq ".data.getTrainingDefinitions[]" | jq -r ".trainingSchedule.frequency")" - " $(echo $result| jq ".data.getTrainingDefinitions[]" | jq -r ".trainingSchedule.repeat")
+      echo "Status:        "$(echo $result| jq ".data.getTrainingDefinitions[]" | jq -r ".trainedModels[].modelStatus")
+      echo "------------------------------------------------------------------------------------------------------------------------------------------------------"
+      #echo $result| jq 
+
+
       echo "------------------------------------------------------------------------------------------------------------------------------------------------------"
       echo ""
       echo ""
@@ -214,14 +266,15 @@ echo "  Initializing......"
       echo "   📥  TEMPORAL GROUPING"
       echo "------------------------------------------------------------------------------------------------------------------------------------------------------"
       echo ""
-      export result=$(curl "https://$ROUTE/graphql" -k -s -H 'Accept-Encoding: gzip, deflate, br' -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'Connection: keep-alive' -H 'DNT: 1' -H 'Origin: https://ai-platform-api-cp4waiops.itzroks-270003bu3k-qd899z-6ccd7f378ae819553d37d5f2ee142bd6-0000.eu-de.containers.appdomain.cloud' --data-binary '{"query":"query {\n    getTrainingDefinitions(algorithmName:Temporal_Grouping) {\n      definitionName\n      algorithmName\n      version\n      deployedVersion\n      description\n      createdBy\n      modelDeploymentDate\n      trainedModels(latest: true) {\n        modelStatus\n        trainingStartTimestamp\n        trainingEndTimestamp\n        postcheckTrainingDetails {\n          modelsCreatedList {\n            modelId\n          }\n        }\n      }\n    }\n  }"}' --compressed)
+      export result=$(curl "https://$ROUTE/graphql" -k -s -H "authorization: Bearer $ZEN_TOKEN" -H 'Accept-Encoding: gzip, deflate, br' -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'Connection: keep-alive' -H 'DNT: 1' -H 'Origin: https://ai-platform-api-cp4waiops.itzroks-270003bu3k-qd899z-6ccd7f378ae819553d37d5f2ee142bd6-0000.eu-de.containers.appdomain.cloud' --data-binary '{"query":"query {\n    getTrainingDefinitions(algorithmName:Temporal_Grouping) {\n      definitionName\n      algorithmName\n      version\n      deployedVersion\n      description\n      createdBy\n      modelDeploymentDate\n      trainedModels(latest: true) {\n        modelStatus\n        trainingStartTimestamp\n        trainingEndTimestamp\n        postcheckTrainingDetails {\n          modelsCreatedList {\n            modelId\n          }\n        }\n      }\n    }\n  }"}' --compressed)
       echo "Name:          "$(echo $result| jq ".data.getTrainingDefinitions[]" | jq -r ".definitionName")
       echo "Deployed:      "$(echo $result| jq ".data.getTrainingDefinitions[]" | jq -r ".deployedVersion")
       echo "Latest:        "$(echo $result| jq ".data.getTrainingDefinitions[]" | jq -r ".version")      
-      echo "Data Quality:  "$(echo $result| jq ".data.getTrainingDefinitions[]" | jq -r ".trainedModels[].precheckTrainingDetails.dataQuality")" - " $(echo $result| jq ".data.getTrainingDefinitions[]" | jq -r ".trainedModels[].precheckTrainingDetails.dataQualityDetails.report[0]")
       echo "AI Coverage:   "$(echo $result| jq ".data.getTrainingDefinitions[]" | jq -r ".trainedModels[].postcheckTrainingDetails.modelsCreatedList")
       echo "Deployed:      "$(echo $result| jq ".data.getTrainingDefinitions[]" | jq -r ".modelDeploymentDate")
       #echo $result| jq 
+
+
       echo "------------------------------------------------------------------------------------------------------------------------------------------------------"
       echo ""
       echo ""
@@ -229,13 +282,15 @@ echo "  Initializing......"
       echo "   📥  SIMILAR INCIDENTS"
       echo "------------------------------------------------------------------------------------------------------------------------------------------------------"
       echo ""
-      export result=$(curl "https://$ROUTE/graphql" -k -s -H 'Accept-Encoding: gzip, deflate, br' -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'Connection: keep-alive' -H 'DNT: 1' -H 'Origin: https://ai-platform-api-cp4waiops.itzroks-270003bu3k-qd899z-6ccd7f378ae819553d37d5f2ee142bd6-0000.eu-de.containers.appdomain.cloud' --data-binary '{"query":"  query {\n    getTrainingDefinitions (algorithmName:Similar_Incidents){\n      definitionName\n      algorithmName\n      description\n      version\n      deployedVersion\n      lastTraining\n      trainingSchedule {\n        frequency\n        repeat\n        noEndDate\n      }\n      trainedModels(latest: true) {\n        trainingStartTimestamp\n        trainingEndTimestamp\n        modelStatus\n        postcheckTrainingDetails {\n            aiCoverage\n          \n          }\n      }\n    }\n  }"}' --compressed)
+      export result=$(curl "https://$ROUTE/graphql" -k -s -H "authorization: Bearer $ZEN_TOKEN" -H 'Accept-Encoding: gzip, deflate, br' -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'Connection: keep-alive' -H 'DNT: 1' -H 'Origin: https://ai-platform-api-cp4waiops.itzroks-270003bu3k-qd899z-6ccd7f378ae819553d37d5f2ee142bd6-0000.eu-de.containers.appdomain.cloud' --data-binary '{"query":"  query {\n    getTrainingDefinitions (algorithmName:Similar_Incidents){\n      definitionName\n      algorithmName\n      description\n      version\n      deployedVersion\n      lastTraining\n      trainingSchedule {\n        frequency\n        repeat\n        noEndDate\n      }\n      trainedModels(latest: true) {\n        trainingStartTimestamp\n        trainingEndTimestamp\n        modelStatus\n        postcheckTrainingDetails {\n            aiCoverage\n          \n          }\n      }\n    }\n  }"}' --compressed)
             echo "Name:          "$(echo $result| jq ".data.getTrainingDefinitions[]" | jq -r ".definitionName")
       echo "Deployed:      "$(echo $result| jq ".data.getTrainingDefinitions[]" | jq -r ".deployedVersion")
       echo "Latest:        "$(echo $result| jq ".data.getTrainingDefinitions[]" | jq -r ".version")      
       echo "Schedule:      "$(echo $result| jq ".data.getTrainingDefinitions[]" | jq -r ".trainingSchedule.frequency")" - " $(echo $result| jq ".data.getTrainingDefinitions[]" | jq -r ".trainingSchedule.repeat")
       echo "AI Coverage:   "$(echo $result| jq ".data.getTrainingDefinitions[]" | jq -r ".trainedModels[].postcheckTrainingDetails.aiCoverage")
       #echo $result| jq 
+
+
       echo "------------------------------------------------------------------------------------------------------------------------------------------------------"
       echo ""
       echo ""
@@ -243,14 +298,33 @@ echo "  Initializing......"
       echo "   📥  CHANGE RISK"
       echo "------------------------------------------------------------------------------------------------------------------------------------------------------"
       echo ""
-      export result=$(curl "https://$ROUTE/graphql" -k -s -H 'Accept-Encoding: gzip, deflate, br' -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'Connection: keep-alive' -H 'DNT: 1' -H 'Origin: https://ai-platform-api-cp4waiops.itzroks-270003bu3k-qd899z-6ccd7f378ae819553d37d5f2ee142bd6-0000.eu-de.containers.appdomain.cloud' --data-binary '{"query":"  query {\n    getTrainingDefinitions (algorithmName:Change_Risk){\n      definitionName\n      algorithmName\n      description\n      version\n      deployedVersion\n      lastTraining\n      trainingSchedule {\n        frequency\n        repeat\n        noEndDate\n      }\n      trainedModels(latest: true) {\n        trainingStartTimestamp\n        trainingEndTimestamp\n        modelStatus\n        postcheckTrainingDetails {\n            aiCoverage\n          \n          }\n      }\n    }\n  }"}' --compressed)
+      export result=$(curl "https://$ROUTE/graphql" -k -s -H "authorization: Bearer $ZEN_TOKEN" -H 'Accept-Encoding: gzip, deflate, br' -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'Connection: keep-alive' -H 'DNT: 1' -H 'Origin: https://ai-platform-api-cp4waiops.itzroks-270003bu3k-qd899z-6ccd7f378ae819553d37d5f2ee142bd6-0000.eu-de.containers.appdomain.cloud' --data-binary '{"query":"  query {\n    getTrainingDefinitions (algorithmName:Change_Risk){\n      definitionName\n      algorithmName\n      description\n      version\n      deployedVersion\n      lastTraining\n      trainingSchedule {\n        frequency\n        repeat\n        noEndDate\n      }\n      trainedModels(latest: true) {\n        trainingStartTimestamp\n        trainingEndTimestamp\n        modelStatus\n        postcheckTrainingDetails {\n            aiCoverage\n          \n          }\n      }\n    }\n  }"}' --compressed)
       echo "Name:          "$(echo $result| jq ".data.getTrainingDefinitions[]" | jq -r ".definitionName")
       echo "Deployed:      "$(echo $result| jq ".data.getTrainingDefinitions[]" | jq -r ".deployedVersion")
       echo "Latest:        "$(echo $result| jq ".data.getTrainingDefinitions[]" | jq -r ".version")
       echo "Schedule:      "$(echo $result| jq ".data.getTrainingDefinitions[]" | jq -r ".trainingSchedule.frequency")" - " $(echo $result| jq ".data.getTrainingDefinitions[]" | jq -r ".trainingSchedule.repeat")
       echo "AI Coverage:   "$(echo $result| jq ".data.getTrainingDefinitions[]" | jq -r ".trainedModels[].postcheckTrainingDetails.aiCoverage")
-      echo $result| jq 
       echo "------------------------------------------------------------------------------------------------------------------------------------------------------"
+      #echo $result| jq 
+
+
+      echo "------------------------------------------------------------------------------------------------------------------------------------------------------"
+      echo ""
+      echo ""
+      echo "------------------------------------------------------------------------------------------------------------------------------------------------------"
+      echo "   📥  METRIC ANOMALIES"
+      echo "------------------------------------------------------------------------------------------------------------------------------------------------------"
+      echo ""
+      export result=$(curl "https://$ROUTE/graphql" -k -s -H "authorization: Bearer $ZEN_TOKEN" -H 'Accept-Encoding: gzip, deflate, br' -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'Connection: keep-alive' -H 'DNT: 1' -H 'Origin: https://ai-platform-api-cp4waiops.itzroks-270003bu3k-qd899z-6ccd7f378ae819553d37d5f2ee142bd6-0000.eu-de.containers.appdomain.cloud' --data-binary '{"query":"  query {\n    getTrainingDefinitions (algorithmName:Metric_Anomaly_Detection){\n      definitionName\n      algorithmName\n      description\n      version\n      deployedVersion\n      lastTraining\n      trainingSchedule {\n        frequency\n        repeat\n        noEndDate\n      }\n      trainedModels(latest: true) {\n        trainingStartTimestamp\n        trainingEndTimestamp\n        modelStatus\n        postcheckTrainingDetails {\n            aiCoverage\n          \n          }\n      }\n    }\n  }"}' --compressed)
+      echo "Name:          "$(echo $result| jq ".data.getTrainingDefinitions[]" | jq -r ".definitionName")
+      echo "Deployed:      "$(echo $result| jq ".data.getTrainingDefinitions[]" | jq -r ".deployedVersion")
+      echo "Latest:        "$(echo $result| jq ".data.getTrainingDefinitions[]" | jq -r ".version")
+      echo "Schedule:      "$(echo $result| jq ".data.getTrainingDefinitions[]" | jq -r ".trainingSchedule.frequency")" - " $(echo $result| jq ".data.getTrainingDefinitions[]" | jq -r ".trainingSchedule.repeat")
+      echo "AI Coverage:   "$(echo $result| jq ".data.getTrainingDefinitions[]" | jq -r ".trainedModels[].postcheckTrainingDetails.aiCoverage")
+      echo "------------------------------------------------------------------------------------------------------------------------------------------------------"
+      #echo $result| jq 
+
+
 
 
 
@@ -412,14 +486,15 @@ echo "  Initializing......"
       echo "      ❎ Clean-up errored Pods in $WAIOPS_NAMESPACE"
       oc delete pod $(oc get po -n $WAIOPS_NAMESPACE|grep "Error"|grep "0/"|awk '{print$1}') -n $WAIOPS_NAMESPACE --ignore-not-found
       echo ""
-      echo "      ❎ Clean-up errored Pods in $EVTMGR_NAMESPACE"
-      oc delete pod $(oc get po -n $EVTMGR_NAMESPACE|grep "Error"|grep "0/"|awk '{print$1}') -n $EVTMGR_NAMESPACE --ignore-not-found
-      echo ""
       echo "      ❎ Clean-up stuck Pods in $WAIOPS_NAMESPACE"
       oc delete pod $(oc get po -n $WAIOPS_NAMESPACE|grep -v "Completed"|grep "0/"|awk '{print$1}') -n $WAIOPS_NAMESPACE --ignore-not-found
       echo ""
-      echo "      ❎ Clean-up stuck Pods in $EVTMGR_NAMESPACE"
-      oc delete pod $(oc get po -n $EVTMGR_NAMESPACE|grep -v "Completed"|grep "0/"|awk '{print$1}') -n $EVTMGR_NAMESPACE --ignore-not-found
+      echo "      ❎ Clean-up evicted Pods in $WAIOPS_NAMESPACE"
+      oc delete pod $(oc get po -n $WAIOPS_NAMESPACE|grep "Evicted"|awk '{print$1}') -n $WAIOPS_NAMESPACE --ignore-not-found
+      echo ""
+      echo "      ❎ Clean-up evicted Pods in ibm-common-services"
+      oc delete pod $(oc get po -n ibm-common-services|grep "Evicted"|awk '{print$1}') -n $WAIOPS_NAMESPACE --ignore-not-found
+
 
 
 

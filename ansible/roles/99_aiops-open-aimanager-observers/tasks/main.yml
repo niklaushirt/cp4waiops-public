@@ -16,7 +16,18 @@
     echo "                🧑 User:     $(oc -n ibm-common-services get secret platform-auth-idp-credentials -o jsonpath='{.data.admin_username}' | base64 --decode && echo)"
     echo "                🔐 Password: $(oc -n ibm-common-services get secret platform-auth-idp-credentials -o jsonpath='{.data.admin_password}' | base64 --decode)"
 
-    open https://$AIMANAGER_ROUTE/aiops/cfd95b7e-3bc7-4006-a4a8-a73a79c71255/topology/observers
+    export URL=https://$AIMANAGER_ROUTE/aiops/cfd95b7e-3bc7-4006-a4a8-a73a79c71255/topology/observers
+    if [ -x "$(command -v open)" ]; then
+      open $URL
+    else 
+      if [ -x "$(command -v firefox)" ]; then
+        firefox $URL
+      else 
+        if [ -x "$(command -v google-chrome)" ]; then
+          google-chrome $URL
+        fi
+      fi
+    fi
   ignore_errors: yes
   register: LOGINS
 

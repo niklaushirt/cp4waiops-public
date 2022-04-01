@@ -364,17 +364,19 @@ menu_check_install_aimgr () {
 
       fi
 
-
+      TOPO_OK=$(oc get pod -n $WAIOPS_NAMESPACE| grep aiops-topology-merge)
       PATCH_OK=$(oc get deployment aiops-topology-merge -n $WAIOPS_NAMESPACE -oyaml --ignore-not-found| grep "failureThreshold: 61" || true) 
-      if  ([[ ! $PATCH_OK =~ "failureThreshold: 61" ]]); 
+      if  ([[ $TOPO_OK =~ "0/1" ]]); 
       then 
-            echo "      ⭕ aiops-topology-merge Not Patched"; 
-            echo "      ⭕ (You may want to run option: 22  - Patch evtmanager topology pods)";  
-            echo ""
-      else
-            echo "      ✅ OK: evtmanager-topology-merge Patched"; 
+            if  ([[ ! $PATCH_OK =~ "failureThreshold: 61" ]]); 
+            then 
+                  echo "      ⭕ aiops-topology-merge Not Patched"; 
+                  echo "      ⭕ (You may want to run option: 22  - Patch evtmanager topology pods)";  
+                  echo ""
+            else
+                  echo "      ✅ OK: evtmanager-topology-merge Patched"; 
+            fi
       fi
-
 
 
 
@@ -470,7 +472,6 @@ menu_check_install_aimgr () {
       CP4AIOPS_CHECK_LIST=(
            "aiopsedge-operator-controller-manager"
             "asm-operator"
-            "camel-k-operator"
             "couchdb-operator"
             "ibm-cloud-databases-redis"
             "ibm-ir-ai-operator-controller-manager"
@@ -558,7 +559,8 @@ menu_check_install_aimgr () {
             "aimanager-aio-tls"
             "aimanager-ibm-minio-access-secret"
             "aimanager-modeltrain-cert-secret"
-            "$WAIOPS_NAMESPACE-cartridge-kafka-auth"
+            "$WAIOPS_NAMESPACE-cartridge-kafka-auth-0"
+            "$WAIOPS_NAMESPACE-cartridge-kafka-auth-0"
             "$WAIOPS_NAMESPACE-postgres-ibm-postgresql-auth-secret"
             "$WAIOPS_NAMESPACE-postgres-postgresql-conn-secret"
             "$WAIOPS_NAMESPACE-postgresdb-postgresql-$WAIOPS_NAMESPACE-secret"
@@ -753,34 +755,7 @@ menu_check_install_all () {
     echo "--------------------------------------------------------------------------------------------"
 
  
-      CHECK_NAME=BEDROCK_CRDS
-      CHECK_ARRAY=("${BEDROCK_CRDS[@]}")    
-      check_array
-
-      CHECK_NAME=CP4WAIOPS_CRDS
-      CHECK_ARRAY=("${CP4WAIOPS_CRDS[@]}")    
-      check_array
-
-    
-      CHECK_NAME=CP4WAIOPS_ELASTICSEARCH_CRDS
-      CHECK_ARRAY=("${CP4WAIOPS_ELASTICSEARCH_CRDS[@]}")    
-      check_array
-
-    
-      CHECK_NAME=CP4WAIOPS_SECURETUNNEL_CRDS
-      CHECK_ARRAY=("${CP4WAIOPS_SECURETUNNEL_CRDS[@]}")    
-      check_array
-
-    
-      CHECK_NAME=CAMELK_CRDS
-      CHECK_ARRAY=("${CAMELK_CRDS[@]}")    
-      check_array
-
-    
-      CHECK_NAME=KONG_CRDS
-      CHECK_ARRAY=("${KONG_CRDS[@]}")    
-      check_array
-
+  
 
       CHECK_NAME=CP4WAIOPS_CONFIGMAPS
       CHECK_ARRAY=("${CP4WAIOPS_CONFIGMAPS[@]}")    
@@ -1639,7 +1614,6 @@ until [ "$selection" = "0" ]; do
   echo ""      
   echo "    	1  - Check CP4WAIOPS AI Manager Installation                   - examining AI Manager Installation for hints (this is by no means complete)    "
   echo "    	2  - Check CP4WAIOPS Event Managaer Installation               - examining Event Manager Installation for hints (this is by no means complete)    "
-  echo "    	3  - Check CP4WAIOPS Installation - in-depth                   - examining CP4WAIOPS Installation in-depth for hints (this is by no means complete)    "
   echo ""      
   echo ""      
   echo ""      

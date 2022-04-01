@@ -33,7 +33,7 @@ WAIOPS_NAMESPACE: cp4waiops
 WAIOPS_SIZE: small # Leave at small unless you know what you're doing
 
 # Version of the catalog subscription
-SUBSCRIPTION_CHANNEL: 3.3-rc
+SUBSCRIPTION_CHANNEL: v3.3
 
 
 
@@ -65,7 +65,7 @@ STORAGECLASS_BLOCK_OVERRIDE: not_configured
 # CP4WAIOPS Namespace for installation
 EVTMGR_NAMESPACE: cp4waiops-evtmgr
 
-EVTMGR_CHANNEL: v1.5
+EVTMGR_CHANNEL: v1.7
 
 
 
@@ -112,7 +112,7 @@ STORAGE_CLASS_HUMIO: ibmc-block-gold
 
 # *************************************************************************************************************************************************
 # --------------------------------------------------------------------------------------------------------------------------------------
-# OCP LOGIN PARAMETERS
+# OCP LOGIN PARAMETERS (if you want to login automatically)
 # --------------------------------------------------------------------------------------------------------------------------------------
 # *************************************************************************************************************************************************
 OCP_LOGIN: false
@@ -232,14 +232,209 @@ EVTMGR_NS_MIN_PODS_FINAL: 70
 # --------------------------------------------------------------------------------------------------------------------------------------
 # *************************************************************************************************************************************************
 # IBM Entitled Registry
-#ENTITLED_REGISTRY: cp.icr.io
-#ENTITLED_REGISTRY_USER: cp
-ENTITLED_REGISTRY_KEY: TOKEN
-#CATALOG_IMAGE: icr.io/cpopen/ibm-operator-catalog:latest
-
-ENTITLED_REGISTRY: cp.stg.icr.io
+ENTITLED_REGISTRY: cp.icr.io
 ENTITLED_REGISTRY_USER: cp
-CATALOG_IMAGE: cp.stg.icr.io/cp/ibm-watson-aiops-catalog:v3.3.0-20220318.1607-5b33fc8b1
+ENTITLED_REGISTRY_KEY: TOKEN
+CATALOG_IMAGE: icr.io/cpopen/ibm-operator-catalog:latest
+
+
+
+
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# URLs for Documentation
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+URL_STEP_1: https://github.ibm.com/NIKH/aiops-install-ansible-fvt-33#3-ai-manager-configuration
+URL_STEP_2: https://github.ibm.com/NIKH/aiops-install-ansible-fvt-33#4-ai-manager-post-install-configuration
+URL_STEP_3: https://github.ibm.com/NIKH/aiops-install-ansible-fvt-33#5-ai-manager-finalize-configuration
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ENTITLED_REGISTRY: cp.stg.icr.io
+# ENTITLED_REGISTRY_USER: cp
+# CATALOG_IMAGE: cp.stg.icr.io/cp/ibm-watson-aiops-catalog:v3.3.0-20220318.1607-5b33fc8b1
 
 
 #ENTITLED_REGISTRY: hyc-katamari-cicd-team-docker-local.artifactory.swg-devops.com

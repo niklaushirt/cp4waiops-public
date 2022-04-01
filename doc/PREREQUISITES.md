@@ -46,6 +46,7 @@ Or install them manually:
 brew install ansible
 ansible-galaxy collection install community.kubernetes:1.2.1
 ansible-galaxy collection install kubernetes.core:2.2.3
+ansible-galaxy collection install cloud.common
 pip install openshift pyyaml kubernetes 
 brew install kafkacat
 brew install node

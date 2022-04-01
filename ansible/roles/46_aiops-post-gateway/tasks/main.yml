@@ -13,6 +13,13 @@
 
 
 
+- name: GATEWAY -            🔎 Check AI Manager Installed
+  shell: |
+    export WAIOPS_NAMESPACE=$(oc get po -A|grep aimanager-operator |awk '{print$1}')
+    echo $WAIOPS_NAMESPACE
+  ignore_errors: yes
+  register: AIMANAGER_EXISTS
+
 
 - name: GATEWAY -            🔐 Copy Pull Secret from WAIOPS Namespace
   shell: |
@@ -21,6 +28,7 @@
     oc create secret generic aiops-omni-secret -n {{ WAIOPS_NAMESPACE }} --from-literal=username=root --from-file=password=./OMNIBUS_ROOT_PASSWORD --from-file=OMNIBUS_ROOT_PASSWORD=./OMNIBUS_ROOT_PASSWORD
     rm ./OMNIBUS_ROOT_PASSWORD
   ignore_errors: yes
+  when: AIMANAGER_EXISTS.stdout != ""
 
 
 
@@ -29,7 +37,7 @@
     oc get EventManagerGateway --ignore-not-found -n {{ WAIOPS_NAMESPACE }} event-gateway-generic
   ignore_errors: yes
   register: OBJECT_EXISTS
-
+  when: AIMANAGER_EXISTS.stdout != ""
 
 
 - name: GATEWAY -            🌏 Get NOI Kafka Topic
@@ -38,10 +46,12 @@
     echo $EVENTS_TOPIC
   ignore_errors: yes
   register: RES_NOI_KAFKA_TOPIC 
+  when: AIMANAGER_EXISTS.stdout != ""
+
 
 - name: GATEWAY -            📥 Set  NOI Kafka Topic {{RES_NOI_KAFKA_TOPIC.stdout}}
   set_fact: NOI_KAFKA_TOPIC={{ RES_NOI_KAFKA_TOPIC.stdout }} 
-
+  when: AIMANAGER_EXISTS.stdout != ""
 
 
 
@@ -55,8 +65,7 @@
       state: present
       namespace: "{{ WAIOPS_NAMESPACE }}"
       template: ./templates/gateway/1_gateway-generic-template.j2
-    when: INSTALL_GATEWAY == true
-
+    when: AIMANAGER_EXISTS.stdout != "" AND OBJECT_EXISTS.stdout|length == 0
   # - name: GATEWAY -            🩹 Patch Gateway
   #   shell: oc apply -n {{ WAIOPS_NAMESPACE }} -f ./templates/gateway/2_gateway_cr_cm.yaml
   #   ignore_errors: yes
@@ -66,4 +75,4 @@
   #   shell: oc delete pod -n {{ WAIOPS_NAMESPACE }} $(oc get po -n {{ WAIOPS_NAMESPACE }}|grep event-gateway-generic|awk '{print$1}') 
   #   ignore_errors: yes
   #   when: INSTALL_GATEWAY == true
-  when: OBJECT_EXISTS.stdout|length == 0
+  when: AIMANAGER_EXISTS.stdout != ""

@@ -1,0 +1,24 @@
+FROM quay.io/ansible/awx-ee:latest
+
+USER 0
+RUN dnf install -y wget jq npm unzip
+RUN dnf install -y dnf-plugins-core 
+# RUN dnf copr help
+# RUN dnf copr -y enable bvn13/kafkacat
+# RUN dnf update
+# RUN dnf install kafkacat
+
+# Install Openshift Client
+RUN wget https://github.com/openshift/okd/releases/download/4.9.0-0.okd-2022-01-14-230113/openshift-client-linux-4.9.0-0.okd-2022-01-14-230113.tar.gz && tar xfvz openshift-client-linux-4.9.0-0.okd-2022-01-14-230113.tar.gz && mv oc /usr/local/bin && mv kubectl /usr/local/bin/ && rm openshift-client-linux-4.9.0-0.okd-2022-01-14-230113.tar.gz
+
+# Install cloudctl
+RUN curl -L https://github.com/IBM/cloud-pak-cli/releases/latest/download/cloudctl-linux-amd64.tar.gz -o cloudctl-linux-amd64.tar.gz && tar xfvz cloudctl-linux-amd64.tar.gz && mv cloudctl-linux-amd64 /usr/local/bin/cloudctl && rm cloudctl-linux-amd64.tar.gz
+RUN npm install elasticdump -g
+
+USER 1000
+RUN ansible-galaxy collection install community.kubernetes:1.2.1
+
+RUN pip install openshift pyyaml kubernetes 
+
+
+

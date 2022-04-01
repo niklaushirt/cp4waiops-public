@@ -1,0 +1,83 @@
+extends layout
+
+block title
+  h1 AIManager
+  h2 Demo UI
+
+
+block navigation
+  p
+  p Endpoints
+  p
+  a(href='/demo_doc') Create Events and Log Anomalies
+  p
+  a(href='/demo_doc') Create Events
+  p
+  a(href='/demo_doc') Create Log Anomalies
+  p
+  p Configuration
+  p
+  a(href='/config') Configuration
+  p
+  p About
+  p
+  a(href='/about') About
+
+
+
+
+block content
+  h2 Automated Deployment
+  p The easiest way to deploy the Demo UI is by using the automated Ansible script.
+  div
+    pre.
+      ansible-playbook ./ansible/18_aiops-demo-ui.yaml
+      oc get route -n cp4waiops cp4waiops-demo-ui  -o jsonpath={.spec.host}
+
+  h2 Manual Deployment
+
+  h3#toc_2 Getting the Kafka Conncetion Parameters
+  p
+    | This gives you the Parameters for the Kafka Connection that you have to modify in the 
+    code cp4waiops-demo-ui-config
+    |  ConfigMap in file 
+    code ./tools/97_addons/demo-ui/create-cp4waiops-demo-ui.yaml
+    | .
+      
+    pre.
+      export WAIOPS_NAMESPACE=cp4waiops
+      export KAFKA_TOPIC_EVENTS=$(oc get kafkatopics -n $WAIOPS_NAMESPACE | grep -v cp4waiopscp4waiops|grep -v noi-integration | grep cp4waiops-cartridge-alerts-$EVENTS_TYPE| awk '{print $1;}')
+      export KAFKA_TOPIC_LOGS=$(oc get kafkatopics -n $WAIOPS_NAMESPACE  | grep -v cp4waiopscp4waiops| grep cp4waiops-cartridge-logs-humio| awk '{print $1;}')
+      export KAFKA_USER=$(oc get secret ibm-aiops-kafka-secret -n $WAIOPS_NAMESPACE --template={{.data.username}} | base64 --decode)
+      export KAFKA_PWD=$(oc get secret ibm-aiops-kafka-secret -n $WAIOPS_NAMESPACE --template={{.data.password}} | base64 --decode)
+      export KAFKA_BROKER=$(oc get routes iaf-system-kafka-0 -n $WAIOPS_NAMESPACE -o=jsonpath='{.status.ingress[0].host}{"\n"}'):443
+      export CERT_ELEMENT=$(oc get secret -n $WAIOPS_NAMESPACE kafka-secrets  -o jsonpath='{.data.ca\.crt}'| base64 -d)
+      export LOG_ITERATIONS=5
+      export TOKEN=123456789
+
+      echo "KAFKA_BROKER: '"$KAFKA_BROKER"'"
+      echo "KAFKA_USER: '"$KAFKA_USER"'"
+      echo "KAFKA_PWD: '"$KAFKA_PWD"'"
+      echo "KAFKA_TOPIC_EVENTS: '"$KAFKA_TOPIC_EVENTS"'"
+      echo "KAFKA_TOPIC_LOGS: '"$KAFKA_TOPIC_EVENTS"'"
+      echo "CERT_ELEMENT:  |- "
+      echo $CERT_ELEMENT
+      echo "LOG_ITERATIONS: '"$LOG_ITERATIONS"'"
+      echo "TOKEN: '"$TOKEN"'"
+  blockquote
+    p You will have to indent the Certificate!
+  h3#toc_3 Deploying
+  div
+    pre.
+      oc apply -n default -f ./tools/97_addons/k8s-remote/create-cp4waiops-demo-ui.yaml
+      oc get route -n cp4waiops cp4waiops-demo-ui  -o jsonpath={.spec.host}
+  h3#toc_4 Using the API
+  p
+    | The following example we will create
+    code Events
+    |  and
+    code Log Anomalies
+    |  :
+  div
+    pre.
+      curl -X "POST" "http://localhost:8080/demo" -H 'token: my-token' 

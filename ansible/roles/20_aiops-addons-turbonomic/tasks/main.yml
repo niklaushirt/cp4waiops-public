@@ -57,6 +57,16 @@
 
 
 
+- name: TURBONOMIC -         🕦 Wait for CRD to become ready
+  shell: oc get crd -n turbonomic xls.charts.helm.k8s.io --ignore-not-found  --no-headers| grep -c ""
+  register: kubectl_get_pods
+  until: kubectl_get_pods.stdout == "1"
+  retries: 500
+  delay: 15
+
+
+
+
 - name: TURBONOMIC -         🚀 Create Turbonomic Instance
   kubernetes.core.k8s:
     state: present
