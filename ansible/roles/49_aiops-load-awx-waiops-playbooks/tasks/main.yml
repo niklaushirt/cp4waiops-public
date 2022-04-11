@@ -183,7 +183,7 @@
       "job_type": "run",
       "inventory": {{AWX_INVENTORY_ID}},
       "project": {{AWX_PROJECT_ID}},
-      "playbook": "ansible/10_install-cp4waiops_ai_manager_only_with_demo.yaml",
+      "playbook": "ansible/01_AIManager-base-install.yaml",
       "scm_branch": "",
       "extra_vars": "",
       "ask_variables_on_launch": "true",
@@ -207,7 +207,7 @@
       "job_type": "run",
       "inventory": {{AWX_INVENTORY_ID}},
       "project": {{AWX_PROJECT_ID}},
-      "playbook": "ansible/11_install-cp4waiops_event_manager.yaml",
+      "playbook": "ansible/04_EventManager-install.yaml",
       "scm_branch": "",
       "extra_vars": "",
       "ask_variables_on_launch": true,
@@ -229,7 +229,7 @@
       "job_type": "run",
       "inventory": {{AWX_INVENTORY_ID}},
       "project": {{AWX_PROJECT_ID}},
-      "playbook": "ansible/90_aiops-logins.yaml",
+      "playbook": "ansible/90_aiops-get-all-logins.yaml",
       "scm_branch": "",
       "extra_vars": "",
       "execution_environment": {{EXENV_ID}}
@@ -271,7 +271,7 @@
       "job_type": "run",
       "inventory": {{AWX_INVENTORY_ID}},
       "project": {{AWX_PROJECT_ID}},
-    "playbook": "ansible/18_aiops-demo-ui.yaml",
+    "playbook": "ansible/16_aiops-install-demo-ui.yaml",
       "scm_branch": "",
       "extra_vars": "",
       "execution_environment": {{EXENV_ID}}
@@ -292,7 +292,7 @@
       "job_type": "run",
       "inventory": {{AWX_INVENTORY_ID}},
       "project": {{AWX_PROJECT_ID}},
-    "playbook": "ansible/17_aiops-toolbox.yaml",
+    "playbook": "ansible/17_aiops-install-toolbox.yaml",
       "scm_branch": "",
       "extra_vars": "",
       "execution_environment": {{EXENV_ID}}
@@ -441,7 +441,7 @@
       "job_type": "run",
       "inventory": {{AWX_INVENTORY_ID}},
       "project": {{AWX_PROJECT_ID}},
-    "playbook": "ansible/80_load-topology-all.yaml",
+    "playbook": "ansible/80_create-topology-all-steps.yaml",
       "scm_branch": "",
       "extra_vars": "",
       "execution_environment": {{EXENV_ID}}
@@ -487,7 +487,7 @@
       "job_type": "run",
       "inventory": {{AWX_INVENTORY_ID}},
       "project": {{AWX_PROJECT_ID}},
-    "playbook": "ansible/85_training-all.yaml",
+    "playbook": "ansible/85_training-all-steps.yaml",
       "scm_branch": "",
       "extra_vars": "",
       "execution_environment": {{EXENV_ID}}

@@ -136,11 +136,12 @@ This gives you the Parameters for the Kafka Connection that you have to modify i
 ```bash
 export WAIOPS_NAMESPACE=cp4waiops
 export KAFKA_TOPIC_EVENTS=$(oc get kafkatopics -n $WAIOPS_NAMESPACE | grep -v cp4waiopscp4waiops|grep -v noi-integration | grep cp4waiops-cartridge-alerts-$EVENTS_TYPE| awk '{print $1;}')
-export KAFKA_TOPIC_LOGS=$(oc get kafkatopics -n $WAIOPS_NAMESPACE  | grep -v cp4waiopscp4waiops| grep cp4waiops-cartridge-logs-humio| awk '{print $1;}')
-export KAFKA_USER=$(oc get secret ibm-aiops-kafka-secret -n $WAIOPS_NAMESPACE --template={{.data.username}} | base64 --decode)
-export KAFKA_PWD=$(oc get secret ibm-aiops-kafka-secret -n $WAIOPS_NAMESPACE --template={{.data.password}} | base64 --decode)
+export KAFKA_TOPIC_LOGS=$(oc get kafkatopics -n $WAIOPS_NAMESPACE  | grep -v cp4waiopscp4waiops| grep cp4waiops-cartridge-logs-elk| awk '{print $1;}')
+export KAFKA_SECRET=$(oc get secret -n $WAIOPS_NAMESPACE |grep 'aiops-kafka-secret'|awk '{print$1}')
+export KAFKA_USER=$(oc get secret $KAFKA_SECRET -n $WAIOPS_NAMESPACE --template={{.data.username}} | base64 --decode)
+export KAFKA_PWD=$(oc get secret $KAFKA_SECRET -n $WAIOPS_NAMESPACE --template={{.data.password}} | base64 --decode)
 export KAFKA_BROKER=$(oc get routes iaf-system-kafka-0 -n $WAIOPS_NAMESPACE -o=jsonpath='{.status.ingress[0].host}{"\n"}'):443
-export CERT_ELEMENT=$(oc get secret -n $WAIOPS_NAMESPACE kafka-secrets  -o jsonpath='{.data.ca\.crt}'| base64 -d)
+export CERT_ELEMENT=$(oc get secret -n $WAIOPS_NAMESPACE kafka-secrets  -o 'go-template={{index .data "ca.crt"}}'| base64 -d)
 export TOKEN=123456789
 
 echo "KAFKA_BROKER: '"$KAFKA_BROKER"'"
@@ -185,7 +186,7 @@ data:
   MANAGER_ELEMENT: 'Manager'
 ```
 
-### Humio
+### elk
 
 ```yaml
 data:

@@ -119,7 +119,7 @@ if [[ $DO_COMM == "y" ||  $DO_COMM == "Y" ]]; then
       echo  ""    
       echo  ""
       echo "     --------------------------------------------------------------------------------------------"
-      echo "     📥 Copy the dumps from the Pod to the local filesystem"
+      echo "     📥 Copy the dumps from the Pod to the local filesystem (you can ignore rsync errors)"
 
 	oc rsync aiops-topology-cassandra-0:/tmp/tararam.md_metric_resource.csv $WORKING_DIR_DUMPS| sed 's/^/           /'
 	oc rsync aiops-topology-cassandra-0:/tmp/tararam.dt_metric_value.csv $WORKING_DIR_DUMPS| sed 's/^/           /'

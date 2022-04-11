@@ -9,7 +9,7 @@
 
 - name: AI MANAGER -              🌏 Get AI MANAGER LOGINS
   shell: |
-    export WAIOPS_NAMESPACE=$(oc get po -A|grep aimanager-operator |awk '{print$1}')
+    export WAIOPS_NAMESPACE=$(oc get po -A|grep aiops-orchestrator-controller |awk '{print$1}')
     export AIMANAGER_ROUTE=$(oc get route -n $WAIOPS_NAMESPACE cpd -o jsonpath={.spec.host})
     echo "                🌏 URL:      https://$AIMANAGER_ROUTE"
     echo ""

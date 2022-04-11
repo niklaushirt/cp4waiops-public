@@ -7,9 +7,9 @@
 # cleanup resources created by the product.  Please configure what you want to uninstall
 # in the uninstall-cp4waiops.props file first before running this script.
 
-. ./uninstall-cp4waiops.props
-. ./uninstall-cp4waiops-helper.sh
-. ./uninstall-cp4waiops-resource-groups.props
+. ./tools/99_uninstall/3.3/uninstall-cp4waiops.props
+. ./tools/99_uninstall/3.3/uninstall-cp4waiops-helper.sh
+. ./tools/99_uninstall/3.3/uninstall-cp4waiops-resource-groups.props
 
 HELP="false"
 SKIP_CONFIRM="false"

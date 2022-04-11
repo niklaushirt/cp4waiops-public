@@ -44,7 +44,7 @@ These are the high level steps that you need to execute to install the demo envi
 1. Install AI Manager
 
 	```bash
-	ansible-playbook ./ansible/01_AIManager-install.yaml -e ENTITLED_REGISTRY_KEY=<REGISTRY_TOKEN> 
+	ansible-playbook ./ansible/01_AIManager-base-install.yaml -e ENTITLED_REGISTRY_KEY=<REGISTRY_TOKEN> 
 	```
 
 1. [AI Manager Configuration](#3-ai-manager-configuration)
@@ -52,7 +52,7 @@ These are the high level steps that you need to execute to install the demo envi
 1. Launch Post Install
 
 	```bash
-	ansible-playbook ./ansible/02_AIManager-post.yaml
+	ansible-playbook ./ansible/02_AIManager-post-install.yaml
 	```
 
 1. [AI Manager Post Install Configuration](#4-ai-manager-post-install-configuration )
@@ -60,7 +60,7 @@ These are the high level steps that you need to execute to install the demo envi
 1. Launch Finalize Install
 
 	```bash
-	ansible-playbook ./ansible/03_AIManager-finalize.yaml
+	ansible-playbook ./ansible/03_AIManager-finalize-install.yaml
 	```
 
 1. [AI Manager Finalize Configuration](#5-ai-manager-finalize-configuration )
@@ -187,7 +187,7 @@ You need the following tools installed in order to follow through this guide:
 Just run:
 
 ```bash
-./13_install_prerequisites_mac.sh
+./10_install_prerequisites_mac.sh
 ```
 
 #### 2.2.2 On Ubuntu - Automated (preferred) 
@@ -195,14 +195,14 @@ Just run:
 Just run:
 
 ```bash
-./14_install_prerequisites_ubuntu.sh
+./11_install_prerequisites_ubuntu.sh
 ```
 
  
 
 <div style="page-break-after: always;"></div>
 
-## 2.3 Create Pull Secrets 
+## 2.3 Pull Secrets 
 
 
 
@@ -235,7 +235,7 @@ This allows the CP4WAIOPS images to be pulled from the IBM Container Registry.
 Or directly run:
 
 ```bash
-ansible-playbook ./ansible/01_AIManager-install.yaml -e ENTITLED_REGISTRY_KEY=<REGISTRY_TOKEN> 
+ansible-playbook ./ansible/01_AIManager-base-install.yaml -e ENTITLED_REGISTRY_KEY=<REGISTRY_TOKEN> 
 ```
 
 > This takes about an hour.
@@ -440,7 +440,7 @@ Do this for your applications (RobotShop by default)
 Or directly run:
 
 ```bash
-ansible-playbook ./ansible/02_AIManager-post.yaml
+ansible-playbook ./ansible/02_AIManager-post-install.yaml
 ```
 
 This will:
@@ -708,7 +708,7 @@ Training will be done for:
 Or directly run:
 
 ```bash
-ansible-playbook ./ansible/03_AIManager-finalize.yaml
+ansible-playbook ./ansible/03_AIManager-finalize-install.yaml
 ```
 
 <div style="page-break-after: always;"></div>
@@ -1064,7 +1064,7 @@ Installer should aready have done this.
 But if there still are problems, you can directly run: 
 
 ```bash
-ansible-playbook ./ansible/31_aiops-patch-ingress.yaml
+ansible-playbook ./ansible/31_aiops-create-valid-ingress-certificates.yaml
 ```
 
 

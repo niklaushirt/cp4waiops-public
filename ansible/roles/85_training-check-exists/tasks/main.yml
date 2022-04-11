@@ -16,11 +16,11 @@
 
 
 
-- name: CHECK LAD TRAINING EXISTS -       🚀 CHECK LAD EXISTS
+- name: CHECK LAD TRAINING EXISTS -       🔎 CHECK TRAINING DEFINITIONS EXISTS
   shell: |
     set -x
     export ROUTE=""
-    export WAIOPS_NAMESPACE=$(oc get po -A|grep aimanager-operator |awk '{print$1}')
+    export WAIOPS_NAMESPACE=$(oc get po -A|grep aiops-orchestrator-controller |awk '{print$1}')
 
     if [[ ! $ROUTE =~ "ai-platform-api" ]]; then
           #echo "       🛠️  Create Route"
@@ -65,7 +65,7 @@
 
 
     #echo "***************************************************************************************************************************************************"
-    #echo "   🛠️  Check if Model Exists: Log Anomaly Detection"
+    #echo "   🛠️  Check if Training Definitions already exist"
     #echo "     "	
     #echo "      📥 Launch Query for file: checkLAD.graphql"	
     #echo "     "
@@ -82,13 +82,17 @@
     -H "authorization: Bearer $ZEN_TOKEN"  \
     --data-binary "${JSON_QUERY}"  \
     --compressed)
-    TRAINING_DEFINITIONS=$(echo $result | jq ".data.getTrainingDefinitions")
-    if [ "${TRAINING_DEFINITIONS}" == "[]" ]; then
-      echo "false"
-    else
+    TRAINING_DEFINITIONS=$(echo $result | jq ".data.getTrainingDefinitions"|jq '. | length')
+    if [ $TRAINING_DEFINITIONS -gt "4" ]; then
       echo "true"
+    else
+      echo "false"
 
     fi
+
+
+
+
   register: output_string
   ignore_errors: yes
   args:
@@ -98,7 +102,7 @@
   debug: 
     var: output_string.stdout_lines
 
-- name: CHECK LAD TRAINING EXISTS -       ☑️  Determine if LAD model has been trained
+- name: CHECK LAD TRAINING EXISTS -       ☑️  Check if Training Definitions already exist
   set_fact: TRAINING_EXISTS={{output_string.stdout_lines[0]}}
 
 

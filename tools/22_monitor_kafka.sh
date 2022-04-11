@@ -37,7 +37,7 @@ echo "  Initializing......"
 
 
 
-export WAIOPS_NAMESPACE=$(oc get po -A|grep aimanager-operator |awk '{print$1}')
+export WAIOPS_NAMESPACE=$(oc get po -A|grep aiops-orchestrator-controller |awk '{print$1}')
 
 export LOG_TYPE=elk   # humio, elk, splunk, ...
 export EVENT_TYPE=noi   # humio, elk, splunk, ...
@@ -202,10 +202,12 @@ else
 fi
 
   oc extract secret/kafka-secrets -n $WAIOPS_NAMESPACE --keys=ca.crt --confirm
+  export KAFKA_SECRET=$(oc get secret -n $WAIOPS_NAMESPACE |grep 'aiops-kafka-secret'|awk '{print$1}')
 
-  export SASL_USER=$(oc get secret ibm-aiops-kafka-secret -n $WAIOPS_NAMESPACE --template={{.data.username}} | base64 --decode)
-  export SASL_PASSWORD=$(oc get secret ibm-aiops-kafka-secret -n $WAIOPS_NAMESPACE --template={{.data.password}} | base64 --decode)
+  export SASL_USER=$(oc get secret $KAFKA_SECRET -n $WAIOPS_NAMESPACE --template={{.data.username}} | base64 --decode)
+  export SASL_PASSWORD=$(oc get secret $KAFKA_SECRET -n $WAIOPS_NAMESPACE --template={{.data.password}} | base64 --decode)
   export BROKER=$(oc get routes iaf-system-kafka-0 -n $WAIOPS_NAMESPACE -o=jsonpath='{.status.ingress[0].host}{"\n"}'):443
+
 
 
 echo "***************************************************************************************************************************************************"

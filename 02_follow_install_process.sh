@@ -32,7 +32,7 @@ echo "**************************************************************************
 echo "  "
 echo "  "
 
-export WAIOPS_NAMESPACE=$(oc get po -A|grep operator-controller |awk '{print$1}')
+export WAIOPS_NAMESPACE=$(oc get po -A|grep aiops-orchestrator-controller |awk '{print$1}')
 
 while :
 do

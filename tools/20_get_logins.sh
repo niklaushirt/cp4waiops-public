@@ -53,8 +53,11 @@ export TEMP_PATH=~/aiops-install
 
 
 
-export WAIOPS_NAMESPACE=$(oc get po -A|grep aimanager-operator |awk '{print$1}')
+export WAIOPS_NAMESPACE=$(oc get po -A|grep aiops-orchestrator-controller |awk '{print$1}')
 export EVTMGR_NAMESPACE=$(oc get po -A|grep noi-operator |awk '{print$1}')
+
+: "${WAIOPS_NAMESPACE:=cp4waiops}"
+: "${EVTMGR_NAMESPACE:=noi}"
 
 CLUSTER_ROUTE=$(oc get routes console -n openshift-console | tail -n 1 2>&1 ) 
 CLUSTER_FQDN=$( echo $CLUSTER_ROUTE | awk '{print $2}')
@@ -128,7 +131,7 @@ fi
 
 
 
-EVTMGR_READY=$(oc get pod -n $EVTMGR_NAMESPACE | grep webgui-0|| true) 
+EVTMGR_READY=$(oc get pod -n $EVTMGR_NAMESPACE --ignore-not-found| grep webgui-0|| true) 
 if [[ $EVTMGR_READY =~ "2/2" ]]; 
 then
     echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
@@ -209,7 +212,7 @@ echo "    "
 echo "    "
 echo "    "
 
-TURBO_READY=$(oc get ns turbonomic || true) 
+TURBO_READY=$(oc get ns turbonomic --ignore-not-found|| true) 
 if [[ $TURBO_READY =~ "Active" ]]; 
 then
     echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
@@ -232,7 +235,7 @@ fi
 
 
 
-HUMIO_READY=$(oc get ns humio-logging || true) 
+HUMIO_READY=$(oc get ns humio-logging  --ignore-not-found|| true) 
 if [[ $HUMIO_READY =~ "Active" ]]; 
 then
 
@@ -261,7 +264,7 @@ fi
 
 
 
-ISTIO_READY=$(oc get ns istio-system || true) 
+ISTIO_READY=$(oc get ns istio-system  --ignore-not-found|| true) 
 if [[ $ISTIO_READY =~ "Active" ]]; 
 then
 
@@ -290,7 +293,7 @@ then
 fi
 
 
-AWX_READY=$(oc get ns awx || true) 
+AWX_READY=$(oc get ns awx  --ignore-not-found|| true) 
 if [[ $AWX_READY =~ "Active" ]]; 
 then
     echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
@@ -322,10 +325,30 @@ then
 fi
 
 
+ARGOCD_READY=$(oc get ns openshift-logging  --ignore-not-found|| true) 
+if [[ $ARGOCD_READY =~ "Active" ]]; 
+then
+      export ARGOCD_URL=$(oc get route -n  openshift-gitops  openshift-gitops-server -o jsonpath={.spec.host})
+      export ARGOCD_USER=admin
+      export ARGOCD_PWD=$(oc get secret -n openshift-gitops openshift-gitops-cluster -o "jsonpath={.data['admin\.password']}"| base64 --decode)
+
+      echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+      echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+      echo "    🚀 Connect to OpenShift GitOps to check your deployments"
+      echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+      echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+      echo "    "
+      echo "    🌏 URL:      https://$ARGOCD_URL"
+      echo "  "
+      echo "    🧔 User:       $ARGOCD_USER"
+      echo "    🔐 Password:   $ARGOCD_PWD"
+      echo "  "
+      echo "  "
+fi
 
 
 
-MIQ_READY=$(oc get ns manageiq || true) 
+MIQ_READY=$(oc get ns manageiq  --ignore-not-found|| true) 
 if [[ $MIQ_READY =~ "Active" ]]; 
 then
     echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
@@ -348,7 +371,7 @@ fi
 
 
 
-DEMO_READY=$(oc get ns robot-shop || true) 
+DEMO_READY=$(oc get ns robot-shop  --ignore-not-found|| true) 
 if [[ $DEMO_READY =~ "Active" ]]; 
 then
 
@@ -363,17 +386,7 @@ then
     echo "    " 
     echo "                🌏 APP URL:           http://$appURL/"
 
-    echo ""
-    echo ""
-    appURL=$(oc get routes -n kubetoy kubetoy  -o jsonpath="{['spec']['host']}")|| true
-
-    echo "            📥 Kubetoy:"
-    echo "    " 
-    echo "                🌏 APP URL:           http://$appURL/"
-    echo ""
-    echo ""
-    echo ""
-    echo ""
+  
 fi
 
 
@@ -502,8 +515,7 @@ echo "    "
 
 
 
-
-ELK_READY=$(oc get ns openshift-logging || true) 
+ELK_READY=$(oc get ns openshift-logging  --ignore-not-found|| true) 
 if [[ $ELK_READY =~ "Active" ]]; 
 then
     echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
@@ -559,7 +571,7 @@ then
 
 
 
-ROOK_READY=$(oc get ns rook-ceph || true) 
+ROOK_READY=$(oc get ns rook-ceph  --ignore-not-found|| true) 
 if [[ $ROOK_READY =~ "Active" ]]; 
 then
     echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"

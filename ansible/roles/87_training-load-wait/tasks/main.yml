@@ -40,9 +40,9 @@
   
 
 
-- name: TRAINING LOAD SNOW -       🧻 CLEANUP COMPLETED JOBS
+- name: TRAINING LOAD METRICS -       🧻 CLEANUP COMPLETED JOBS
   shell: |
-    oc delete pod  -n default --ignore-not-found $(oc get po -n default|grep load-snow-indexes|awk '{print$1}')
+    oc delete pod  -n default --ignore-not-found $(oc get po -n default|grep load-metric-cassandra|awk '{print$1}')
   register: ES_READY
   ignore_errors: yes
 

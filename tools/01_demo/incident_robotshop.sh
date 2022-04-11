@@ -49,7 +49,7 @@ echo "   -----------------------------------------------------------------------
 echo "    🔬 Getting Installation Namespace"
 echo "   ------------------------------------------------------------------------------------------------------------------------------"
 
-export WAIOPS_NAMESPACE=$(oc get po -A|grep aimanager-operator |awk '{print$1}')
+export WAIOPS_NAMESPACE=$(oc get po -A|grep aiops-orchestrator-controller |awk '{print$1}')
 echo "       ✅ OK - AI Manager:    $WAIOPS_NAMESPACE"
 
 
@@ -122,8 +122,9 @@ export KAFKA_TOPIC_EVENTS=$(oc get kafkatopics -n $WAIOPS_NAMESPACE | grep -v cp
 
 echo " "
 echo "     🔐 Get Kafka Password"
-export SASL_USER=$(oc get secret ibm-aiops-kafka-secret -n $WAIOPS_NAMESPACE --template={{.data.username}} | base64 --decode)
-export SASL_PASSWORD=$(oc get secret ibm-aiops-kafka-secret -n $WAIOPS_NAMESPACE --template={{.data.password}} | base64 --decode)
+export KAFKA_SECRET=$(oc get secret -n $WAIOPS_NAMESPACE |grep 'aiops-kafka-secret'|awk '{print$1}')
+export SASL_USER=$(oc get secret $KAFKA_SECRET -n $WAIOPS_NAMESPACE --template={{.data.username}} | base64 --decode)
+export SASL_PASSWORD=$(oc get secret $KAFKA_SECRET -n $WAIOPS_NAMESPACE --template={{.data.password}} | base64 --decode)
 export KAFKA_BROKER=$(oc get routes iaf-system-kafka-0 -n $WAIOPS_NAMESPACE -o=jsonpath='{.status.ingress[0].host}{"\n"}'):443
 echo " "
 
@@ -143,7 +144,7 @@ if [ "${OS}" == "darwin" ]; then
       export DATE_FORMAT_EVENTS="-v-60M +%Y-%m-%dT%H:%M"
 else
       # Suppose we're on a Linux flavour
-      export DATE_FORMAT_EVENTS="-d-60min +%Y-%m-%dT%H:%M:%S" 
+      export DATE_FORMAT_EVENTS="-d-60min +%Y-%m-%dT%H:%M" 
 fi
 
 

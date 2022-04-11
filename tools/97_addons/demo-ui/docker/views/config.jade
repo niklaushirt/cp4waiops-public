@@ -1,0 +1,34 @@
+extends bootstrap
+
+
+
+
+block content
+ p(style='font-size:50px;') 🔎 Configuration
+
+  p 
+  p
+  h4 KAFKA Parameters
+  table
+    tbody
+      tr
+        td   KafkaBroker:     
+        td #{kafkaBroker}
+      tr
+        td   KafkaUser:       
+        td #{kafkaUser}
+      tr
+        td   KafkaPWD:        
+        td **PROVIDED**
+      tr
+        td   KafkaTopic Events:
+        td #{kafkaTopicEvents}
+      tr
+        td   KafkaTopic Logs:
+        td #{kafkaTopicLogs}
+      tr
+        td   Log Iterations:
+        td #{iterations}
+      tr
+        td   Token:
+        td #{token}

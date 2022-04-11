@@ -1,0 +1,25 @@
+extends layout
+
+block title
+  h1 AIManager
+  p(style='font-size:30px;') Demo UI
+
+
+block navigation
+  p
+
+
+
+
+
+block content
+  p(style='font-size:50px;') ❗ Error, you must use your Access Token
+  p 
+  p 
+  p 
+  form(action='/login' method='GET')
+    input#exampleFormControlInput1.form-control(type='password' name='token' required='' placeholder='my-token')
+    button.btn.btn-danger.mb-3(type='reset') Reset
+    button.btn.btn-success.mb-3(type='submit') Authenticate
+
+

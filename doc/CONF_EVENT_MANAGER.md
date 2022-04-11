@@ -205,7 +205,7 @@ Then
 If you want to push the robot-shop events from Event Manager to AI Manager you have to install the Gateway:
 
 ```bash
-ansible-playbook ./ansible/46_aiops-post-gateway.yaml
+ansible-playbook ./ansible/18_aiops-post-gateway.yaml
 ```
 	
 ### 🚀 Next [Configure Ansible Tower Runbooks](./CONF_RUNBOOKS.md)

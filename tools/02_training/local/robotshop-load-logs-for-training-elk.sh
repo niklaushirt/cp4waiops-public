@@ -25,7 +25,7 @@ if [[  $WAIOPS_NAMESPACE =~ "" ]]; then
     echo "   ------------------------------------------------------------------------------------------------------------------------------"
     echo "   🔬 Getting Installation Namespace"
     echo "   ------------------------------------------------------------------------------------------------------------------------------"
-    export WAIOPS_NAMESPACE=$(oc get po -A|grep aimanager-operator |awk '{print$1}')
+    export WAIOPS_NAMESPACE=$(oc get po -A|grep aiops-orchestrator-controller |awk '{print$1}')
     echo "       ✅ OK - AI Manager:    $WAIOPS_NAMESPACE"
 fi
 

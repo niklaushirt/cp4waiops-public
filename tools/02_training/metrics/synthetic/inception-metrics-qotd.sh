@@ -59,7 +59,7 @@ echo "   -----------------------------------------------------------------------
 echo "   ----------------------------------------------------------------------------------------------------------------------------------------"
 echo "     🔐  Getting credentials"
 echo "   ----------------------------------------------------------------------------------------------------------------------------------------"
-export WAIOPS_NAMESPACE=$(oc get po -A|grep aimanager-operator |awk '{print$1}')
+export WAIOPS_NAMESPACE=$(oc get po -A|grep aiops-orchestrator-controller |awk '{print$1}')
 
 oc project $WAIOPS_NAMESPACE >/dev/null 2>/dev/null
 

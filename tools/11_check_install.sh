@@ -96,7 +96,7 @@ function check_array(){
 }
 
 
-export WAIOPS_NAMESPACE=$(oc get po -A|grep aimanager-operator |awk '{print$1}')
+export WAIOPS_NAMESPACE=$(oc get po -A|grep aiops-orchestrator-controller |awk '{print$1}')
 export EVTMGR_NAMESPACE=$(oc get po -A|grep noi-operator |awk '{print$1}')
 
 
@@ -416,7 +416,7 @@ echo "  Initializing......"
 
       if  ([[ $ZEN_FAILED == "" ]]); 
       then 
-            echo "      ⭕ Zen has errors"; 
+            echo "      ⭕ Zen has errors (this might not necessarily represent a problem)"; 
             echo "$ZEN_ERRORS"
             echo ""
       else
@@ -503,4 +503,4 @@ echo "  Initializing......"
       echo "--------------------------------------------------------------------------------------------"
       echo "🔎 Check Error Events"
       echo "--------------------------------------------------------------------------------------------"
-      oc get events -A|grep -v Normal
+      oc get events -A|grep Error

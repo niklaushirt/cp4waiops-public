@@ -5,6 +5,9 @@
 # Open Doc
 # --------------------------------------------------------------------------------------------------------------------------------------
 # *************************************************************************************************************************************************
+- name: PREREQUISITES -      👓 Load parameters
+  include_vars: ../00_config_cp4waiops.yaml
+
 
 
 - name: LOGGING -              🟢 WRITE TO LOGFILE
@@ -19,7 +22,7 @@
 
 - name: DOCUMENTATION -          🌏 Open Documentation
   shell: |
-    export URL{{URL_STEP_1}}
+    export URL={{URL_STEP_1}}
     if [ -x "$(command -v open)" ]; then
       open $URL
     else 

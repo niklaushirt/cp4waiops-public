@@ -37,7 +37,7 @@ echo "  Initializing......"
 
 
 
-export WAIOPS_NAMESPACE=$(oc get po -A|grep aimanager-operator |awk '{print$1}')
+export WAIOPS_NAMESPACE=$(oc get po -A|grep aiops-orchestrator-controller |awk '{print$1}')
 
 
 export LOG_TYPE=elk   # humio, elk, splunk, ...

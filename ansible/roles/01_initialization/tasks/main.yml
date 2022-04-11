@@ -68,6 +68,7 @@
     - " OCP Major Version:                {{OCP_MAJOR_VERSION}}"
     - " Storage Class File Override:      {{STORAGECLASS_FILE_OVERRIDE}}"
     - " Storage Class Block Override:     {{STORAGECLASS_BLOCK_OVERRIDE}}"
+    - " Storage Class InfraManagement:    {{INFRA_STORAGE_CLASS_FILE}}"
     - ""
     - "** Additional Content *************************************************************************"
     - "  LDAP Domain:                     {{LDAP_DOMAIN}}"
@@ -87,9 +88,9 @@
 # --------------------------------------------------------------------------------------------------------------------------------------
 # *************************************************************************************************************************************************
 
-- name: PREREQUISITES -      🔐 Check Entitlement provided
-  fail: msg="Please provide IBM Entitlement Pull Secret Key/Token (Get it from here https://myibm.ibm.com/products-services/containerlibrary)"
-  when: "ENTITLED_REGISTRY_KEY is not defined"
+# - name: PREREQUISITES -      🔐 Check Entitlement provided
+#   fail: msg="Please provide IBM Entitlement Pull Secret Key/Token (Get it from here https://myibm.ibm.com/products-services/containerlibrary)"
+#   when: "ENTITLED_REGISTRY_KEY is not defined"
 
 
 # *************************************************************************************************************************************************
@@ -97,21 +98,21 @@
 # Login
 # --------------------------------------------------------------------------------------------------------------------------------------
 # *************************************************************************************************************************************************
-- name: LOGIN -              🔐 Check Login credentials
-  fail: msg="If you select auto-login, you have to provide Cluster credentials"
-  when: OCP_LOGIN and OCP_URL=="not_configured" and OCP_TOKEN=="not_configured"
+# - name: LOGIN -              🔐 Check Login credentials
+#   fail: msg="If you select auto-login, you have to provide Cluster credentials"
+#   when: OCP_LOGIN and OCP_URL=="not_configured" and OCP_TOKEN=="not_configured"
 
 
-- name: LOGIN -              👨‍💼 Login to cluster
-  shell: "oc login --token={{ OCP_TOKEN }} --server={{ OCP_URL }}"   
-  register: k8s_auth_results
-  when: OCP_LOGIN == true
+# - name: LOGIN -              👨‍💼 Login to cluster
+#   shell: "oc login --token={{ OCP_TOKEN }} --server={{ OCP_URL }}"   
+#   register: k8s_auth_results
+#   when: OCP_LOGIN == true
 
 
 
 # *************************************************************************************************************************************************
 # --------------------------------------------------------------------------------------------------------------------------------------
-# Login
+# Check Platform
 # --------------------------------------------------------------------------------------------------------------------------------------
 # *************************************************************************************************************************************************
 - name: PLATFORM -           🌏 Get Cluster FQDN

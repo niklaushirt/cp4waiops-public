@@ -96,9 +96,9 @@ function check_array(){
 }
 
 
-export WAIOPS_NAMESPACE=$(oc get po -A|grep aimanager-operator |awk '{print$1}')
+export WAIOPS_NAMESPACE=$(oc get po -A|grep aiops-orchestrator-controller |awk '{print$1}')
 
-export WAIOPS_NAMESPACE=$(oc get po -A|grep aimanager-operator |awk '{print$1}')
+export WAIOPS_NAMESPACE=$(oc get po -A|grep aiops-orchestrator-controller |awk '{print$1}')
 export EVTMGR_NAMESPACE=$(oc get po -A|grep noi-operator |awk '{print$1}')
 
 
@@ -553,7 +553,6 @@ menu_check_install_aimgr () {
             "ibm-aiops-elastic-admin-secret"
             "ibm-aiops-elastic-secret"
             "ibm-aiops-flink-secret"
-            "ibm-aiops-kafka-secret"
             "ibm-aiops-redis-secret"
             "zen-truststore"
             "aimanager-aio-tls"

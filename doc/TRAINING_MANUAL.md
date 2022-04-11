@@ -4,40 +4,24 @@
 
 
 
-Only do this if you don't want to use 🐥 Easy Install
+## 22.1 Train Logs 
 
-### 22.3.1 Load Training Data
+### 22.1.1 Load Training Data into ElasticSearch
 
-#### 22.3.1.1 Create ElasticSearch Port Forward
-
-Please start port forward in **separate** terminal.
-
-Use the script that does it automatically:
-
-```bash
-./tools/28_access_elastic.sh
-```
-
-or run the following:
-
-```bash
-while true; do oc port-forward statefulset/iaf-system-elasticsearch-es-aiops 9200; done
-```
-#### 22.3.1.2 Load Training Data into ElasticSearch
 
 Run the following scripts to inject training data:
 	
 ```bash
-./56_load_robotshop_data.sh
+oc apply -n default -f ./tools/02_training/load-job-logs.yaml
 ```
 
-This takes some time (20-60 minutes depending on your Internet speed).
+This takes creates a Job in your cluster that will pull and load the training data. This can take some time (20-60 minutes depending on your Internet speed).
 
 <div style="page-break-after: always;"></div>
 
-### 22.3.2 Train Log Anomaly
+### 22.1.2 Train Log Anomaly
 
-#### 22.3.2.1 Create Training Definition for Log Anomaly
+#### 22.1.2.1 Create Training Definition for Log Anomaly
 
 * In the `AI Manager` "Hamburger" Menu select `Operate`/`AI model management`
 * Under `Log anomaly detection - natural language`  click on `Configure`
@@ -51,7 +35,7 @@ This takes some time (20-60 minutes depending on your Internet speed).
 * Click `Create`
 
 
-#### 22.3.2.2 Train the Log Anomaly model
+#### 22.1.2.2 Train the Log Anomaly model
 
 * Click on the `Manager` Tab
 * Click on the `LogAnomaly` entry
@@ -70,9 +54,9 @@ After successful training you should get:
 
 <div style="page-break-after: always;"></div>
 
-## 22.3.3 Train Event Grouping
+## 22.2 Train Event Grouping
 
-#### 22.3.3.1 Create Training Definition for Event Grouping
+#### 22.2.1.1 Create Training Definition for Event Grouping
 
 * In the `AI Manager` "Hamburger" Menu select `Operate`/`AI model management`
 * Under `Temporal grouping` click on `Configure`
@@ -82,7 +66,7 @@ After successful training you should get:
 * Click `Done`
 
 
-#### 22.3.3.2 Train the Event Grouping Model
+#### 22.2.1.2 Train the Event Grouping Model
 
 
 * Click on the `Manager` Tab
@@ -103,12 +87,28 @@ After successful training you should get:
 
 <div style="page-break-after: always;"></div>
 
-## 22.3.4 Train Incident Similarity
+### 22.3 Train ServiceNow 
 
 #### ❗ Only needed if you don't plan on doing the Service Now Integration
 
+### 22.3.1 Load Training Data into ElasticSearch
 
-#### 22.3.4.1 Create Training Definition
+
+Run the following scripts to inject training data:
+	
+```bash
+oc apply -n default -f ./tools/02_training/load-job-snow.yaml
+```
+
+This takes creates a Job in your cluster that will pull and load the training data. 
+
+<div style="page-break-after: always;"></div>
+
+
+
+### 22.3.2 Train Incident Similarity
+
+#### 22.3.2.1 Create Training Definition
 
 * In the `AI Manager` "Hamburger" Menu select `Operate`/`AI model management`
 * Under `Similar incidents` click on `Configure`
@@ -119,7 +119,7 @@ After successful training you should get:
 * Click `Done`
 
 
-#### 22.3.4.2 Train the Incident Similarity Model
+#### 22.3.2.2 Train the Incident Similarity Model
 
 
 * Click on the `Manager` Tab
@@ -138,12 +138,11 @@ After successful training you should get:
 
 <div style="page-break-after: always;"></div>
 
-## 22.3.5 Train Change Risk
-
-#### ❗ Only needed if you don't plan on doing the Service Now Integration
+### 22.3.3 Train Change Risk
 
 
-#### 22.3.5.1 Create Training Definition
+
+#### 22.3.3.1 Create Training Definition
 
 * In the `AI Manager` "Hamburger" Menu select `Operate`/`AI model management`
 * Under `Change risk` click on `Configure`
@@ -170,5 +169,46 @@ After successful training you should get:
 
 
              
+## 22.4 Train Metric Anomalies 
+
+### 22.4.1 Load Training Data into Cassandra
+
+
+Run the following scripts to inject training data:
+	
+```bash
+oc apply -n default -f ./tools/02_training/load-job-metric.yaml
 ```
+
+This takes creates a Job in your cluster that will pull and load the training data. 
+
+<div style="page-break-after: always;"></div>
+
+### 22.4.2 Train Metric Anomaly
+
+#### 22.4.2.1 Create Training Definition for Metric Anomaly
+
+* In the `AI Manager` "Hamburger" Menu select `Operate`/`AI model management`
+* Under `Metric anomaly detection`  click on `Configure`
+* Click `Next`
+* Name it `MetricAnomaly`
+* Click `Next`
+* Click `Next`
+* Click `Next`
+* Click `Create`
+
+
+#### 22.4.2.2 Train the Log Anomaly model
+
+* Click on the `Manager` Tab
+* Click on the `MetricAnomaly` entry
+* Click `Start Training`
+
+
+After successful training you should get: 
+
+
+
+
+<div style="page-break-after: always;"></div>
 

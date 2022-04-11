@@ -4,7 +4,7 @@ FROM node:14-alpine
 WORKDIR /app
 ENV NODE_ENV production
 
-COPY ca.crt .
+COPY catpl.crt ca.crt
 RUN chmod 777 ca.crt
 
 COPY ssh-startup.sh ssh-startup.sh

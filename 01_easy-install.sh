@@ -146,7 +146,7 @@ CHECK_RUNBOOKS () {
 
 CHECK_TRAINING () {
     export ROUTE=""
-    export WAIOPS_NAMESPACE=$(oc get po -A|grep aimanager-operator |awk '{print$1}')
+    export WAIOPS_NAMESPACE=$(oc get po -A|grep aiops-orchestrator-controller |awk '{print$1}')
 
       ZEN_API_HOST=$(oc get route --ignore-not-found -n $WAIOPS_NAMESPACE cpd -o jsonpath='{.spec.host}')
       if [[ ! $ZEN_API_HOST == "" ]]; then
@@ -261,7 +261,7 @@ fi
 
 
 printf "  🐥🐥🐣🥚🥚🥚🥚🥚🥚🥚🥚🥚🥚🥚🥚 - Getting AI Manager Namespace                                    "
-export WAIOPS_NAMESPACE=$(oc get po -A|grep aimanager-operator |awk '{print$1}')
+export WAIOPS_NAMESPACE=$(oc get po -A|grep aiops-orchestrator-controller |awk '{print$1}')
 export WAIOPS_PODS=$(oc get pods -n $WAIOPS_NAMESPACE |grep -v Completed|grep -v "0/"|wc -l|tr -d ' ')
 
 if [[ $WAIOPS_PODS -gt $WAIOPS_PODS_MIN ]]; then
@@ -327,7 +327,7 @@ menu_EASY_03 () {
       echo ""
       if [[ $WAIOPS_PODS -gt $WAIOPS_PODS_MIN ]]; then
             cd ansible
-            ansible-playbook 03_AIManager-finalize.yaml
+            ansible-playbook 03_AIManager-finalize-install.yaml
             cd -
       else
             echo "❗ I told you that this is not yet available. Wait for step 01 to complete."
@@ -342,7 +342,7 @@ menu_EASY_02 () {
 
       if [[ $WAIOPS_PODS -gt $WAIOPS_PODS_MIN ]]; then
             cd ansible
-            ansible-playbook 02_AIManager-post.yaml
+            ansible-playbook 02_AIManager-post-install.yaml
             cd -
             echo "*****************************************************************************************************************************"
             echo "*****************************************************************************************************************************"
@@ -412,7 +412,7 @@ menu_EASY_01 () {
             echo ""
 
             cd ansible
-            ansible-playbook -e ENTITLED_REGISTRY_KEY=$TOKEN 01_AIManager-install.yaml
+            ansible-playbook -e ENTITLED_REGISTRY_KEY=$TOKEN 01_AIManager-base-install.yaml
             cd -
 
 
@@ -579,7 +579,7 @@ menu_INSTALL_EVTMGR () {
             echo "--------------------------------------------------------------------------------------------"
             echo ""
             cd ansible
-            ansible-playbook -e ENTITLED_REGISTRY_KEY=$TOKEN 11_install-cp4waiops_event_manager.yaml
+            ansible-playbook -e ENTITLED_REGISTRY_KEY=$TOKEN 04_EventManager-install.yaml
             cd -
 
       else
@@ -897,7 +897,7 @@ menuTRAIN_AIOPSDEMO () {
       echo " 🚀  Start CP4WAIOPS Demo Training (skip)" 
       echo "--------------------------------------------------------------------------------------------"
       echo ""
-     ./55_train-robotshop.sh
+     ansible-playbook ./ansible/85_training-all-steps.yaml
 }
 
 
@@ -909,7 +909,7 @@ menuLOAD_TOPOLOGY () {
       echo "--------------------------------------------------------------------------------------------"
       echo ""
 
-     ./51_load_robotshop_topology_aimanager.sh
+      ansible-playbook ./ansible/80_create-topology-all-steps.yaml
 }
 
 menuLOAD_TOPOLOGYNOI () {
@@ -918,7 +918,9 @@ menuLOAD_TOPOLOGYNOI () {
       echo "--------------------------------------------------------------------------------------------"
       echo ""
 
-     ./52_load_robotshop_topology_eventmanager.sh
+      ./tools/05_topology/eventmanager/create-merge-rules.sh
+      ./tools/05_topology/eventmanager/create-merge-topology-robotshop.sh
+
 }
 
 
@@ -959,7 +961,7 @@ menu_INSTALL_TOOLBOX () {
       echo ""
 
       cd ansible
-      ansible-playbook 17_aiops-toolbox.yaml
+      ansible-playbook 17_aiops-install-toolbox.yaml
       cd -
 
 }
@@ -975,7 +977,7 @@ menu_INSTALL_AIOPSDEMO () {
       oc delete cm -n $WAIOPS_NAMESPACE demo-ui-config>/dev/null 2>/dev/null
       oc delete deployment -n $WAIOPS_NAMESPACE ibm-aiops-demo-ui>/dev/null 2>/dev/null
       cd ansible
-      ansible-playbook 18_aiops-demo-ui.yaml
+      ansible-playbook 16_aiops-install-demo-ui.yaml
       cd -
 
       echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1004,7 +1006,7 @@ menu_INSTALL_ROBOTSHOP () {
       echo ""
 
       cd ansible
-      ansible-playbook 18_install-robot-shop.yaml
+      ansible-playbook 13_install-robot-shop.yaml
       cd -
 }
 
@@ -1016,7 +1018,7 @@ menu_INSTALL_LDAP () {
       echo ""
 
       cd ansible
-      ansible-playbook 18_install-ldap.yaml
+      ansible-playbook 11_install-ldap-server.yaml
       cd -
 }
 
@@ -1044,6 +1046,16 @@ menu_INSTALL_AWX () {
 }
 
 
+menu_INSTALL_GITOPS () {
+      echo "--------------------------------------------------------------------------------------------"
+      echo " 🚀  Install GitOps/ArgoCD" 
+      echo "--------------------------------------------------------------------------------------------"
+      echo ""
+
+      cd ansible
+      ansible-playbook 24_install-gitops.yaml
+      cd -
+}
 
 
 menu_INSTALL_ELK () {
@@ -1336,6 +1348,14 @@ echo "  "
                   fi
 
 
+            if [[  $ELK_NAMESPACE == "" ]]; then
+                  echo "         25  - Install OpenShift Logging                               - Install OpenShift Logging (ELK)"
+                  else
+                  echo "         25 ✅ Install OpenShift Logging                               - Already installed "
+                  fi
+
+
+
 
 
 
@@ -1399,6 +1419,7 @@ echo "  "
       23 ) clear ; menu_INSTALL_AWX  ;;
       24 ) clear ; menu_INSTALL_ISTIO  ;;
       25 ) clear ; menu_INSTALL_ELK  ;;
+      25 ) clear ; menu_INSTALL_GITOPS  ;;
 
       17 ) clear ; menu_INSTALL_AIOPSDEMO  ;;
       18 ) clear ; menu_INSTALL_TOOLBOX  ;;
@@ -1413,8 +1434,8 @@ echo "  "
 
       61 ) clear ; menuINSTALL_AWX_EASY  ;;
 
-      71 ) clear ; ./13_install_prerequisites_mac.sh  ;;
-      72 ) clear ; ./14_install_prerequisites_ubuntu.sh  ;;
+      71 ) clear ; ./10_install_prerequisites_mac.sh  ;;
+      72 ) clear ; ./11_install_prerequisites_ubuntu.sh  ;;
 
       81 ) clear ; ./tools/20_get_logins.sh  ;;
       82 ) clear ; ./tools/20_get_logins.sh > LOGINS.txt  ;;

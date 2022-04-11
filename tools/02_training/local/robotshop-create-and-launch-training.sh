@@ -30,7 +30,7 @@ echo ""
 
 echo "  ***************************************************************************************************************************************************"
 echo "   🛠️  Get Namespace"
-export WAIOPS_NAMESPACE=$(oc get po -A|grep aimanager-operator |awk '{print$1}')
+export WAIOPS_NAMESPACE=$(oc get po -A|grep aiops-orchestrator-controller |awk '{print$1}')
 oc project $WAIOPS_NAMESPACE >/tmp/templog.txt 2>&1
 echo "       Namespace: $WAIOPS_NAMESPACE"
 echo ""

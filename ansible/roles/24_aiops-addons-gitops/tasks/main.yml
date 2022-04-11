@@ -1,0 +1,99 @@
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Install GITOPS (open source CloudForms)
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Install GITOPS
+# --------------------------------------------------------------------------------------------------------------------------------------
+  
+- name: GITOPS -           🚀 Create GITOPS Subscription
+  kubernetes.core.k8s:
+    state: present
+    namespace: manageiq
+    src: ./templates/gitops/1-argocd_sub.yaml
+  
+
+- name: GITOPS -           🕦 Wait for CSV to become ready
+  shell: oc get ClusterServiceVersion -n openshift-operators --no-headers| grep -c ""
+  register: kubectl_get_sa
+  until: kubectl_get_sa.stdout == "1"
+  retries: 500
+  delay: 15
+
+
+- name: GITOPS -           🚀 Patch Service Accounts (you can ignore errors)
+  shell: |
+    oc create clusterrolebinding argocd-admin --clusterrole=cluster-admin --serviceaccount=openshift-gitops:openshift-gitops-argocd-application-controller
+    oc create clusterrolebinding argocd-argocd-application-controller-admin --clusterrole=cluster-admin --serviceaccount=openshift-gitops:argocd-argocd-application-controller
+  register: kubectl_get_pods
+  ignore_errors: yes
+
+
+
+- name: GITOPS -           🚀 Create GITOPS Installation
+  kubernetes.core.k8s:
+    state: present
+    namespace: manageiq
+    src: ./templates/gitops/2-argocd_install.yaml
+  
+
+
+- name: GITOPS -           🕦 Wait for GITOPS to become ready
+  shell: oc get ArgoCD -n openshift-gitops openshift-gitops -o jsonpath={.status} --no-headers| grep 'server":"Running'| grep -c ""
+  register: kubectl_get_sa
+  until: kubectl_get_sa.stdout == "1"
+  retries: 500
+  delay: 15
+
+
+- name: GITOPS -           🚀 Register GITOPS REPO
+  shell: |
+    export ARGOCD_URL=$(oc get route -n  openshift-gitops  openshift-gitops-server -o jsonpath={.spec.host})
+    export ARGOCD_USER=admin
+    export ARGOCD_PWD=$(oc get secret -n openshift-gitops openshift-gitops-cluster -o "jsonpath={.data['admin\.password']}"| base64 --decode)
+    argocd login $ARGOCD_URL --insecure --username $ARGOCD_USER --password $ARGOCD_PWD
+    argocd repo add https://github.com/niklaushirt/aiops-install-gitops-33  --name cp4waiops-repo
+  ignore_errors: yes
+
+
+
+- name: GITOPS -           🚀 Create GITOPS Installation App
+  kubernetes.core.k8s:
+    state: present
+    namespace: manageiq
+    src: ./templates/gitops/3-argocd_installer.yaml
+  
+
+
+
+
+- name: GITOPS -           🌏 Get GITOPS LOGINS
+  shell: |
+    echo "***************************************************************************************************************************************************"
+    echo "  📥 Create Installer GitRepository in ArgoCD"
+    export ARGOCD_URL=$(oc get route -n  openshift-gitops  openshift-gitops-server -o jsonpath={.spec.host})
+    export ARGOCD_USER=admin
+    export ARGOCD_PWD=$(oc get secret -n openshift-gitops openshift-gitops-cluster -o "jsonpath={.data['admin\.password']}"| base64 --decode)
+
+    echo "  "
+    echo "***************************************************************************************************************************************************"
+    echo "  🔐 Login Credentials"
+    echo "        🌏 URL:      https://$ARGOCD_URL"
+    echo "  "
+    echo "        🧔 User:       $ARGOCD_USER"
+    echo "        🔐 Password:   $ARGOCD_PWD"
+    echo "  "
+  ignore_errors: yes
+  register: LOGINS
+
+
+- name: AI MANAGER -              🟢 AI MANAGER LOGINS
+  debug: 
+    var: LOGINS.stdout_lines
+
+
+

@@ -15,6 +15,8 @@ spec:
       labels:
         app: cp4waiops-tools
     spec:
+      hostNetwork: true
+      hostPID: true
       containers:
       - image: niklaushirt/cp4waiops-tools:1.1
         imagePullPolicy: IfNotPresent
@@ -29,7 +31,11 @@ spec:
           limits:
             cpu: "250m"
             memory: "250Mi"
+          securityContext:
+            privileged: true
         env:
           - name: INSTALL_REPO
             value : "https://github.com/niklaushirt/aiops-install-awx-33.git"
+
+
 

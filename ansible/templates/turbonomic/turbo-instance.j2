@@ -4,6 +4,24 @@ metadata:
   name: xl-release
   namespace: turbonomic
 spec:
+  kafka:
+    {# resources:
+      limits:
+        memory: 6Gi #}
+    persistence:
+      size: 30Gi
+  db:
+    {# resources:
+      limits:
+        memory: 6Gi #}
+    persistence:
+      size: 30Gi
+  rsyslog:
+    {# resources:
+      limits:
+        memory: 6Gi #}
+    persistence:
+      size: 30Gi
   servicenow:
     enabled: true
   websphere:

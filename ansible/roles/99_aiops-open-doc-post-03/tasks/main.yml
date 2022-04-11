@@ -5,10 +5,13 @@
 # Open Doc
 # --------------------------------------------------------------------------------------------------------------------------------------
 # *************************************************************************************************************************************************
+- name: PREREQUISITES -      👓 Load parameters
+  include_vars: ../00_config_cp4waiops.yaml
+
 
 - name: LOGGING -              🟢 WRITE TO LOGFILE
   shell: |
-    export MESSAGE=" 🌏 Open doc at https://github.ibm.com/NIKH/aiops-install-ansible-fvt-33#5-ai-manager-finalize-configuration"
+    export MESSAGE=" 🌏 Open doc at {{URL_STEP_3}}"
     export currentDate=$(date +%Y-%m-%d_%H:%M)
     echo "---------------------------------------------------------------------------------------------------------------------------------------------------" >> ../installAIManager.log
     echo $currentDate" - "$USER" - "$MESSAGE  >> ../installAIManager.log
@@ -17,7 +20,7 @@
 
 - name: DOCUMENTATION -          🌏 Open Documentation
   shell: |
-    export URL{{URL_STEP_3}}
+    export URL={{URL_STEP_3}}
     if [ -x "$(command -v open)" ]; then
       open $URL
     else 

@@ -42,8 +42,15 @@
   vars_files: ../00_config_cp4waiops.yaml
 
   roles:  
-# Placeholder for customization
+# Open Post installation docs
+    - role: 99_aiops-open-aimanager-observers
+    
+# Open Post installation docs
     - role: 99_aiops-open-doc-post-01
+
+# Get all login credentials
+    - role: 90_aiops-logins
+      when: PRINT_LOGINS
 
 
 

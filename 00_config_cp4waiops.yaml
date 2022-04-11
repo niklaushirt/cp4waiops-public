@@ -107,8 +107,8 @@ STORAGE_CLASS_TURBO: ibmc-block-gold
 # Humio Storage Class (ibmc-block-gold, rook-cephfs, nfs-client, ...)
 STORAGE_CLASS_HUMIO: ibmc-block-gold
 
-
-
+# Storage Class for Infra Management (must be RWX)
+INFRA_STORAGE_CLASS_FILE: ibmc-file-gold-gid
 
 # *************************************************************************************************************************************************
 # --------------------------------------------------------------------------------------------------------------------------------------
@@ -201,7 +201,8 @@ OCP_MAJOR_VERSION: automatic
 # *************************************************************************************************************************************************
 
 # Name of the CP4WAIOPS instance
-WAIOPS_NAME: ibm-aiops
+#WAIOPS_NAME: ibm-aiops
+WAIOPS_NAME: ibm-cp-watson-aiops
 #WAIOPS_NAME: ibm-cp-watson-aiops
 # Create externally accessible Route for Topology
 CREATE_TOPO_ROUTE: true
@@ -234,7 +235,7 @@ EVTMGR_NS_MIN_PODS_FINAL: 70
 # IBM Entitled Registry
 ENTITLED_REGISTRY: cp.icr.io
 ENTITLED_REGISTRY_USER: cp
-ENTITLED_REGISTRY_KEY: TOKEN
+#ENTITLED_REGISTRY_KEY: TOKEN
 CATALOG_IMAGE: icr.io/cpopen/ibm-operator-catalog:latest
 
 
@@ -437,9 +438,9 @@ URL_STEP_3: https://github.ibm.com/NIKH/aiops-install-ansible-fvt-33#5-ai-manage
 # CATALOG_IMAGE: cp.stg.icr.io/cp/ibm-watson-aiops-catalog:v3.3.0-20220318.1607-5b33fc8b1
 
 
-#ENTITLED_REGISTRY: hyc-katamari-cicd-team-docker-local.artifactory.swg-devops.com
-#ENTITLED_REGISTRY_USER: nikh@ch.ibm.com
-#CATALOG_IMAGE: hyc-katamari-cicd-team-docker-local.artifactory.swg-devops.com/katamari/relatedimages/ibm-watson-aiops-catalog:v3.3.0-20220318.1607-5b33fc8b1
+# ENTITLED_REGISTRY: hyc-katamari-cicd-team-docker-local.artifactory.swg-devops.com
+# ENTITLED_REGISTRY_USER: nikh@ch.ibm.com
+# CATALOG_IMAGE: hyc-katamari-cicd-team-docker-local.artifactory.swg-devops.com/katamari/relatedimages/ibm-watson-aiops-catalog:ibm-watson-aiops-catalog:v3.3.1-20220401.0402-d8321a862
 
 #CATALOG_IMAGE: hyc-katamari-cicd-team-docker-local.artifactory.swg-devops.com/katamari/relatedimages/ibm-watson-aiops-catalog:v3.3.0-20220302.0400-3b4003642
 #CATALOG_IMAGE: hyc-katamari-cicd-team-docker-local.artifactory.swg-devops.com/katamari/relatedimages/ibm-watson-aiops-catalog:v0.1.0-20220228.0226-9683f80a9

@@ -1,0 +1,78 @@
+extends bootstrap
+
+
+
+block content
+  p(style='font-size:50px;') 🛠️ Usage
+  h3#accessing-the-web-ui Accessing the Web UI
+  p
+    | You can access the Web UI via the external Route that you can determine like this:
+  pre.
+    oc get route -n cp4waiops cp4waiops-demo-ui  -o jsonpath={.spec.host}
+
+  p You have to use the Token to access the UI.
+  h3#using-the-api Using the API
+  p The Demo APIs are available at 
+  ul
+    li
+      code http://<YOUR-CLUSTER>/demo
+      |   - create Events and Log Anomalies
+    li
+      code http://<YOUR-CLUSTER>/demo_event
+      |  - create onyl Events
+    li
+      code http://<YOUR-CLUSTER>/demo_log
+      | - create only Log Anomalies
+  p
+    | They have to be called with the 
+    code POST
+    |  Method and the security 
+    code token
+    |  (defined in the ConfigMap) has to be provided in the Header.
+  p The following example we will create Events and Log Anomalies :
+  pre.
+    curl -X "POST" "http://localhost:8080/demo" -H 'token: my-token' 
+
+  h3#content-format Content format
+  p
+    | You can have a look at the ConfigFile for examples of content (Events and Logs) to be injected.
+  h4#events Events
+  p For Events you have to use the following JSON Structure:
+  pre.
+    {
+        "events": [{
+            "Node": "mysql-github",
+            "NodeAlias": "github",
+            "Manager": "Github",
+            "AlertGroup": "robot-shop",
+            "Severity": 2,
+            "Summary": "[Git] Commit in repository robot-shop by Niklaus Hirt on file robot-shop.yaml - New Memory Limits",
+            "URL": "https://pirsoscom.github.io/git-commit-robot.html"
+            }, {
+            "Node": "mysql-instana",
+            "NodeAlias": "mysql",
+            "Manager": "Instana",
+            "AlertGroup": "robot-shop",
+            "Severity": 3,
+            "Summary": "[Instana] MySQL - change detected - The value **resources/limits** has changed",
+            "URL": "https://pirsoscom.github.io/INSTANA_CHANGE_ROB.html"
+            }
+        }]
+    }
+
+  p Then merge it to a one line string:
+  pre.
+    DEMO_EVENTS:  |-
+      {"events": [{"Node" : "mysql-github","NodeAlias" : "github","Manager" : "Github","AlertGroup" : "robot-shop",....}
+
+  p 
+  h4#logs Logs
+  p
+    | For Logs, just define the lines you wish to inject and put them one per line (without the comma at the end! This is one valid JSON but separate lines of valid JSON entries)
+  pre.
+    DEMO_LOGS:  |-
+      {"kubernetes.namespace_name":"robot-shop",.....,"@rawstring":"2021-05-17T06:20:10.922365132-05:00\",....}
+      {"kubernetes.namespace_name":"robot-shop",.....,"@rawstring":"2021-05-17T06:20:10.922061234-05:00\",....}
+      {"kubernetes.namespace_name":"robot-shop",.....,"@rawstring":"2021-05-17T06:20:10.920550071-05:00\",....}
+
+

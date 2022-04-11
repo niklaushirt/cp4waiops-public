@@ -160,11 +160,11 @@ eyJhbGciOiJIUzI1NiJ9.eyJpc3adsgJJQk0gTWFya2V0cGxhY2UiLCJpYXQiOjE1Nzg0NzQzMjgsImp
 Just run:
 
 ```bash
-./10_install_ai_manager.sh -t <PULL_SECRET_TOKEN> [-v true]
+ansible-playbook ./ansible/01_AIManager-base-install.yaml -e ENTITLED_REGISTRY_KEY=<REGISTRY_TOKEN> 
 
 
 Example:
-./10_install_ai_manager.sh -t eyJhbGciOiJIUzI1NiJ9.eyJpc3adsgJJQk0gTWFya2V0cGxhY2UiLCJpYXQiOjE1Nzg0NzQzMjgsImp0aSI6IjRjYTM3gsdgdMzExNjQxZDdiMDJhMjRmMGMxMWgdsmZhIn0.Z-rqfSLJA-R-ow__tI3RmLx4mssdggdabvdcgdgYEkbYY
+ansible-playbook ./ansible/01_AIManager-base-install.yaml -e ENTITLED_REGISTRY_KEY=eyJhbGciOiJIUzI1NiJ9.eyJpc3adsgJJQk0gTWFya2V0cGxhY2UiLCJpYXQiOjE1Nzg0NzQzMjgsImp0aSI6IjRjYTM3gsdgdMzExNjQxZDdiMDJhMjRmMGMxMWgdsmZhIn0.Z-rqfSLJA-R-ow__tI3RmLx4mssdggdabvdcgdgYEkbYY
 ```
 
 This will install:

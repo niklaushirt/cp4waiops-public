@@ -37,7 +37,7 @@ echo "  Initializing......"
 
 
 
-export WAIOPS_NAMESPACE=$(oc get po -A|grep aimanager-operator |awk '{print$1}')
+export WAIOPS_NAMESPACE=$(oc get po -A|grep aiops-orchestrator-controller |awk '{print$1}')
 
 
 export LOG_TYPE=elk   # humio, elk, splunk, ...
@@ -67,9 +67,8 @@ echo "  🔐  Getting credentials"
 echo "***************************************************************************************************************************************************"
 oc project $WAIOPS_NAMESPACE
 
-
-export username=$(oc get secret $(oc get secrets | grep ibm-aiops-elastic-secret | awk '!/-min/' | awk '{print $1;}') -o jsonpath="{.data.username}"| base64 --decode)
-export password=$(oc get secret $(oc get secrets | grep ibm-aiops-elastic-secret | awk '!/-min/' | awk '{print $1;}') -o jsonpath="{.data.password}"| base64 --decode)
+export username=$(oc get secret $(oc get secrets | grep elastic-secret | awk '!/-min/' | awk '{print $1;}') -o jsonpath="{.data.username}"| base64 --decode)
+export password=$(oc get secret $(oc get secrets | grep elastic-secret | awk '!/-min/' | awk '{print $1;}') -o jsonpath="{.data.password}"| base64 --decode)
 
 export WORKING_DIR_ES="./training/TRAINING_FILES/ELASTIC/$APP_NAME/$INDEX_TYPE"
 
@@ -249,7 +248,7 @@ until [ "$selection" = "0" ]; do
   echo "    	2  - Get ES Indexes - LOGS"
   echo "    	3  - Get ES Indexes - LOGS TRAIN"
   echo ""
-  echo "    	4  - Get ES Indexes - INCIDENTS"
+  echo "    	4  - Get ES Indexes - SNOW INCIDENTS"
   echo ""
   echo "    	5  - Pre Check Training details"
   echo "    	6  - Post Check Training details"

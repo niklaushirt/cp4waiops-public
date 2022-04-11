@@ -56,7 +56,7 @@
     kind: Namespace
     name: "{{ WAIOPS_NAMESPACE }}"
     state: present
-
+  ignore_errors: yes
 
 
 

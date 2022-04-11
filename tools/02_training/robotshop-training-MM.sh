@@ -18,7 +18,7 @@ if [[  $WAIOPS_NAMESPACE =~ "" ]]; then
     echo "   ------------------------------------------------------------------------------------------------------------------------------"
     echo "   🔬 Getting Installation Namespace"
     echo "   ------------------------------------------------------------------------------------------------------------------------------"
-    export WAIOPS_NAMESPACE=$(oc get po -A|grep aimanager-operator |awk '{print$1}')
+    export WAIOPS_NAMESPACE=$(oc get po -A|grep aiops-orchestrator-controller |awk '{print$1}')
     echo "       ✅ AI Manager:         OK - $WAIOPS_NAMESPACE"
 else
     echo "       ✅ AI Manager:         OK - $WAIOPS_NAMESPACE"
@@ -26,13 +26,16 @@ fi
 
 
 
-
+echo "  ***************************************************************************************************************************************************"
+echo "   🛠️  Create Analysis Definiton: Temporal Grouping"
+export FILE_NAME=create-analysis-METRIC.graphql
+./tools/02_training/scripts/execute-graphql.sh
 
 
 echo "  ***************************************************************************************************************************************************"
-echo "   🛠️  Create Analysis Definiton: Temporal Grouping"
-./tools/02_training/scripts/train-metrics-curl.sh
-
+echo "   🛠️  Run Analysis: Temporal Grouping"
+export FILE_NAME=run-analysis-METRIC.graphql
+./tools/02_training/scripts/execute-graphql.sh
 
 
 

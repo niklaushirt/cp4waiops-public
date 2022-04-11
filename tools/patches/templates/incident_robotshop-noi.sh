@@ -49,7 +49,7 @@ echo "   -----------------------------------------------------------------------
 echo "   🔬 Getting Installation Namespace"
 echo "   ------------------------------------------------------------------------------------------------------------------------------"
 
-export WAIOPS_NAMESPACE=$(oc get po -A|grep aimanager-operator |awk '{print$1}')
+export WAIOPS_NAMESPACE=$(oc get po -A|grep aiops-orchestrator-controller |awk '{print$1}')
 export EVTMGR_NAMESPACE=$(oc get po -A|grep noi-operator |awk '{print$1}')
 echo "       ✅ OK - AI Manager:    $WAIOPS_NAMESPACE"
 echo "       ✅ OK - Event Manager: $EVTMGR_NAMESPACE"
