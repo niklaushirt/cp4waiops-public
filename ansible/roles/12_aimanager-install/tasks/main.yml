@@ -1,0 +1,25 @@
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Install CP4WAIOPS
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+
+- name: TIMESTAMP -              🟢 START - AI MANAGER INSTALLATION
+  debug: 
+    msg="{{ lookup('pipe','date +%d.%m.%Y---%H:%M:%S') }}"
+
+
+- name:  AIMANAGER INSTALL -     📥 WRITE TO LOGFILE
+  shell: |
+    export MESSAGE="Installing AI MAnager Instance"
+    export currentDate=$(date +%Y-%m-%d_%H:%M)
+    echo "---------------------------------------------------------------------------------------------------------------------------------------------------" >> ../installAIManager.log
+    echo $currentDate" - "$USER" - "$MESSAGE  >> ../installAIManager.log
+  ignore_errors: yes
+
+
+- name:  AIMANAGER INSTALL -     🚀 Install Custom Resource - INSTALL AI MANAGER
+  kubernetes.core.k8s:
+    state: present
+    template: './templates/waiops/4_waiops-install-template.j2'

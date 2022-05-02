@@ -15,7 +15,7 @@ This will instrument the RobotShop Application at the same time.
 1. Launch
 
 	```bash
-	ansible-playbook ./ansible/29_install-servicemesh.yaml	
+	ansible-playbook ./ansible/29_addons-install-servicemesh.yaml	
 	```
 	
 2. Wait for the pods to come up

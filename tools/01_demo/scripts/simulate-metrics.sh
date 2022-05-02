@@ -87,7 +87,7 @@ echo "           Quit with Ctrl-Z"
 echo "      -------------------------------------------------------------------------------------------------------------------------------------"
 echo ""
 
-export  ADD_SECONDS=0
+export  ADD_SECONDS=120
 export  ITERATIONS=0
 
 # {"timestamp":"MY_TIMESTAMP","resourceID":"qotd-rating (qotd/qotd-rating-76d4964f5-8l8z6):::7QthWgdy4IaSS0KkxFUkYmBCLC0","metrics":{"cpu.user_usage":CPU_USAGE},"attributes":{"group":"docker","node":"qotd-rating (qotd/qotd-rating-76d4964f5-8l8z6):::7QthWgdy4IaSS0KkxFUkYmBCLC0"}},
@@ -108,7 +108,7 @@ do
       do
 
             ADD_SECONDS=$(($ADD_SECONDS+($TIME_INCREMENT_MINUTES*60)))
-            export act_timestamp_readable=$(date -v "+"$ADD_SECONDS"S" "$DATE_FORMAT_READABLE")
+            export act_timestamp_readable=$(date -v "$METRICS_SKEW" -v "+"$ADD_SECONDS"S" "$DATE_FORMAT_READABLE")
 
 
             echo "        ♻️  ITERATION: $ITERATIONS-$BUNDLE_ITERATIONS     at "$act_timestamp_readable"   -     Seconds skew "$ADD_SECONDS
@@ -118,8 +118,8 @@ do
             ADD_SECONDS=$(($ADD_SECONDS+$TIME_INCREMENT_SECONDS))
 
             # Get timestamp in ELK format
-            export MY_TIMESTAMP=$(date -v "+"$ADD_SECONDS"S" "$DATE_FORMAT")"$ADD_MSECONDS_STRING"
-            export my_timestamp_readable=$(date -v "+"$ADD_SECONDS"S" "$DATE_FORMAT_READABLE")
+            export MY_TIMESTAMP=$(date -v "$METRICS_SKEW" -v "+"$ADD_SECONDS"S" "$DATE_FORMAT")"$ADD_MSECONDS_STRING"
+            export my_timestamp_readable=$(date -v "$METRICS_SKEW" -v "+"$ADD_SECONDS"S" "$DATE_FORMAT_READABLE")
 
 
             for value in "${MY_RES_IDS[@]}"

@@ -1,0 +1,108 @@
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Install Longhorn
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Install Longhorn
+# --------------------------------------------------------------------------------------------------------------------------------------
+
+- name: TIMESTAMP -              🟢 START - ROOK CEPH
+  debug: 
+    msg="{{ lookup('pipe','date +%d.%m.%Y---%H:%M:%S') }}"
+
+
+
+- name: LO£NGHORN -           🔎 Check if Longhorn should be installed
+  shell: |
+    oc get namespace --ignore-not-found longhorn-system
+  ignore_errors: yes
+  register: OBJECT_EXISTS
+
+
+
+- name: LOGGING -                📥 WRITE TO LOGFILE
+  shell: |
+    export MESSAGE="Install Rook/Ceph: {{INSTALL_ROOK_CEPH}}"
+    export currentDate=$(date +%Y-%m-%d_%H:%M)
+    echo "---------------------------------------------------------------------------------------------------------------------------------------------------" >> ../installAIManager.log
+    echo $currentDate" - "$USER" - "$MESSAGE  >> ../installAIManager.log
+  ignore_errors: yes
+
+
+- name: LO£NGHORN -           🚀 Installation
+  shell: |
+    oc create ns longhorn-system
+
+    oc create clusterrolebinding longhorn-default-admin --clusterrole=cluster-admin --serviceaccount=longhorn-system:default
+    oc create clusterrolebinding longhorn-longhorn-admin --clusterrole=cluster-admin --serviceaccount=longhorn-system:longhorn
+    oc create clusterrolebinding longhorn-longhorn-service-account-admin --clusterrole=cluster-admin --serviceaccount=longhorn-system:longhorn-service-account
+    oc adm policy add-scc-to-group anyuid system:serviceaccounts:longhorn-system
+    oc create route passthrough longhorn -n longhorn-system  --service=longhorn-frontend --port=http --insecure-policy=Redirect --wildcard-policy=None
+    oc expose svc longhorn-frontend -n longhorn-system  --name longhorn
+
+  ignore_errors: yes
+  when: INSTALL_ROOK_CEPH
+
+
+  
+- name: LO£NGHORN -           🚀 Install Longhorn
+  block:
+
+  - name: LO£NGHORN -           🚀 Longhorn ISCSI
+    kubernetes.core.k8s:
+      state: present
+      namespace: longhorn-system
+      src: ./templates/longhorn/longhorn-iscsi-installation.yml
+    when: INSTALL_ROOK_CEPH
+
+
+
+  - name: LO£NGHORN -           🚀 Longhorn Installation
+    kubernetes.core.k8s:
+      state: present
+      namespace: longhorn-system
+      src: ./templates/longhorn/longhorn.yaml
+    when: INSTALL_ROOK_CEPH
+
+
+
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Wait for longhorn-system Namespace to be ready
+# --------------------------------------------------------------------------------------------------------------------------------------
+- name: CHECK -                  🕦 Wait for more than >{{ROOK_NS_MIN_PODS}} pods in namespace longhorn-system
+  shell: |
+    NUM_PODS=$(oc get po -n longhorn-system | wc -l)
+    echo $NUM_PODS
+  register: kubectl_num_pods
+  until: kubectl_num_pods.stdout|int > ROOK_NS_MIN_PODS
+  retries: 500
+  delay: 15
+  when: INSTALL_ROOK_CEPH
+
+
+
+- name: CHECK -              🕦 Wait for longhorn-system namespace to become ready
+  shell: oc get po -n longhorn-system | grep -v Running |grep -v Completed | grep -c ""
+  register: kubectl_get_pods
+  until: kubectl_get_pods.stdout == "1"
+  retries: 500
+  delay: 15
+  when: INSTALL_ROOK_CEPH
+
+
+- name: LO£NGHORN -           🚀 Longhorn patch some stuff
+  shell: |
+    oc create route passthrough dash -n longhorn-system --service=longhorn-system-mgr-dashboard --port=8443
+    #HACK
+    oc -n longhorn-system create secret generic --type kubernetes.io/rook longhorn-system-crash-collector-keyring
+  ignore_errors: yes
+  when: INSTALL_ROOK_CEPH
+  
+     
+
+
+     

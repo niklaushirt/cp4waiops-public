@@ -1,0 +1,76 @@
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Install Turbonomic
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Install Turbonomic
+# --------------------------------------------------------------------------------------------------------------------------------------
+
+- name: TIMESTAMP -              🟢 START - INSTALL TURBONOMIC
+  debug: 
+    msg="{{ lookup('pipe','date +%d.%m.%Y---%H:%M:%S') }}"
+
+
+- name: TURBONOMIC -             📥 WRITE TO LOGFILE
+  shell: |
+    export MESSAGE="Installing TURBONOMIC"
+    export currentDate=$(date +%Y-%m-%d_%H:%M)
+    echo "---------------------------------------------------------------------------------------------------------------------------------------------------" >> ../installAIManager.log
+    echo $currentDate" - "$USER" - "$MESSAGE  >> ../installAIManager.log
+  ignore_errors: yes
+
+
+- name: TURBONOMIC -             🚀 Create Turbonomic namespace
+  kubernetes.core.k8s:
+    api_version: v1
+    kind: Namespace
+    name: "turbonomic"
+    state: present
+  
+
+- name: TURBONOMIC -             🚀 Create Turbonomic scc
+  shell: |
+    oc adm policy add-scc-to-group anyuid system:serviceaccounts:turbonomic
+    oc create clusterrolebinding turbonomic-admin1 --clusterrole=cluster-admin --serviceaccount=turbonomic:t8c-operator
+    oc create clusterrolebinding turbonomic-admin2 --clusterrole=cluster-admin --serviceaccount=turbonomic:turbo-user
+  ignore_errors: yes
+  register: demo_robot_shop
+        
+
+- name: TURBONOMIC -             🚀 Create Turbonomic Operator Group
+  kubernetes.core.k8s:
+    state: present
+    namespace: turbonomic
+    src: ./templates/turbonomic/turbo-operatorgroup.yaml
+  
+
+
+- name: TURBONOMIC -             🚀 Create Turbonomic Subscription
+  kubernetes.core.k8s:
+    state: present
+    namespace: turbonomic
+    src: ./templates/turbonomic/turbo-subscription.yaml
+  
+
+
+
+- name: TURBONOMIC -             🕦 Wait for CRD to become ready
+  shell: oc get crd -n turbonomic xls.charts.helm.k8s.io --ignore-not-found  --no-headers| grep -c ""
+  register: kubectl_get_pods
+  until: kubectl_get_pods.stdout == "1"
+  retries: 500
+  delay: 15
+
+
+
+
+- name: TURBONOMIC -             🚀 Create Turbonomic Instance
+  kubernetes.core.k8s:
+    state: present
+    namespace: turbonomic
+    template: ./templates/turbonomic/turbo-instance.j2
+  
+

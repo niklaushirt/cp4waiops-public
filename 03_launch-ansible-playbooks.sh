@@ -67,7 +67,7 @@ runPlaybook () {
             echo "✅ Playbook found..."
             echo ""
             echo ""
-            if [[ $ANSIBLE_PLAYBOOK =~ "01_AIManager-install" ]] || [[ $ANSIBLE_PLAYBOOK =~ "05_InfraManagement-install" ]] || [[ $ANSIBLE_PLAYBOOK =~ "09_AIManager-only" ]];
+            if [[ $ANSIBLE_PLAYBOOK =~ "01_AIManager-install" ]] || [[ $ANSIBLE_PLAYBOOK =~ "04_eventmanager-install" ]] || [[ $ANSIBLE_PLAYBOOK =~ "05_InfraManagement-install" ]] || [[ $ANSIBLE_PLAYBOOK =~ "09_AIManager-only" ]];  
             then
                   echo ""
                   echo ""
@@ -136,7 +136,7 @@ until [ "$selection" = "0" ]; do
       echo "  📛  Addons Playbooks"
       echo "  "
 
-      ls -1 ./ansible | grep "2._ins"| sed 's/.yaml//'| sed 's/^/       /'
+      ls -1 ./ansible | grep "2._addons-ins"| sed 's/.yaml//'| sed 's/^/       /'
 
 
 

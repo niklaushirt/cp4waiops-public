@@ -1,0 +1,158 @@
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Create Topology Merge Rules
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Create Topology Merge Rules
+# --------------------------------------------------------------------------------------------------------------------------------------
+- name: TIMESTAMP -              🟢 START - CREATE ROBOTSHOP TOPOLOGY
+  debug: 
+    msg="{{ lookup('pipe','date +%d.%m.%Y---%H:%M:%S') }}"
+
+
+- name: TOPOLOGY -               📥 WRITE TO LOGFILE
+  shell: |
+    export MESSAGE="Create RobotShop Topology"
+    export currentDate=$(date +%Y-%m-%d_%H:%M)
+    echo "---------------------------------------------------------------------------------------------------------------------------------------------------" >> ../installAIManager.log
+    echo $currentDate" - "$USER" - "$MESSAGE  >> ../installAIManager.log
+  ignore_errors: yes
+
+
+- name: TOPOLOGY     -           🌏 Get Cluster FQDN
+  shell: |
+    CLUSTER_ROUTE=$(oc get routes console -n openshift-console | tail -n 1 2>&1 ) 
+    CLUSTER_FQDN=$( echo $CLUSTER_ROUTE | awk '{print $2}')
+    echo ${CLUSTER_FQDN##*console.}
+  register: CLUSTER_NAME
+
+
+
+
+- name: TOPOLOGY     -           🔐 Get EventManager REST USER
+  shell: |
+    echo "$(oc get secret evtmanager-topology-asm-credentials -n {{ WAIOPS_NAMESPACE }} -o jsonpath='{.data.username}' | base64 --decode)"
+  register: EVTMGR_REST_USR
+
+
+- name: TOPOLOGY     -           🔐 Get EventManager REST PASSWORD
+  shell: |
+    echo "$(oc get secret evtmanager-topology-asm-credentials -n {{ WAIOPS_NAMESPACE }} -o jsonpath='{.data.password}' | base64 --decode)"
+  register: EVTMGR_REST_PWD
+
+
+- name: TOPOLOGY     -           🔐 Get EventManager REST LOGIN
+  shell: |
+    echo "{{ EVTMGR_REST_USR.stdout_lines[0] }}:{{ EVTMGR_REST_PWD.stdout_lines[0] }}"
+  register: EVTMGR_LOGIN
+
+
+- name: TOPOLOGY     -           🚀 Load Merge Rule
+  shell: |
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/merge/rules?ruleType=matchTokensRule" --insecure \
+        -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' \
+        -H 'content-type: application/json' \
+        -u {{ EVTMGR_LOGIN.stdout_lines[0] }} \
+        -d $'{
+              "tokens": [
+                "name"
+              ],
+              "entityTypes": [
+                "deployment"
+              ],
+              "providers": [
+                "*"
+              ],
+              "observers": [
+                "*"
+              ],
+              "ruleType": "mergeRule",
+              "name": "merge-name-type",
+              "ruleStatus": "enabled"
+            }'
+  register: LOAD_RULES
+- name: DEBUG -                  🟢 Output
+  debug: 
+    var: LOAD_RULES.stdout_lines
+    verbosity: 1
+
+
+- name: TOPOLOGY     -           🚀 Load RobotShop Nodes
+  shell: |
+    # -------------------------------------------------------------------------------------------------------------------------------------------------
+    # CREATE EDGES
+    # -------------------------------------------------------------------------------------------------------------------------------------------------
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/resources" --insecure -H 'Content-Type: application/json' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -H 'JobId: listenJob' -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -d $'{"app": "robotshop","availableReplicas": 1,"createdReplicas": 1,"dataCenter": "demo","desiredReplicas": 1,"entityTypes": ["deployment"],"mergeTokens": ["web"],"matchTokens": ["web","web-deployment"],"name": "web","namespace": "robot-shop","readyReplicas": 1,"tags": ["app:robotshop","namespace:robot-shop"],"vertexType": "resource","uniqueId": "web-id"}'
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/resources" --insecure -H 'Content-Type: application/json' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -H 'JobId: listenJob' -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -d $'{"app": "robotshop","availableReplicas": 1,"createdReplicas": 1,"dataCenter": "demo","desiredReplicas": 1,"entityTypes": ["deployment"],"mergeTokens": ["shipping"],"matchTokens": ["shipping","shipping-deployment"],"name": "shipping","namespace": "robot-shop","readyReplicas": 1,"tags": ["app:robotshop","namespace:robot-shop"],"vertexType": "resource","uniqueId": "shipping-id"}'
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/resources" --insecure -H 'Content-Type: application/json' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -H 'JobId: listenJob' -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -d $'{"app": "robotshop","availableReplicas": 1,"createdReplicas": 1,"dataCenter": "demo","desiredReplicas": 1,"entityTypes": ["deployment"],"mergeTokens": ["cart"],"matchTokens": ["cart","cart-deployment"],"name": "cart","namespace": "robot-shop","readyReplicas": 1,"tags": ["app:robotshop","namespace:robot-shop"],"vertexType": "resource","uniqueId": "cart-id"}'
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/resources" --insecure -H 'Content-Type: application/json' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -H 'JobId: listenJob' -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -d $'{"app": "robotshop","availableReplicas": 1,"createdReplicas": 1,"dataCenter": "demo","desiredReplicas": 1,"entityTypes": ["deployment"],"mergeTokens": ["user"],"matchTokens": ["user","user-deployment"],"name": "user","namespace": "robot-shop","readyReplicas": 1,"tags": ["app:robotshop","namespace:robot-shop"],"vertexType": "resource","uniqueId": "user-id"}'
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/resources" --insecure -H 'Content-Type: application/json' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -H 'JobId: listenJob' -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -d $'{"app": "robotshop","availableReplicas": 1,"createdReplicas": 1,"dataCenter": "demo","desiredReplicas": 1,"entityTypes": ["deployment"],"mergeTokens": ["catalogue"],"matchTokens": ["catalogue","catalogue-deployment"],"name": "catalogue","namespace": "robot-shop","readyReplicas": 1,"tags": ["app:robotshop","namespace:robot-shop"],"vertexType": "resource","uniqueId": "catalogue-id"}'
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/resources" --insecure -H 'Content-Type: application/json' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -H 'JobId: listenJob' -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -d $'{"app": "robotshop","availableReplicas": 1,"createdReplicas": 1,"dataCenter": "demo","desiredReplicas": 1,"entityTypes": ["deployment"],"mergeTokens": ["cities"],"matchTokens": ["cities","cities-deployment"],"name": "cities","namespace": "robot-shop","readyReplicas": 1,"tags": ["app:robotshop","namespace:robot-shop"],"vertexType": "resource","uniqueId": "cities-id"}'
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/resources" --insecure -H 'Content-Type: application/json' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -H 'JobId: listenJob' -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -d $'{"app": "robotshop","availableReplicas": 1,"createdReplicas": 1,"dataCenter": "demo","desiredReplicas": 1,"entityTypes": ["deployment"],"mergeTokens": ["redis"],"matchTokens": ["redis","redis-deployment"],"name": "redis","namespace": "robot-shop","readyReplicas": 1,"tags": ["app:robotshop","namespace:robot-shop"],"vertexType": "resource","uniqueId": "redis-id"}'
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/resources" --insecure -H 'Content-Type: application/json' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -H 'JobId: listenJob' -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -d $'{"app": "robotshop","availableReplicas": 1,"createdReplicas": 1,"dataCenter": "demo","desiredReplicas": 1,"entityTypes": ["deployment"],"mergeTokens": ["payment"],"matchTokens": ["payment","payment-deployment"],"name": "payment","namespace": "robot-shop","readyReplicas": 1,"tags": ["app:robotshop","namespace:robot-shop"],"vertexType": "resource","uniqueId": "payment-id"}'
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/resources" --insecure -H 'Content-Type: application/json' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -H 'JobId: listenJob' -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -d $'{"app": "robotshop","availableReplicas": 1,"createdReplicas": 1,"dataCenter": "demo","desiredReplicas": 1,"entityTypes": ["deployment"],"mergeTokens": ["dispatch"],"matchTokens": ["dispatch","dispatch-deployment"],"name": "dispatch","namespace": "robot-shop","readyReplicas": 1,"tags": ["app:robotshop","namespace:robot-shop"],"vertexType": "resource","uniqueId": "dispatch-id"}'
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/resources" --insecure -H 'Content-Type: application/json' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -H 'JobId: listenJob' -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -d $'{"app": "robotshop","availableReplicas": 1,"createdReplicas": 1,"dataCenter": "demo","desiredReplicas": 1,"entityTypes": ["deployment"],"mergeTokens": ["mongodb"],"matchTokens": ["mongodb","mongodb-deployment"],"name": "mongodb","namespace": "robot-shop","readyReplicas": 1,"tags": ["app:robotshop","namespace:robot-shop"],"vertexType": "resource","uniqueId": "mongodb-id"}'
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/resources" --insecure -H 'Content-Type: application/json' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -H 'JobId: listenJob' -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -d $'{"app": "robotshop","availableReplicas": 1,"createdReplicas": 1,"dataCenter": "demo","desiredReplicas": 1,"entityTypes": ["deployment"],"mergeTokens": ["rabbitmq"],"matchTokens": ["rabbitmq","rabbitmq-deployment"],"name": "rabbitmq","namespace": "robot-shop","readyReplicas": 1,"tags": ["app:robotshop","namespace:robot-shop"],"vertexType": "resource","uniqueId": "rabbitmq-id"}'
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/resources" --insecure -H 'Content-Type: application/json' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -H 'JobId: listenJob' -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -d $'{"app": "robotshop","availableReplicas": 1,"createdReplicas": 1,"dataCenter": "demo","desiredReplicas": 1,"entityTypes": ["deployment"],"mergeTokens": ["ratings"],"matchTokens": ["ratings","ratings-deployment"],"name": "ratings","namespace": "robot-shop","readyReplicas": 1,"tags": ["app:robotshop","namespace:robot-shop"],"vertexType": "resource","uniqueId": "ratings-id"}'
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/resources" --insecure -H 'Content-Type: application/json' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -H 'JobId: listenJob' -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -d $'{"app": "robotshop","availableReplicas": 1,"createdReplicas": 1,"dataCenter": "demo","desiredReplicas": 1,"entityTypes": ["deployment"],"mergeTokens": ["mysql"],"matchTokens": ["mysql","mysql-deployment"],"matchTokens": ["mysql","mysql"],"name": "mysql","namespace": "robot-shop","readyReplicas": 1,"tags": ["app:robotshop","namespace:robot-shop"],"vertexType": "resource","uniqueId": "mysql-id"}'
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/resources" --insecure -H 'Content-Type: application/json' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -H 'JobId: listenJob' -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -d $'{"app": "robotshop","availableReplicas": 1,"createdReplicas": 1,"dataCenter": "demo","desiredReplicas": 1,"entityTypes": ["deployment"],"mergeTokens": ["load"],"matchTokens": ["load","load-deployment"],"name": "load","namespace": "robot-shop","readyReplicas": 1,"tags": ["app:robotshop","namespace:robot-shop"],"vertexType": "resource","uniqueId": "load-id"}'
+
+
+
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/resources" --insecure -H 'Content-Type: application/json' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -H 'JobId: listenJob' -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -d $'{"app": "robotshop","availableReplicas": 1,"createdReplicas": 1,"dataCenter": "demo","desiredReplicas": 1,"entityTypes": ["server"],"matchTokens": ["paypal"],"name": "paypal.com","namespace": "robot-shop","readyReplicas": 1,"tags": ["app:robotshop","namespace:robot-shop"],"vertexType": "resource","uniqueId": "paypal.com-id"}'
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/resources" --insecure -H 'Content-Type: application/json' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -H 'JobId: listenJob' -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -d $'{"app": "robotshop","availableReplicas": 1,"createdReplicas": 1,"dataCenter": "demo","desiredReplicas": 1,"entityTypes": ["server"],"matchTokens": ["paypal"],"name": "www.paypal.com","namespace": "robot-shop","readyReplicas": 1,"tags": ["app:robotshop","namespace:robot-shop"],"vertexType": "resource","uniqueId": "www.paypal.com-id"}'
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/resources" --insecure -H 'Content-Type: application/json' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -H 'JobId: listenJob' -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -d $'{"app": "robotshop","availableReplicas": 1,"createdReplicas": 1,"dataCenter": "demo","desiredReplicas": 1,"entityTypes": ["volume"],"matchTokens": ["catalogue-db"],"name": "catalogue-db","namespace": "robot-shop","readyReplicas": 1,"tags": ["app:robotshop","namespace:robot-shop"],"vertexType": "resource","uniqueId": "catalogue-db-id"}'
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/resources" --insecure -H 'Content-Type: application/json' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -H 'JobId: listenJob' -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -d $'{"app": "robotshop","availableReplicas": 1,"createdReplicas": 1,"dataCenter": "demo","desiredReplicas": 1,"entityTypes": ["volume"],"matchTokens": ["user-db"],"name": "user-db","namespace": "robot-shop","readyReplicas": 1,"tags": ["app:robotshop","namespace:robot-shop"],"vertexType": "resource","uniqueId": "user-db-id"}'
+  register: LOAD_NODES
+- name: DEBUG -                  🟢 Output
+  debug: 
+    var: LOAD_NODES.stdout_lines
+    verbosity: 1
+
+
+
+- name: TOPOLOGY     -           🚀 Load Links
+  shell: |
+    # -------------------------------------------------------------------------------------------------------------------------------------------------
+    # CREATE LINKS
+    # -------------------------------------------------------------------------------------------------------------------------------------------------
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/references" --insecure -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -H 'JobId: listenJob' -H 'Content-Type: application/json; charset=utf-8' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -d $'{"_edgeType": "dependsOn","_fromUniqueId": "load-id","_toUniqueId": "web-id"}'
+
+
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/references" --insecure -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -H 'JobId: listenJob' -H 'Content-Type: application/json; charset=utf-8' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -d $'{"_edgeType": "dependsOn","_fromUniqueId": "web-id","_toUniqueId": "shipping-id"}'
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/references" --insecure -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -H 'JobId: listenJob' -H 'Content-Type: application/json; charset=utf-8' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -d $'{"_edgeType": "dependsOn","_fromUniqueId": "web-id","_toUniqueId": "catalogue-id"}'
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/references" --insecure -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -H 'JobId: listenJob' -H 'Content-Type: application/json; charset=utf-8' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -d $'{"_edgeType": "dependsOn","_fromUniqueId": "web-id","_toUniqueId": "cart-id"}'
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/references" --insecure -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -H 'JobId: listenJob' -H 'Content-Type: application/json; charset=utf-8' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -d $'{"_edgeType": "dependsOn","_fromUniqueId": "web-id","_toUniqueId": "payment-id"}'
+
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/references" --insecure -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -H 'JobId: listenJob' -H 'Content-Type: application/json; charset=utf-8' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -d $'{"_edgeType": "dependsOn","_fromUniqueId": "cart-id","_toUniqueId": "catalogue-id"}'
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/references" --insecure -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -H 'JobId: listenJob' -H 'Content-Type: application/json; charset=utf-8' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -d $'{"_edgeType": "dependsOn","_fromUniqueId": "cart-id","_toUniqueId": "redis-id"}'
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/references" --insecure -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -H 'JobId: listenJob' -H 'Content-Type: application/json; charset=utf-8' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -d $'{"_edgeType": "dependsOn","_fromUniqueId": "user-id","_toUniqueId": "redis-id"}'
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/references" --insecure -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -H 'JobId: listenJob' -H 'Content-Type: application/json; charset=utf-8' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -d $'{"_edgeType": "dependsOn","_fromUniqueId": "user-id","_toUniqueId": "mongodb-id"}'
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/references" --insecure -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -H 'JobId: listenJob' -H 'Content-Type: application/json; charset=utf-8' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -d $'{"_edgeType": "dependsOn","_fromUniqueId": "catalogue-id","_toUniqueId": "mongodb-id"}'
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/references" --insecure -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -H 'JobId: listenJob' -H 'Content-Type: application/json; charset=utf-8' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -d $'{"_edgeType": "dependsOn","_fromUniqueId": "ratings-id","_toUniqueId": "mysql-id"}'
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/references" --insecure -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -H 'JobId: listenJob' -H 'Content-Type: application/json; charset=utf-8' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -d $'{"_edgeType": "dependsOn","_fromUniqueId": "catalogue-id","_toUniqueId": "ratings-id"}'
+
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/references" --insecure -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -H 'JobId: listenJob' -H 'Content-Type: application/json; charset=utf-8' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -d $'{"_edgeType": "dependsOn","_fromUniqueId": "shipping-id","_toUniqueId": "cart-id"}'
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/references" --insecure -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -H 'JobId: listenJob' -H 'Content-Type: application/json; charset=utf-8' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -d $'{"_edgeType": "dependsOn","_fromUniqueId": "cart-id","_toUniqueId": "payment-id"}'
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/references" --insecure -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -H 'JobId: listenJob' -H 'Content-Type: application/json; charset=utf-8' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -d $'{"_edgeType": "dependsOn","_fromUniqueId": "payment-id","_toUniqueId": "user-id"}'
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/references" --insecure -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -H 'JobId: listenJob' -H 'Content-Type: application/json; charset=utf-8' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -d $'{"_edgeType": "dependsOn","_fromUniqueId": "payment-id","_toUniqueId": "www.paypal.com-id"}'
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/references" --insecure -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -H 'JobId: listenJob' -H 'Content-Type: application/json; charset=utf-8' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -d $'{"_edgeType": "dependsOn","_fromUniqueId": "payment-id","_toUniqueId": "paypal.com-id"}'
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/references" --insecure -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -H 'JobId: listenJob' -H 'Content-Type: application/json; charset=utf-8' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -d $'{"_edgeType": "dependsOn","_fromUniqueId": "payment-id","_toUniqueId": "rabbitmq-id"}'
+
+
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/references" --insecure -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -H 'JobId: listenJob' -H 'Content-Type: application/json; charset=utf-8' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -d $'{"_edgeType": "dependsOn","_fromUniqueId": "rabbitmq-id","_toUniqueId": "dispatch-id"}'
+
+
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/references" --insecure -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -H 'JobId: listenJob' -H 'Content-Type: application/json; charset=utf-8' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -d $'{"_edgeType": "dependsOn","_fromUniqueId": "user-id","_toUniqueId": "user-db-id"}'
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/references" --insecure -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -H 'JobId: listenJob' -H 'Content-Type: application/json; charset=utf-8' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -d $'{"_edgeType": "dependsOn","_fromUniqueId": "catalogue-id","_toUniqueId": "catalogue-db-id"}'
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/references" --insecure -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -H 'JobId: listenJob' -H 'Content-Type: application/json; charset=utf-8' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -d $'{"_edgeType": "dependsOn","_fromUniqueId": "user-db-id","_toUniqueId": "mongodb-id"}'
+    curl -X "POST" "https://evtmanager-topology.{{ WAIOPS_NAMESPACE }}.{{ CLUSTER_NAME.stdout_lines[0] }}/1.0/rest-observer/rest/references" --insecure -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' -H 'JobId: listenJob' -H 'Content-Type: application/json; charset=utf-8' -u {{ EVTMGR_LOGIN.stdout_lines[0] }} -d $'{"_edgeType": "dependsOn","_fromUniqueId": "catalogue-db-id","_toUniqueId": "mongodb-id"}'
+  register: LOAD_LINKS
+- name: DEBUG -                  🟢 Output
+  debug: 
+    var: LOAD_LINKS.stdout_lines
+    verbosity: 1
+

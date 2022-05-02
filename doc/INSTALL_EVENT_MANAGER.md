@@ -9,7 +9,7 @@ Use Option 🐥`12` in Easy Install to install a base `Event Manager` instance
 or run:
 
 ```bash
-ansible-playbook ./ansible/04_EventManager-install.yaml -e ENTITLED_REGISTRY_KEY=<REGISTRY_TOKEN> 
+ansible-playbook ./ansible/04_eventmanager-install.yaml -e ENTITLED_REGISTRY_KEY=<REGISTRY_TOKEN> 
 ```
 
 ### 2.6.2 Configure Event Manager 
@@ -57,11 +57,11 @@ To get the token, see [here](#3.1.2-get-the-installation-token)
 Just run:
 
 ```bash
-ansible-playbook ./ansible/04_EventManager-install.yaml -e ENTITLED_REGISTRY_KEY=<REGISTRY_TOKEN> 
+ansible-playbook ./ansible/04_eventmanager-install.yaml -e ENTITLED_REGISTRY_KEY=<REGISTRY_TOKEN> 
 
 
 Example:
-ansible-playbook ./ansible/04_EventManager-install.yaml -e ENTITLED_REGISTRY_KEY=eyJhbGciOiJIUzI1NiJ9.eyJpc3adsgJJQk0gTWFya2V0cGxhY2UiLCJpYXQiOjE1Nzg0NzQzMjgsImp0aSI6IjRjYTM3gsdgdMzExNjQxZDdiMDJhMjRmMGMxMWgdsmZhIn0.Z-rqfSLJA-R-ow__tI3RmLx4mssdggdabvdcgdgYEkbYY
+ansible-playbook ./ansible/04_eventmanager-install.yaml -e ENTITLED_REGISTRY_KEY=eyJhbGciOiJIUzI1NiJ9.eyJpc3adsgJJQk0gTWFya2V0cGxhY2UiLCJpYXQiOjE1Nzg0NzQzMjgsImp0aSI6IjRjYTM3gsdgdMzExNjQxZDdiMDJhMjRmMGMxMWgdsmZhIn0.Z-rqfSLJA-R-ow__tI3RmLx4mssdggdabvdcgdgYEkbYY
 ```
 
 This will install:

@@ -32,12 +32,12 @@
 
   roles:  
 # Placeholder for customization
-    - role: 00_pre
+    - role: 00_init-custom-hook
 
 
 # Install Add-Ons while CP4WAIOPS is coming up
 
-    - role: 27_aiops-addons-demoapps
+    - role: 27_addons-demoapps
       #when: INSTALL_DEMO_APPS
 
 

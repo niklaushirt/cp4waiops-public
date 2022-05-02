@@ -36,7 +36,7 @@
 #  
 # ---------------------------------------------------------------------------------------------------------------------------------------------------"
 # ---------------------------------------------------------------------------------------------------------------------------------------------------"
-
+ 
 
 - hosts: localhost
   #become: true
@@ -48,33 +48,33 @@
     - role: 98-log-start-03
 
 # Placeholder for customization
-    - role: 00_pre
+    - role: 00_init-custom-hook
 
 # Run Prerequisites
-    - role: 01_initialization
+    - role: 03_init-initialization
   
 
 
 
 # Install Add-Ons while CP4WAIOPS is coming up
-    - role: 48_aiops-load-aimanager-runbooks
+    - role: 48_aimanager-load-runbooks-for-demo
 
 
 # Restart Anomaly Pods to make anomaly detection workk
-    #- role: 89_aiops-reset-anomaly-detection
+    #- role: 89_aimanager-reset-anomaly-detection
 
 # Wait for CP4WAIOPS being completely installed
-    #- role: 99_aiops-wait-cp4waiops
+    #- role: 99_aimanager-wait-cp4waiops
 
 
 # Open Post installation docs
-    - role: 99_aiops-open-aimanager-runbook
+    - role: 99_open-aimanager-runbook
     
 # Open Post installation docs
-    - role: 99_aiops-open-doc-post-03
+    - role: 99_open-doc-post-03
 
 # Get all login credentials
-    - role: 90_aiops-logins
+    - role: 90_core-get-all-logins
       when: PRINT_LOGINS
 
 

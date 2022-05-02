@@ -81,7 +81,7 @@ curl -X "POST" "http://<YOUR-CLUSTER>/webhook" \
 The easiest way to deploy the webhook is by using the automated Ansible script.
 
 ```bash   
-ansible-playbook ./ansible/19_aiops-event-webhook.yaml 
+ansible-playbook ./ansible/19_aimanager-event-webhook.yaml 
 
 oc get route -n cp4waiops cp4waiops-event-gateway  -o jsonpath={.spec.host}
 ```

@@ -14,7 +14,7 @@ You can easily install ELK into the same cluster as CP4WAIOPS.
 1. Launch
 
 	```bash
-	ansible-playbook ./ansible/22_install-elk-ocp.yaml
+	ansible-playbook ./ansible/22_addons-install-elk-ocp.yaml
 	```
 2. Wait for the pods to come up
 3. Open Kibana

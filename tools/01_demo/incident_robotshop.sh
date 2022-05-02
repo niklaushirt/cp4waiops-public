@@ -11,7 +11,9 @@
 export APP_NAME=robot-shop
 export LOG_TYPE=elk   # humio, elk, splunk, ...
 export EVENTS_TYPE=noi
-
+export EVENTS_SKEW="-120M"
+export LOGS_SKEW="-110M"
+export METRICS_SKEW="+5M"
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -118,7 +120,6 @@ echo "   -----------------------------------------------------------------------
 
 echo "     📥 Get Kafka Topics"
 export KAFKA_TOPIC_LOGS=$(oc get kafkatopics -n $WAIOPS_NAMESPACE | grep cp4waiops-cartridge-logs-$LOG_TYPE| awk '{print $1;}')
-export KAFKA_TOPIC_EVENTS=$(oc get kafkatopics -n $WAIOPS_NAMESPACE | grep -v cp4waiopscp4waiops| grep -v noi-integration| grep -v "1000-1000"| grep cp4waiops-cartridge-alerts-$EVENTS_TYPE| awk '{print $1;}')
 
 echo " "
 echo "     🔐 Get Kafka Password"
@@ -130,7 +131,7 @@ echo " "
 
 echo "     📥 Get Working Directories"
 export WORKING_DIR_LOGS="./tools/01_demo/INCIDENT_FILES/$APP_NAME/logs"
-export WORKING_DIR_EVENTS="./tools/01_demo/INCIDENT_FILES/$APP_NAME/events"
+export WORKING_DIR_EVENTS="./tools/01_demo/INCIDENT_FILES/$APP_NAME/events_rest"
 export WORKING_DIR_METRICS="./tools/01_demo/INCIDENT_FILES/$APP_NAME/metrics"
 
 echo " "
@@ -141,19 +142,28 @@ echo "     📥 Get Date Formats"
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 if [ "${OS}" == "darwin" ]; then
       # Suppose we're on Mac
-      export DATE_FORMAT_EVENTS="-v-60M +%Y-%m-%dT%H:%M"
+      export DATE_FORMAT_EVENTS="-v$EVENTS_SKEW +%Y-%m-%dT%H:%M:%S"
+      #export DATE_FORMAT_EVENTS="+%Y-%m-%dT%H:%M"
 else
       # Suppose we're on a Linux flavour
-      export DATE_FORMAT_EVENTS="-d-60min +%Y-%m-%dT%H:%M" 
+      export DATE_FORMAT_EVENTS="-d$EVENTS_SKEW +%Y-%m-%dT%H:%M:%S" 
+      #export DATE_FORMAT_EVENTS="+%Y-%m-%dT%H:%M" 
 fi
 
 
+OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+if [ "${OS}" == "darwin" ]; then
+      # Suppose we're on Mac
+      export DATE_FORMAT_LOGS="-v$LOGS_SKEW +%Y-%m-%dT%H:%M:%S.000000+00:00"
+      #export DATE_FORMAT_LOGS="-v$LOGS_SKEW +%Y-%m-%dT%H:%M:%S.000000+00:00"
+      # HUMIO export DATE_FORMAT_LOGS="+%s000"
+else
+      # Suppose we're on a Linux flavour
+      export DATE_FORMAT_LOGS="-d$LOGS_SKEW +%Y-%m-%dT%H:%M:%S.000000+00:00"
+      #export DATE_FORMAT_LOGS="-d$LOGS_SKEW +%Y-%m-%dT%H:%M:%S.000000+00:00" 
+      # HUMIO export DATE_FORMAT_LOGS="+%s000"
+fi
 
-case $LOG_TYPE in
-  elk) export DATE_FORMAT_LOGS="+%Y-%m-%dT%H:%M:%S.000000+00:00";;
-  humio) export DATE_FORMAT_LOGS="+%s000";;
-  *) export DATE_FORMAT_LOGS="+%s000";;
-esac
 echo " "
 
 
@@ -200,13 +210,6 @@ else
       echo "       ✅ OK - Logs Topic"
 fi
 
-if [[ $KAFKA_TOPIC_EVENTS == "" ]] ;
-then
-      echo " ❌ Please create the $EVENTS_TYPE Kafka Events Integration. Aborting..."
-      exit 1
-else
-      echo "       ✅ OK - Events Topic"
-fi
 
 if [[ $KAFKA_BROKER == "" ]] ;
 then
@@ -228,7 +231,6 @@ echo "     🔎  Parameters for Incident Simulation for $APP_NAME"
 echo "   ----------------------------------------------------------------------------------------------------------------------------------------"
 echo "     "
 echo "       🗂  Log Topic                   : $KAFKA_TOPIC_LOGS"
-echo "       🗂  Event Topic                 : $KAFKA_TOPIC_EVENTS"
 echo "       🌏 Kafka Broker URL            : $KAFKA_BROKER"
 echo "       🔐 Kafka User                  : $SASL_USER"
 echo "       🔐 Kafka Password              : $SASL_PASSWORD"
@@ -269,7 +271,7 @@ echo "   -----------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Inject the Events Inception files
-./tools/01_demo/scripts/simulate-events.sh
+./tools/01_demo/scripts/simulate-events-rest.sh
 
 # Prepare the Log Inception files
 ./tools/01_demo/scripts/prepare-logs-fast.sh

@@ -8,7 +8,7 @@
 
 
 
-- name: LOGGING -              🟢 WRITE TO LOGFILE
+- name: LOGGING -                📥 WRITE TO LOGFILE
   shell: |
     export MESSAGE=" 🚀 Starting Ai Manager Finalize Install (03_AIManager-finalize)"
     export currentDate=$(date +%Y-%m-%d_%H:%M)

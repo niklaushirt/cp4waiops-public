@@ -43,13 +43,13 @@
 
   roles:  
 # Open Post installation docs
-    - role: 99_aiops-open-aimanager-observers
+    - role: 99_open-aimanager-observers
     
 # Open Post installation docs
-    - role: 99_aiops-open-doc-post-01
+    - role: 99_open-doc-post-01
 
 # Get all login credentials
-    - role: 90_aiops-logins
+    - role: 90_core-get-all-logins
       when: PRINT_LOGINS
 
 

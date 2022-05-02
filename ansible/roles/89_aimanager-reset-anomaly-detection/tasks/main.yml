@@ -1,0 +1,25 @@
+- name: TIMESTAMP -              🟢 START - RESET ANOMALY DETECTION
+  debug: 
+    msg="{{ lookup('pipe','date +%d.%m.%Y---%H:%M:%S') }}"
+
+
+
+- name: LOGGING -                📥 WRITE TO LOGFILE
+  shell: |
+    export MESSAGE="Reset Anomaly Detection Pods"
+    export currentDate=$(date +%Y-%m-%d_%H:%M)
+    echo "---------------------------------------------------------------------------------------------------------------------------------------------------" >> ../installAIManager.log
+    echo $currentDate" - "$USER" - "$MESSAGE  >> ../installAIManager.log
+  ignore_errors: yes
+
+
+
+- name: TRAINING          -       🚀 RESET ANOMALY DETECTION
+  shell: |
+    set -x
+    export WAIOPS_NAMESPACE=$(oc get po -A|grep aiops-orchestrator-controller |awk '{print$1}')
+
+    oc delete pod $(oc get po -n $WAIOPS_NAMESPACE|grep anomaly|awk '{print$1}') -n $WAIOPS_NAMESPACE
+
+  register: output_string
+  ignore_errors: yes

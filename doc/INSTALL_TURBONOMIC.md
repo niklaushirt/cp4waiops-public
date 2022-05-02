@@ -18,7 +18,7 @@ You can install Turbonomic into the same cluster as CP4WAIOPS.
 1. Launch
 
 	```bash
-	ansible-playbook ./ansible/20_install-turbonomic.yaml
+	ansible-playbook ./ansible/20_addons-install-turbonomic.yaml
 	```
 2. Wait for the pods to come up
 3. Open Turbonomic
@@ -35,7 +35,7 @@ In order to get other Kubernetes clusters to show up in Turbonomic, you have to 
 2. Launch
 
 	```bash
-	ansible-playbook ./ansible/20_1_aiops-addons-kubeturbo.yaml
+	ansible-playbook ./ansible/20_addons-turbonomic-kubeturbo.yaml
 	```
 <div style="page-break-after: always;"></div>
 
@@ -97,7 +97,7 @@ This tool needs existing `Business Applications`, you can either integrate with 
 4. Launch 
 
 	```shell
-	ansible-playbook ./ansible/20_3_aiops-addons-turbonomic-gateway.yaml
+	ansible-playbook ./ansible/20_3_addons-turbonomic-gateway.yaml
 	```
 
 <div style="page-break-after: always;"></div>
@@ -117,7 +117,7 @@ With this tool you can you can add randomized ResponseTime and Transactions metr
 1. Launch
 
 	```shell
-	ansible-playbook ./ansible/20_2_aiops-addons-turbonomic-metrics.yaml
+	ansible-playbook ./ansible/20_2_addons-turbonomic-metrics.yaml
 	```
 
 1. Wait for the Pod to become available

@@ -10,7 +10,7 @@
 # Get Config File
 # --------------------------------------------------------------------------------------------------------------------------------------
 # *************************************************************************************************************************************************
-- name: PREREQUISITES -      👓 Load parameters
+- name: LOAD PARAMETERS -        👓 Load parameters
   include_vars: ../00_config_cp4waiops.yaml
 
 - name: TIMESTAMP -              🟢 START - INSTALL EVENT MANAGER
@@ -158,7 +158,7 @@
 # Wait for EventManager Namespace to be ready
 # --------------------------------------------------------------------------------------------------------------------------------------
 
-- name: CHECK -          🕦 Wait for more than >{{EVTMGR_NS_MIN_PODS_FINAL}} pods in namespace {{EVTMGR_NAMESPACE}}
+- name: CHECK -                  🕦 Wait for more than >{{EVTMGR_NS_MIN_PODS_FINAL}} pods in namespace {{EVTMGR_NAMESPACE}}
   shell: |
     NUM_PODS=$(oc get po -n {{EVTMGR_NAMESPACE}} | wc -l)
     echo $NUM_PODS
@@ -168,7 +168,7 @@
   delay: 15
 
 
-- name: CHECK -          🕦 Wait for WEBGUI to become ready
+- name: CHECK -                  🕦 Wait for WEBGUI to become ready
   shell: |
     WEBGUI_PODS=$(oc get po -n {{EVTMGR_NAMESPACE}} | grep evtmanager-webgui-0)
     echo $WEBGUI_PODS

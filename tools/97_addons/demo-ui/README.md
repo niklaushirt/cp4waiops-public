@@ -90,7 +90,7 @@ For Logs, just define the lines you wish to inject and put them one per line (wi
 The easiest way to deploy the `Demo UI` is by using the automated Ansible script.
 
 ```bash  
-ansible-playbook ./ansible/16_aiops-install-demo-ui.yaml 
+ansible-playbook ./ansible/16_aimanager-install-demo-ui.yaml 
 
 oc get route -n cp4waiops cp4waiops-demo-ui  -o jsonpath={.spec.host}
 

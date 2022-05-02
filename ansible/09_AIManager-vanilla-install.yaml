@@ -28,7 +28,7 @@
 #  
 # ---------------------------------------------------------------------------------------------------------------------------------------------------"
 # ---------------------------------------------------------------------------------------------------------------------------------------------------"
-
+ 
 
 - hosts: localhost
   #become: true
@@ -36,33 +36,35 @@
 
   roles:  
 # Placeholder for customization
-    - role: 00_pre
+    - role: 00_init-custom-hook
 
 # Initialize Logging
-    - role: 00_init-logging
+    - role: 01_init-logging
     
-    - role: 00_pre_checks
+    - role: 02_init_checks
 # Start block
     - role: 98-log-start-01
 
 # Run Prerequisites
-    - role: 01_initialization
+    - role: 03_init-initialization
   
-    - role: 02_rook-ceph
+    - role: 04_storage-rook-ceph
       when: (ROOK_CEPH_INSTALL_MODE=="enable" or ROOK_CEPH_INSTALL_MODE=="automatic") and  INSTALL_ROOK_CEPH=="true"
 
-    - role: 03_aiops-get-storage-class
+    - role: 05_init-get-storage-class
       
 
-    - role: 04_aiops-prerequisites
+    - role: 06_aimanager-prerequisites
       
 
 # Install CP4WAIOPS Operator
-    - role: 10_aiops-operator
+    - role: 10_aimanager-custom-hook
+
+    - role: 11_aimanager-operator
       
       
 # Install CP4WAIOPS Instance
-    - role: 11_aiops-install
+    - role: 12_aimanager-install
       
 
 
@@ -70,22 +72,22 @@
     
 
 # Wait for Common Services being completely installed
-    - role: 99_aiops-wait-common-services
+    - role: 99_aimanager-wait-common-services
       
 
-    - role: 99_aiops-wait-for-zen
+    - role: 99_aimanager-wait-for-zen
       
 
 
 
 
 # Wait for CP4WAIOPS being completely installed
-    - role: 99_aiops-wait-cp4waiops
+    - role: 99_aimanager-wait-cp4waiops
       
 
 
 # Get all login credentials
-    - role: 90_aiops-logins
+    - role: 90_core-get-all-logins
       when: PRINT_LOGINS
 
 # End block

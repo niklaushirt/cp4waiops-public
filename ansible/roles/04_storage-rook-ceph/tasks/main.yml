@@ -1,0 +1,194 @@
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Install Rook-Ceph
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Install Rook-Ceph
+# --------------------------------------------------------------------------------------------------------------------------------------
+
+- name: TIMESTAMP -              🟢 START - ROOK CEPH
+  debug: 
+    msg="{{ lookup('pipe','date +%d.%m.%Y---%H:%M:%S') }}"
+
+
+
+- name: ROOKCEPH -               🔎 Check if Rook-Ceph should be installed
+  shell: |
+    oc get namespace --ignore-not-found rook-ceph
+  ignore_errors: yes
+  register: OBJECT_EXISTS
+
+
+
+- name: ROOKCEPH -               📥 WRITE TO LOGFILE
+  shell: |
+    export MESSAGE="Install Rook/Ceph: {{INSTALL_ROOK_CEPH}}"
+    export currentDate=$(date +%Y-%m-%d_%H:%M)
+    echo "---------------------------------------------------------------------------------------------------------------------------------------------------" >> ../installAIManager.log
+    echo $currentDate" - "$USER" - "$MESSAGE  >> ../installAIManager.log
+  ignore_errors: yes
+
+
+
+
+
+
+- name: ROOKCEPH -               🚀 Install Rook-Ceph
+  block:
+
+  - name: ROOKCEPH -               🚀 Rook-Ceph create route
+    shell: |
+      oc create route passthrough dash -n rook-ceph --service=rook-ceph-mgr-dashboard --port=8443
+        
+      oc create clusterrolebinding rook-ceph-default-admin --clusterrole=cluster-admin --serviceaccount=rook-ceph:default
+      oc create clusterrolebinding longhorn-rook-ceph-admin --clusterrole=cluster-admin --serviceaccount=rook-ceph:rook-ceph
+      oc adm policy add-scc-to-group anyuid system:serviceaccounts:rook-ceph
+
+    ignore_errors: yes
+    when: INSTALL_ROOK_CEPH
+
+
+  - name: ROOKCEPH -               🚀 Rook-Ceph CRDS
+    kubernetes.core.k8s:
+      state: present
+      namespace: rook-ceph
+      src: ./templates/rook-ceph/crds.yaml
+    when: INSTALL_ROOK_CEPH
+
+
+
+  - name: ROOKCEPH -               🚀 Rook-Ceph Common
+    kubernetes.core.k8s:
+      state: present
+      namespace: rook-ceph
+      src: ./templates/rook-ceph/common.yaml
+    when: INSTALL_ROOK_CEPH
+
+
+  # - name: ROOKCEPH -           🚀 Rook-Ceph LVM
+  #   kubernetes.core.k8s:
+  #     state: present
+  #     namespace: rook-ceph
+  #     src: ./templates/rook-ceph/lvm-installation.yaml
+  #   when: INSTALL_ROOK_CEPH
+
+  # - name: ROOKCEPH -           🚀 Rook-Ceph CLEAN
+  #   kubernetes.core.k8s:
+  #     state: present
+  #     namespace: rook-ceph
+  #     src: ./templates/rook-ceph/lvm-installation-clean-volumes.yaml
+  #   when: INSTALL_ROOK_CEPH
+
+
+
+
+
+  - name: ROOKCEPH -               🚀 Rook-Ceph Operator
+    kubernetes.core.k8s:
+      state: present
+      namespace: rook-ceph
+      src: ./templates/rook-ceph/operator-openshift.yaml
+    when: INSTALL_ROOK_CEPH
+  
+
+
+  - name: ROOKCEPH -               🚀 Rook-Ceph Cluster
+    kubernetes.core.k8s:
+      state: present
+      namespace: rook-ceph
+      src: ./templates/rook-ceph/cluster.yaml
+    when: INSTALL_ROOK_CEPH
+    
+
+
+  - name: ROOKCEPH -               🚀 Rook-Ceph Filesystem
+    kubernetes.core.k8s:
+      state: present
+      namespace: rook-ceph
+      src: ./templates/rook-ceph/filesystem.yaml
+    when: INSTALL_ROOK_CEPH
+    
+
+
+  - name: ROOKCEPH -               🚀 Rook-Ceph Storageclass File
+    kubernetes.core.k8s:
+      state: present
+      namespace: rook-ceph
+      src: ./templates/rook-ceph/storageclass-fs.yaml
+    when: INSTALL_ROOK_CEPH
+    
+
+  - name: ROOKCEPH -               🚀 Rook-Ceph Storageclass Block
+    kubernetes.core.k8s:
+      state: present
+      namespace: rook-ceph
+      src: ./templates/rook-ceph/storageclass-block.yaml
+    when: INSTALL_ROOK_CEPH
+    
+
+  - name: ROOKCEPH -               🚀 Rook-Ceph  make Storageclass File default
+    shell: |
+      oc patch storageclass rook-cephfs -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'  
+    ignore_errors: yes
+    register: demo_robot_shop
+    when: INSTALL_ROOK_CEPH
+  #when: OBJECT_EXISTS.stdout|length == 0
+
+
+
+  - name: ROOKCEPH -               🚀 Rook-Ceph patch some stuff
+    shell: |
+      #HACK
+      oc -n rook-ceph create secret generic --type kubernetes.io/rook rook-ceph-crash-collector-keyring
+    ignore_errors: yes
+    when: INSTALL_ROOK_CEPH
+
+
+
+  # - name: ROOKCEPH -           🚀 Rook-Ceph LVM
+  #   kubernetes.core.k8s:
+  #     state: absent
+  #     namespace: rook-ceph
+  #     src: ./templates/rook-ceph/lvm-installation.yaml
+  #   when: INSTALL_ROOK_CEPH
+
+  # - name: ROOKCEPH -           🚀 Rook-Ceph LVM
+  #   kubernetes.core.k8s:
+  #     state: absent
+  #     namespace: rook-ceph
+  #     src: ./templates/rook-ceph/lvm-installation-clean-volumes.yaml
+  #   when: INSTALL_ROOK_CEPH
+
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Wait for rook-ceph Namespace to be ready
+# --------------------------------------------------------------------------------------------------------------------------------------
+- name: ROOKCEPH -               🕦 Wait for more than >{{ROOK_NS_MIN_PODS}} pods in namespace rook-ceph
+  shell: |
+    NUM_PODS=$(oc get po -n rook-ceph | wc -l)
+    echo $NUM_PODS
+  register: kubectl_num_pods
+  until: kubectl_num_pods.stdout|int > ROOK_NS_MIN_PODS
+  retries: 500
+  delay: 15
+  when: INSTALL_ROOK_CEPH
+
+
+
+- name: ROOKCEPH -               🕦 Wait for rook-ceph namespace to become ready
+  shell: oc get po -n rook-ceph | grep -v Running |grep -v Completed | grep -c ""
+  register: kubectl_get_pods
+  until: kubectl_get_pods.stdout == "1"
+  retries: 500
+  delay: 15
+  when: INSTALL_ROOK_CEPH
+
+
+  
+     
+
+
+     

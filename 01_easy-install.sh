@@ -20,7 +20,7 @@
 
 export SHOW_MORE="false"
 export WAIOPS_PODS_MIN=115
-export DOC_URL="https://github.ibm.com/NIKH/aiops-install-ansible-fvt-33#2-ai-manager-installation"
+export DOC_URL="https://github.ibm.com/NIKH/aiops-install-ansible-33#2-ai-manager-installation"
 
 # ---------------------------------------------------------------------------------------------------------------"
 # ---------------------------------------------------------------------------------------------------------------"
@@ -28,11 +28,14 @@ export DOC_URL="https://github.ibm.com/NIKH/aiops-install-ansible-fvt-33#2-ai-ma
 # ---------------------------------------------------------------------------------------------------------------"
 # ---------------------------------------------------------------------------------------------------------------"
 
-
+export COLOR_SUPPORT=$(tput colors)
+if [[ $COLOR_SUPPORT -gt 250 ]]; then
+      source ./tools/99_colors.sh
+fi
 
 clear
 
-echo "*****************************************************************************************************************************"
+echo "${BYellow}*****************************************************************************************************************************"
 echo "*****************************************************************************************************************************"
 echo "*****************************************************************************************************************************"
 echo "*****************************************************************************************************************************"
@@ -42,7 +45,7 @@ echo "  "
 echo "*****************************************************************************************************************************"
 echo "*****************************************************************************************************************************"
 echo "*****************************************************************************************************************************"
-echo "  "
+echo "${NC}  "
 echo "  "
 
 
@@ -73,13 +76,13 @@ then
     exit 1
 fi
 
-
+echo "${Purple}"
 
 if [[ $INPUT_TOKEN == "" ]];
 then
-    echo " 🔐  Token                               Not Provided (will be asked during installation)"
+    echo " 🔐  Token                              ${Red} Not Provided (will be asked during installation)${Purple}"
 else
-    echo " 🔐  Token                               Provided"
+    echo " 🔐  Token                               ${Green}Provided${Purple}"
     export ENTITLED_REGISTRY_KEY=$INPUT_TOKEN
 fi
 
@@ -98,16 +101,16 @@ fi
 
 if [[ $REPLACE_INDEX ]];
 then
-    echo " ❌  Replace existing Indexes            On ❗         (existing training indexes will be replaced/reloaded)"
+    echo " ❌  Replace existing Indexes            ${BRed}On ❗         (existing training indexes will be replaced/reloaded)${Purple}"
     export SILENT_SKIP=false
 else
-    echo " ✅  Replace existing Indexes            Off          (default - enable it by appending '-r true')"
+    echo " ✅  Replace existing Indexes            ${Green}Off${Purple}          (default - enable it by appending '-r true')"
     export SILENT_SKIP=true
 
 fi
 echo ""
 echo ""
-
+echo "${NC}"
 
 export TEMP_PATH=~/aiops-install
 
@@ -217,7 +220,7 @@ echo " 🐥  Initializing..."
 echo "--------------------------------------------------------------------------------------------"
 echo ""
 
-printf "\r  🥚🥚🥚🥚🥚🥚🥚🥚🥚🥚🥚🥚🥚 - Checking Command Line Tools                                  "
+printf "${BYellow}\r  🥚🥚🥚🥚🥚🥚🥚🥚🥚🥚🥚🥚🥚 - Checking Command Line Tools                                  "
 
 if [ ! -x "$(command -v oc)" ]; then
       echo "❌ Openshift Client not installed."
@@ -255,7 +258,7 @@ if [[ ! $CLUSTER_STATUS =~ "In project" ]]; then
       echo "❌ Aborting...."
       exit 1
 else
-      printf "\r ✅ $CLUSTER_STATUS as user $CLUSTER_WHOAMI\n\n"
+      printf "${NC}\r ✅ $CLUSTER_STATUS as user $CLUSTER_WHOAMI\n\n${BYellow}"
 
 fi
 
@@ -327,7 +330,7 @@ menu_EASY_03 () {
       echo ""
       if [[ $WAIOPS_PODS -gt $WAIOPS_PODS_MIN ]]; then
             cd ansible
-            ansible-playbook 03_AIManager-finalize-install.yaml
+            ansible-playbook 03_aimanager-finalize-install.yaml
             cd -
       else
             echo "❗ I told you that this is not yet available. Wait for step 01 to complete."
@@ -342,7 +345,7 @@ menu_EASY_02 () {
 
       if [[ $WAIOPS_PODS -gt $WAIOPS_PODS_MIN ]]; then
             cd ansible
-            ansible-playbook 02_AIManager-post-install.yaml
+            ansible-playbook 02_aimanager-post-install.yaml
             cd -
             echo "*****************************************************************************************************************************"
             echo "*****************************************************************************************************************************"
@@ -412,7 +415,7 @@ menu_EASY_01 () {
             echo ""
 
             cd ansible
-            ansible-playbook -e ENTITLED_REGISTRY_KEY=$TOKEN 01_AIManager-base-install.yaml
+            ansible-playbook -e ENTITLED_REGISTRY_KEY=$TOKEN 01_aimanager-base-install.yaml
             cd -
 
 
@@ -579,7 +582,7 @@ menu_INSTALL_EVTMGR () {
             echo "--------------------------------------------------------------------------------------------"
             echo ""
             cd ansible
-            ansible-playbook -e ENTITLED_REGISTRY_KEY=$TOKEN 04_EventManager-install.yaml
+            ansible-playbook -e ENTITLED_REGISTRY_KEY=$TOKEN 04_eventmanager-install.yaml
             cd -
 
       else
@@ -897,7 +900,7 @@ menuTRAIN_AIOPSDEMO () {
       echo " 🚀  Start CP4WAIOPS Demo Training (skip)" 
       echo "--------------------------------------------------------------------------------------------"
       echo ""
-     ansible-playbook ./ansible/85_training-all-steps.yaml
+     ansible-playbook ./ansible/85_aimanager-training-all-steps.yaml
 }
 
 
@@ -909,7 +912,7 @@ menuLOAD_TOPOLOGY () {
       echo "--------------------------------------------------------------------------------------------"
       echo ""
 
-      ansible-playbook ./ansible/80_create-topology-all-steps.yaml
+      ansible-playbook ./ansible/80_aimanager-create-topology-all-steps.yaml
 }
 
 menuLOAD_TOPOLOGYNOI () {
@@ -949,7 +952,7 @@ menuDEBUG_PATCH () {
 
 
       cd ansible
-      ansible-playbook 91_aiops-debug-patches.yaml
+      ansible-playbook 91_aimanager-debug-patches.yaml
       cd -
 
 }
@@ -961,7 +964,7 @@ menu_INSTALL_TOOLBOX () {
       echo ""
 
       cd ansible
-      ansible-playbook 17_aiops-install-toolbox.yaml
+      ansible-playbook 17_aimanager-install-toolbox.yaml
       cd -
 
 }
@@ -977,7 +980,7 @@ menu_INSTALL_AIOPSDEMO () {
       oc delete cm -n $WAIOPS_NAMESPACE demo-ui-config>/dev/null 2>/dev/null
       oc delete deployment -n $WAIOPS_NAMESPACE ibm-aiops-demo-ui>/dev/null 2>/dev/null
       cd ansible
-      ansible-playbook 16_aiops-install-demo-ui.yaml
+      ansible-playbook 16_aimanager-install-demo-ui.yaml
       cd -
 
       echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
@@ -1029,7 +1032,7 @@ menu_INSTALL_TURBO () {
       echo ""
 
       cd ansible
-      ansible-playbook 20_install-turbonomic.yaml
+      ansible-playbook 20_addons-install-turbonomic.yaml
       cd -
 }
 
@@ -1041,7 +1044,7 @@ menu_INSTALL_AWX () {
       echo ""
 
       cd ansible
-      ansible-playbook 23_install-awx.yaml
+      ansible-playbook 23_addons-install-awx.yaml
       cd -
 }
 
@@ -1053,7 +1056,7 @@ menu_INSTALL_GITOPS () {
       echo ""
 
       cd ansible
-      ansible-playbook 24_install-gitops.yaml
+      ansible-playbook 24_addons-install-gitops.yaml
       cd -
 }
 
@@ -1065,7 +1068,7 @@ menu_INSTALL_ELK () {
       echo ""
 
       cd ansible
-      ansible-playbook 22_install-elk-ocp.yaml
+      ansible-playbook 22_addons-install-elk-ocp.yaml
       cd -
 }
 
@@ -1078,7 +1081,7 @@ menu_INSTALL_ISTIO () {
       echo ""
 
       cd ansible
-      ansible-playbook 29_install-servicemesh.yaml
+      ansible-playbook 29_addons-install-servicemesh.yaml
       cd -
 }
 
@@ -1123,7 +1126,7 @@ menu_INSTALL_HUMIO () {
             echo ""
 
 cd ansible
-ansible-playbook -e HUMIO_LICENSE_KEY=$TOKEN 21_install-humio.yaml
+ansible-playbook -e HUMIO_LICENSE_KEY=$TOKEN 21_addons-install-humio.yaml
 cd -
             
 
@@ -1147,65 +1150,64 @@ until [ "$selection" = "0" ]; do
   
 clear
 
+echo "${BYellow}*****************************************************************************************************************************"
 echo "*****************************************************************************************************************************"
-echo "*****************************************************************************************************************************"
-echo "      __________  __ ___       _____    ________            "
+echo "     __________  __ ___       _____    ________            "
 echo "     / ____/ __ \/ // / |     / /   |  /  _/ __ \____  _____"
 echo "    / /   / /_/ / // /| | /| / / /| |  / // / / / __ \/ ___/"
 echo "   / /___/ ____/__  __/ |/ |/ / ___ |_/ // /_/ / /_/ (__  ) "
 echo "   \____/_/      /_/  |__/|__/_/  |_/___/\____/ .___/____/  "
 echo "                                             /_/            "
 echo ""
-echo "*****************************************************************************************************************************"
-echo " 🐥 CloudPak for Watson AIOPs - EASY INSTALL"
+echo "   🐥 CloudPak for Watson AIOPs - EASY INSTALL"
+echo ""
 echo "*****************************************************************************************************************************"
 echo ""
-
+echo "${Purple}"
 if [[ $ENTITLED_REGISTRY_KEY == "" ]];
 then
-echo "      🔐 Image Pull Token:          Not Provided (will be asked during installation)"
+echo "      🔐 Image Pull Token:           ${Red}Not Provided (will be asked during installation)${Purple}"
 else
-echo "      🔐 Image Pull Token:          Provided"
+echo "      🔐 Image Pull Token:           ${Green}Provided${Purple}"
 fi
 
-echo "      🌏 Namespace:                 $WAIOPS_NAMESPACE"	
-echo "      💾 Skip Data Load if exists:  $SILENT_SKIP"	
-echo "      🔎 Verbose Mode:              $ANSIBLE_DISPLAY_SKIPPED_HOSTS"
-
-
-echo "  "
+echo "      🌏 Namespace:                  ${Green}$WAIOPS_NAMESPACE${Purple}"	
+echo "      💾 Skip Data Load if exists:   ${Green}$SILENT_SKIP${Purple}"	
+echo "      🔎 Verbose Mode:               ${Green}$ANSIBLE_DISPLAY_SKIPPED_HOSTS${Purple}"
+echo "${NC}"
+echo "${BYellow}   "
 echo "*****************************************************************************************************************************"
 echo "*****************************************************************************************************************************"
-echo "  "
+echo "${NC}"
 
 
-      echo "  🐥 CP4WAIOPS - Guided Install"
+      echo "  🐥 ${UYellow}CP4WAIOPS - Guided Install${NC}"
       echo "         00  - Open Documentation                                      - Open the AI Manager installation Documentation"
 
       if [[ $WAIOPS_PODS -lt $WAIOPS_PODS_MIN ]]; then
-            echo "     🚀  01  - Step 1: Install Base AI Manager   <-- Start here        - Install Base AI Manager"
+            echo "     🚀  ${BYellow}01  - Step 1: Install Base AI Manager${NC}   ${Green}<-- Start here${NC}        - Install Base AI Manager"
       else
-            echo "         01 ✅ Step 1: Install Base AI Manager                         - Already installed "
+            echo "     ✅  ${DGreen}01  - Step 1: Install Base AI Manager${NC}                         - Already installed "
       fi
 
       if [[ $WAIOPS_PODS -gt $WAIOPS_PODS_MIN ]]; then
             if [[ $TRAINING_EXISTS == "false" ]]; then
-                  echo "         02  - Step 2: Post Install Base AI Manager                    - Post Install Steps for AI Manager"
+                  echo "     🚀  ${BYellow}02  - Step 2: Post Install Base AI Manager${NC}                    - Post Install Steps for AI Manager"
             else
-                  echo "         02 ✅ Step 2: Post Install Base AI Manager                    - Already installed (Models trained: $TRAINING_EXISTS)"
+                  echo "     ✅  ${DGreen}02  - Step 2: Post Install Base AI Manager${NC}                    - Already installed (Models trained: $TRAINING_EXISTS)"
             fi
       else
-            echo "      ❗ 02  - Step 2: Post Install Base AI Manager                    - Not yet available. Wait for step 01 to complete."
+            echo "        ${BBlack}02  - Step 2: Post Install Base AI Manager${NC}                    - Not yet available. Wait for step 01 to complete."
       fi
 
       if [[ $WAIOPS_PODS -gt $WAIOPS_PODS_MIN ]]; then
             if [[ $RUNBOOKS_EXISTS == "0" ]]; then
-                  echo "         03  - Step 3: Finalize Install Base AI Manager                - Finalize Install for AI Manager"
+                  echo "     🚀  ${BYellow}03  - Step 3: Finalize Install Base AI Manager${NC}                - Finalize Install for AI Manager"
             else
-                  echo "         03 ✅ Step 3: Finalize Install Base AI Manager                - Already installed (Runbooks created: $CHECK_RUNBOOKS)"
+                  echo "     ✅ ${DGreen} 03  - Step 3: Finalize Install Base AI Manager${NC}                - Already installed (Runbooks created: $CHECK_RUNBOOKS)"
             fi
       else
-            echo "      ❗ 03  - Step 3: Finalize Install Base AI Manager                - Not yet available. Wait for step 01 to complete."
+            echo "        ${BBlack}03  - Step 3: Finalize Install Base AI Manager${NC}                - Not yet available. Wait for step 02 to complete."
 
       fi
       echo "  "
@@ -1215,7 +1217,7 @@ echo "  "
 
 
       echo "  "
-      echo "  🌏 Access Information"
+      echo "  🌏 ${UYellow}Access Information${NC}"
       echo "         81  - Get logins                                              - Get logins for all installed components"
       echo "         82  - Write logins to file                                    - Write logins for all installed components to file LOGIN.txt"
       echo "  "
@@ -1266,33 +1268,33 @@ echo "  "
       if [[ $SHOW_MORE == "true" ]]; then
 
 
-            echo "  🐥 CP4WAIOPS - Base Install Only (without any demo content)"
+            echo "  🐥 ${UYellow}CP4WAIOPS - Base Install Only (without any demo content)${NC}"
             if [[ $WAIOPS_NAMESPACE == "" ]]; then
                   echo "         11  - Install AI Manager                                      - Install CP4WAIOPS AI Manager Component Only"
             else
-                  echo "         11 ✅ Install AI Manager                                      - Already installed "
+                  echo "     ✅  11  - Install AI Manager                                      - Already installed "
             fi
 
             if [[ $EVTMGR_NAMESPACE == "" ]]; then
                   echo "         12  - Install Event Manager                                   - Install CP4WAIOPS Event Manager Component Only"
             else
-                  echo "         12 ✅ Install Event Manager                                   - Already installed "
+                  echo "     ✅  12  - Install Event Manager                                   - Already installed "
             fi
 
 
 
             echo "  "
-            echo "  🐥 CP4WAIOPS Addons"
+            echo "  🐥 ${UYellow}CP4WAIOPS Addons${NC}"
             if [[  $DEMOUI_READY == "" ]]; then
                   echo "         17  - Install CP4WAIOPS Demo Application                      - Install CP4WAIOPS Demo Application"
             else
-                  echo "         17 ✅ Install CP4WAIOPS Demo Application                      - Already installed "
+                  echo "     ✅  17  - Install CP4WAIOPS Demo Application                      - Already installed "
             fi
 
             if [[  $TOOLBOX_READY == "" ]]; then
                   echo "         18  - Install CP4WAIOPS Toolbox                               - Install Toolbox pod with all important tools (oc, kubectl, kafkacat, ...)"
             else
-                  echo "         18 ✅ Install CP4WAIOPS Toolbox                               - Already installed "
+                  echo "     ✅  18  - Install CP4WAIOPS Toolbox                               - Already installed "
             fi
 
 
@@ -1300,43 +1302,43 @@ echo "  "
             if [[  $LDAP_NAMESPACE == "" ]]; then
                   echo "         32  - Install OpenLdap                                        - Install OpenLDAP for CP4WAIOPS (should be installed by option 11)"
             else
-                  echo "         32 ✅ Install OpenLdap                                        - Already installed "
+                  echo "     ✅  32  - Install OpenLdap                                        - Already installed "
             fi
 
             if [[  $RS_NAMESPACE == "" ]]; then
                   echo "         33  - Install RobotShop                                       - Install RobotShop for CP4WAIOPS (should be installed by option 11)"
             else
-                  echo "         33 ✅ Install RobotShop                                       - Already installed  "
+                  echo "     ✅  33  - Install RobotShop                                       - Already installed  "
             fi
 
 
 
 
             echo "  "
-            echo "  🐥 Third Party Solutions"
+            echo "  🐥 ${UYellow}Third Party Solutions${NC}"
             if [[ $TURBO_NAMESPACE == "" ]]; then
                   echo "         21  - Install Turbonomic                                      - Install Turbonomic (needs a separate license)"
             else
-                  echo "         21 ✅ Install Turbonomic                                      - Already installed "
+                  echo "     ✅  21  - Install Turbonomic                                      - Already installed "
             fi
 
             if [[  $HUMIO_NAMESPACE == "" ]]; then
                   echo "         22  - Install Humio                                           - Install Humio (needs a separate license)"
             else
-                  echo "         22 ✅ Install Humio                                           - Already installed "
+                  echo "     ✅  22  - Install Humio                                           - Already installed "
             fi
 
 
             if [[  $AWX_NAMESPACE == "" ]]; then
                   echo "         23  - Install AWX                                             - Install AWX (open source Ansible Tower)"
             else
-                  echo "         23 ✅ Install AWX                                             - Already installed "
+                  echo "     ✅  23  - Install AWX                                             - Already installed "
             fi
 
             if [[  $ISTIO_NAMESPACE == "" ]]; then
                   echo "         24  - Install OpenShift Mesh                                  - Install OpenShift Mesh (Istio)"
                   else
-                  echo "         24 ✅ Install OpenShift Mesh                                  - Already installed "
+                  echo "     ✅  24  - Install OpenShift Mesh                                  - Already installed "
                   fi
 
 
@@ -1344,14 +1346,7 @@ echo "  "
             if [[  $ELK_NAMESPACE == "" ]]; then
                   echo "         25  - Install OpenShift Logging                               - Install OpenShift Logging (ELK)"
                   else
-                  echo "         25 ✅ Install OpenShift Logging                               - Already installed "
-                  fi
-
-
-            if [[  $ELK_NAMESPACE == "" ]]; then
-                  echo "         25  - Install OpenShift Logging                               - Install OpenShift Logging (ELK)"
-                  else
-                  echo "         25 ✅ Install OpenShift Logging                               - Already installed "
+                  echo "     ✅  25  - Install OpenShift Logging                               - Already installed "
                   fi
 
 
@@ -1361,36 +1356,41 @@ echo "  "
 
                   #       echo "    	25  - Install OpenShift Logging                               - Install OpenShift Logging (ELK)"
             echo "  "
-            echo "  🐥 Demo Configuration"
-            echo "         51  - AI Manager Topology                                     - Create RobotShop Topology for AI Manager (must create Observers before - documentation 4.)"
-            echo "         52  - Event Manager Topology                                  - Create RobotShop Topology for Event Manager (must create Observers before - documentation 11.1)"
-            echo "         55  - Train RobotShop Models                                  - Loads training data, creates definitions and launches training (skip if index exists: $SILENT_SKIP)"
-            
+            echo "  🐥 ${UYellow}Demo Configuration${NC}"
+            echo "         51  - AI Manager Topology                                     - Create RobotShop Topology for AI Manager (must create Observers before - documentation 3.2)"
+            if [[  $TRAINING_EXISTS == "" ]]; then
+                  echo "         55  - Train RobotShop Models                                  - Loads training data, creates definitions and launches training (Models trained: $TRAINING_EXISTS)"
+            else
+                  echo "     ✅  55  - Train RobotShop Models                                  - Models already trained: $TRAINING_EXISTS)"
+            fi
+
+
+
             echo "  "
-            echo "  🐥 Ansible AWX - WAIOPS Installer"
+            echo "  🐥 ${UYellow}Ansible AWX - WAIOPS Installer${NC}"
             if [[  $AWX_NAMESPACE == "" ]]; then
                   echo "         61  - Install AWX and Jobs                                    - Create AWX and preload Jobs for a complete installation"
             else
-                  echo "         61 ✅ Install AWX and Jobs                                    - Already installed "
+                  echo "     ✅  61  - Install AWX and Jobs                                    - Already installed "
             fi
 
 
             echo "  "
-            echo "  🐥 Prerequisites Install"
+            echo "  🐥 ${UYellow}Prerequisites Install${NC}"
             echo "         71  - Install Prerequisites Mac                               - Install Prerequisites for Mac"
             echo "         72  - Install Prerequisites Ubuntu                            - Install Prerequisites for Ubuntu"
 
 
 
 
-            echo "  "
-            echo "  🦟 Debug"
-            echo "         999  - Debug Patch                                             - Patches if your AI Manager install is hanging"
-            echo "  "
+            # echo "  "
+            # echo "  🦟 ${UYellow}Debug${NC}"
+            # echo "         999  - Debug Patch                                             - Patches if your AI Manager install is hanging"
+            # echo "  "
       else 
             echo "  "
             echo "  "
-            echo "      🚀  m  -  Show more options                                      - Show advanced options"
+            echo "      🛠️   ${NC}m  -  Show more options${NC}                                      - Show advanced options"
 
       fi
 
@@ -1399,10 +1399,10 @@ echo "  "
 
 
   echo "      "
-  echo "      ❌  0  -  Exit"
+  echo "      ❌  ${Red}0  -  Exit${NC}"
   echo ""
   echo ""
-  echo "  Enter selection: "
+  echo "  ${BGreen}Enter selection: ${NC}"
   read selection
   echo ""
   case $selection in

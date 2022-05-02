@@ -1,0 +1,37 @@
+- name: TIMESTAMP -              🟢 START - CREATE METRICS ANALYSIS DEFINITIONS
+  debug: 
+    msg="{{ lookup('pipe','date +%d.%m.%Y---%H:%M:%S') }}"
+
+
+
+- name: TRAINING CREATE METRICS - 📥 WRITE TO LOGFILE
+  shell: |
+    export MESSAGE="Create Metric Anomaly Training Definition"
+    export currentDate=$(date +%Y-%m-%d_%H:%M)
+    echo "---------------------------------------------------------------------------------------------------------------------------------------------------" >> ../installAIManager.log
+    echo $currentDate" - "$USER" - "$MESSAGE  >> ../installAIManager.log
+  ignore_errors: yes
+
+
+
+- name: TRAINING CREATE METRICS - 🚀 CREATE METRICS ANALYSIS CONFIGURATION
+  shell: |
+    set -x
+    export ROUTE=""
+    pwd
+
+    echo "***************************************************************************************************************************************************"
+    echo "   🛠️  Create Analysis Definiton: Metric Anomaly"
+    export FILE_NAME=create-analysis-METRIC.graphql
+    ../tools/02_training/scripts/execute-graphql.sh
+
+
+
+
+  register: output_string
+  ignore_errors: yes
+
+- name: TRAINING CREATE METRICS - ✅ RESULT
+  debug: 
+    var: output_string.stdout_lines
+  #when: PRINT_LOGINS == true

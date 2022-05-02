@@ -26,7 +26,7 @@
 #  
 # ---------------------------------------------------------------------------------------------------------------------------------------------------"
 # ---------------------------------------------------------------------------------------------------------------------------------------------------"
-
+ 
 
 - hosts: localhost
   #become: true
@@ -34,21 +34,21 @@
 
   roles:  
 # Placeholder for customization
-    - role: 00_pre
+    - role: 00_init-custom-hook
 
 # Run Prerequisites
 
-    - role: 03_aiops-get-storage-class
+    - role: 05_init-get-storage-class
       
  
 
 # Install Event Manager and Gateway if selected
     - role: 45_eventmanager-install
 
-    - role: 46_aiops-post-gateway
+    - role: 46_eventmanager-post-gateway
 
 # Get all login credentials
-    - role: 90_aiops-logins
+    - role: 90_core-get-all-logins
       when: PRINT_LOGINS
 
 

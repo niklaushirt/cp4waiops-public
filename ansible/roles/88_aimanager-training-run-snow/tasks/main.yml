@@ -1,0 +1,38 @@
+- name: TIMESTAMP -              🟢 START - RUN SNOW TRAINING
+  debug: 
+    msg="{{ lookup('pipe','date +%d.%m.%Y---%H:%M:%S') }}"
+
+
+
+
+- name: TRAINING RUN -           📥 WRITE TO LOGFILE
+  shell: |
+    export MESSAGE="Run SNOW Training"
+    export currentDate=$(date +%Y-%m-%d_%H:%M)
+    echo "---------------------------------------------------------------------------------------------------------------------------------------------------" >> ../installAIManager.log
+    echo $currentDate" - "$USER" - "$MESSAGE  >> ../installAIManager.log
+  ignore_errors: yes
+
+
+
+- name: TRAINING RUN -           🚀 RUN TRAINING SNOW
+  shell: |
+    set -x
+    
+    echo "  ***************************************************************************************************************************************************"
+    echo "   🛠️  Run Analysis: Change Risk"
+    export FILE_NAME=run-analysis-CR.graphql
+    ../tools/02_training/scripts/execute-graphql.sh
+
+    echo "  ***************************************************************************************************************************************************"
+    echo "   🛠️  Run Analysis: Similar Incidents"
+    export FILE_NAME=run-analysis-SI.graphql
+    ../tools/02_training/scripts/execute-graphql.sh
+
+  register: output_string
+  ignore_errors: yes
+- name: TRAINING RUN SNOW -       ✅ RESULT
+  debug: 
+    var: output_string.stdout_lines
+  #when: PRINT_LOGINS == true
+

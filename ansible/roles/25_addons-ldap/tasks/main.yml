@@ -1,0 +1,44 @@
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Install ADDONS
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Install OpenLDAP
+# --------------------------------------------------------------------------------------------------------------------------------------
+
+- name: TIMESTAMP -              🟢 START - INSTALL OPENLDAP
+  debug: 
+    msg="{{ lookup('pipe','date +%d.%m.%Y---%H:%M:%S') }}"
+
+
+- name: LDAP -                   📥 WRITE TO LOGFILE
+  shell: |
+    export MESSAGE="Installing Open LDAP"
+    export currentDate=$(date +%Y-%m-%d_%H:%M)
+    echo "---------------------------------------------------------------------------------------------------------------------------------------------------" >> ../installAIManager.log
+    echo $currentDate" - "$USER" - "$MESSAGE  >> ../installAIManager.log
+  ignore_errors: yes
+
+
+
+# - name: ADDONS -             ❎ Remove old OpenLDAP
+#   kubernetes.core.k8s:
+#     state: absent
+#     template: ./templates/ldap/install-ldap.j2
+#   #when: INSTALL_LDAP == true
+
+- name: LDAP -                   🚀 Install OpenLDAP
+  kubernetes.core.k8s:
+    state: present
+    template: ./templates/ldap/install-ldap.j2
+  #when: INSTALL_LDAP == true
+
+
+
+- name: TIMESTAMP -              ✅ END INSTALLATION - INSTALL OPENLDAP
+  debug: 
+    msg="{{ lookup('pipe','date +%d.%m.%Y---%H:%M:%S') }}"
+

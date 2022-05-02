@@ -1,0 +1,52 @@
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Waiting for CP4WAIOPS installation to finish
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+    
+- name: LOGGING -                📥 WRITE TO LOGFILE
+  shell: |
+    export MESSAGE=" 🕦 Wait for Infrastructure Management to become ready"
+    export currentDate=$(date +%Y-%m-%d_%H:%M)
+    echo "---------------------------------------------------------------------------------------------------------------------------------------------------" >> ../installAIManager.log
+    echo $currentDate" - "$USER" - "$MESSAGE  >> ../installAIManager.log
+  ignore_errors: yes
+
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Wait for Infra Namespace to be ready
+# --------------------------------------------------------------------------------------------------------------------------------------
+
+
+- name: CHECK -                  🕦 Wait for more than >55 pods in namespace {{ WAIOPS_NAMESPACE }}-infra (this might take some time)
+  shell: |
+    NUM_PODS=$(oc get po -n {{ WAIOPS_NAMESPACE }}-infra | wc -l)
+    echo $NUM_PODS
+  register: kubectl_num_pods
+  until: kubectl_num_pods.stdout|int > 55
+  retries: 500
+  delay: 15
+
+
+
+- name: CHECK -                  🕦 Wait for pods in namespace {{ WAIOPS_NAMESPACE }}-infra ready
+  shell: |
+    NUM_PODS=$(oc get pods -n awx| grep postgres|grep 1/1 | wc -l| tr -d ' ')
+    echo $NUM_PODS
+  register: kubectl_num_pods
+  until: kubectl_num_pods.stdout|int == 1
+  retries: 500
+  delay: 15
+
+
+
+
+
+
+- name: LOGGING -                📥 WRITE TO LOGFILE
+  shell: |
+    export MESSAGE=" ✅ Infrastructure Management is ready"
+    export currentDate=$(date +%Y-%m-%d_%H:%M)
+    echo $currentDate" - "$USER" - "$MESSAGE  >> ../installAIManager.log
+  ignore_errors: yes

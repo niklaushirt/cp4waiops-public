@@ -1,0 +1,119 @@
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Register LDAP
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Register LDAP
+# --------------------------------------------------------------------------------------------------------------------------------------
+
+- name: TIMESTAMP -              🟢 START - LDAP REGISTER
+  debug: 
+    msg="{{ lookup('pipe','date +%d.%m.%Y---%H:%M:%S') }}"
+
+
+- name: LDAPREGISTER -           📥 WRITE TO LOGFILE
+  shell: |
+    export MESSAGE="Register LDAP Users"
+    export currentDate=$(date +%Y-%m-%d_%H:%M)
+    echo "---------------------------------------------------------------------------------------------------------------------------------------------------" >> ../installAIManager.log
+    echo $currentDate" - "$USER" - "$MESSAGE  >> ../installAIManager.log
+  ignore_errors: yes
+
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Get Cluster FQDN
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+
+- name: LDAPREGISTER -           🌏 Get Cluster FQDN
+  shell: |
+    CLUSTER_ROUTE=$(oc get routes console -n openshift-console | tail -n 1 2>&1 ) 
+    CLUSTER_FQDN=$( echo $CLUSTER_ROUTE | awk '{print $2}')
+    echo ${CLUSTER_FQDN##*console.}
+  register: CLUSTER_NAME
+
+
+- name: LDAPREGISTER -           📥 Get CS Server
+  shell:         
+    echo "https://cp-console.{{ CLUSTER_NAME.stdout_lines[0] }}"
+  register: CS_SERVER
+
+
+- name: LDAPREGISTER -           📥 Get CS Server IP
+  shell:         
+    echo $(ping cp-console.{{ CLUSTER_NAME.stdout_lines[0] }} -c 1 -q | grep -m1 "("| awk '{print $3}' | sed "s/[(]//" | sed "s/[)]//" | sed "s/[:]//")
+  register: CS_SERVER_IP
+
+
+- name: LDAPREGISTER -           📥 Get CS Server Password
+  shell:         
+    echo $(oc -n ibm-common-services get secret platform-auth-idp-credentials -o jsonpath='{.data.admin_password}' | base64 --decode)
+  register: CS_PWD
+
+    
+- name: LDAPREGISTER -           📥 SC Login
+  shell:   
+    cloudctl login -a {{ CS_SERVER.stdout_lines[0] }} --skip-ssl-validation -u admin -p {{ CS_PWD.stdout_lines[0] }} -n kube-system
+  register: LOGIN
+- name: DEBUG -                  🟢 Output
+  debug: 
+    var: LOGIN.stdout_lines
+
+
+- name: LDAPREGISTER -       🔎 Check already registered
+  shell:   
+    echo $(cloudctl iam resources|grep "Directory:LDAP")
+  register: LDAPS
+- name: DEBUG -                  🟢 Output
+  debug: 
+    var: LDAPS.stdout_lines
+
+
+- name: LDAPREGISTER -           📥 Create LDAP Integration
+  block:
+  - name: LDAPREGISTER -           📥 Register LDAP Server
+    shell:         
+      #echo 'cloudctl iam ldap-create "LDAP" --basedn "{{ LDAP_BASE }}" --server "ldap://openldap.default:389" --binddn "cn=admin,{{ LDAP_BASE }}" --binddn-password "{{ LDAP_ADMIN_PASSWORD }}" -t "Custom" --group-filter "(&(cn=%v)(objectclass=groupOfUniqueNames))" --group-id-map "*:cn" --group-member-id-map "groupOfUniqueNames:uniqueMember" --user-filter "(&(uid=%v)(objectclass=Person))" --user-id-map "*:uid"'
+      cloudctl iam ldap-create "LDAP" --basedn {{ LDAP_BASE }} --server ldap://openldap.default:389 --binddn cn=admin,{{ LDAP_BASE }} --binddn-password {{ LDAP_ADMIN_PASSWORD }} -t "Custom" --group-filter "(&(cn=%v)(objectclass=groupOfUniqueNames))" --group-id-map "*:cn" --group-member-id-map "groupOfUniqueNames:uniqueMember" --user-filter "(&(uid=%v)(objectclass=Person))" --user-id-map "*:uid"
+    ignore_errors: yes
+    register: LOGIN
+  - name: DEBUG -                  🟢 Output
+    debug: 
+      var: LOGIN.stdout_lines
+
+  - name: LDAPREGISTER -           📥 Get Team ID
+    shell:         
+      echo $(cloudctl iam teams | awk '{print $1}'| sed -n 2p)
+    register: TEAM_ID
+
+
+  - name: LDAPREGISTER -           📥 Register Users and Teams
+    shell: |
+      cloudctl iam user-import -u demo -f
+      cloudctl iam user-import -u dev -f
+      cloudctl iam user-import -u test -f
+      cloudctl iam user-import -u prod -f
+      cloudctl iam user-import -u boss -f
+      cloudctl iam user-import -u nik -f
+      cloudctl iam user-import -u sre1 -f
+      cloudctl iam user-import -u sre2 -f
+
+      cloudctl iam team-add-users {{ TEAM_ID.stdout_lines[0] }} ClusterAdministrator -u demo
+      cloudctl iam team-add-users {{ TEAM_ID.stdout_lines[0] }} Administrator -u dev
+      cloudctl iam team-add-users {{ TEAM_ID.stdout_lines[0] }} Administrator -u test
+      cloudctl iam team-add-users {{ TEAM_ID.stdout_lines[0] }} Administrator -u prod
+      cloudctl iam team-add-users {{ TEAM_ID.stdout_lines[0] }} ClusterAdministrator -u boss    
+      cloudctl iam team-add-users {{ TEAM_ID.stdout_lines[0] }} ClusterAdministrator -u nik
+      cloudctl iam team-add-users {{ TEAM_ID.stdout_lines[0] }} ClusterAdministrator -u sre1
+      cloudctl iam team-add-users {{ TEAM_ID.stdout_lines[0] }} ClusterAdministrator -u sre2
+
+      cloudctl iam resource-add {{ TEAM_ID.stdout_lines[0] }} -r crn:v1:icp:private:iam::::Directory:LDAP
+    register: TEAMS
+    ignore_errors: yes
+  when: LDAPS.stdout_lines|length == 0
+

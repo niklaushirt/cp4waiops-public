@@ -11,7 +11,7 @@ Use Option 🐥`23` in Easy Install to install an `AWX ` instance if you haven't
 or directly run: 
 
 ```bash
-ansible-playbook ./ansible/23_install-awx.yaml
+ansible-playbook ./ansible/23_addons-install-awx.yaml
 ```
 
 ### 12.1.1 Configure AWX 

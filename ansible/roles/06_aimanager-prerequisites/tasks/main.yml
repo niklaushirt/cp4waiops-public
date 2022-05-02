@@ -1,0 +1,107 @@
+---
+# tasks file for aiops
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#       __________  __ ___       _____    ________            
+#      / ____/ __ \/ // / |     / /   |  /  _/ __ \____  _____
+#     / /   / /_/ / // /| | /| / / /| |  / // / / / __ \/ ___/
+#    / /___/ ____/__  __/ |/ |/ / ___ |_/ // /_/ / /_/ (__  ) 
+#    \____/_/      /_/  |__/|__/_/  |_/___/\____/ .___/____/  
+#                                              /_/            
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------------------------------------------------------"
+#  Ansible Install Playbook V0.1
+#
+#  CloudPak for Watson AIOps
+#
+#  ©2022 nikh@ch.ibm.com
+# ---------------------------------------------------------------------------------------------------------------------------------------------------"
+# ---------------------------------------------------------------------------------------------------------------------------------------------------"
+# ---------------------------------------------------------------------------------------------------------------------------------------------------"
+# ---------------------------------------------------------------------------------------------------------------------------------------------------"
+
+- name: TIMESTAMP -              🟢 START - PREREQUISITES
+  debug: 
+    msg="{{ lookup('pipe','date +%d.%m.%Y---%H:%M:%S') }}"
+
+- name: PREREQUISITES -          📥 WRITE TO LOGFILE
+  shell: |
+    export MESSAGE="Installing Prerequisites"
+    export currentDate=$(date +%Y-%m-%d_%H:%M)
+    echo "---------------------------------------------------------------------------------------------------------------------------------------------------" >> ../installAIManager.log
+    echo $currentDate" - "$USER" - "$MESSAGE  >> ../installAIManager.log
+  ignore_errors: yes
+
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Get Config File
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+- name: LOAD PARAMETERS -        👓 Load parameters
+  include_vars: ../00_config_cp4waiops.yaml
+
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Install GENERAL PREREQUISITES
+# --------------------------------------------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------------------------------------------
+
+# Create Namespace 
+- name: PREREQUISITES -          🚀 Create CP4WAIOPS namespace {{ WAIOPS_NAMESPACE }}
+  kubernetes.core.k8s:
+    api_version: v1
+    kind: Namespace
+    name: "{{ WAIOPS_NAMESPACE }}"
+    state: present
+  ignore_errors: yes
+
+
+
+# Create IBM Entitlements Pull Secret
+- name: PREREQUISITES -          🚀 Create Pull Secret
+  shell: |
+    oc create secret docker-registry 'ibm-entitlement-key' --docker-server={{ ENTITLED_REGISTRY }} --docker-username={{ ENTITLED_REGISTRY_USER }} --docker-password={{ ENTITLED_REGISTRY_KEY }} --namespace={{ WAIOPS_NAMESPACE }}
+    oc create secret docker-registry 'ibm-entitlement-key' --docker-server={{ ENTITLED_REGISTRY }} --docker-username={{ ENTITLED_REGISTRY_USER }} --docker-password={{ ENTITLED_REGISTRY_KEY }} --namespace=openshift-marketplace
+    oc create secret docker-registry 'ibm-entitlement-key' --docker-server={{ ENTITLED_REGISTRY }} --docker-username={{ ENTITLED_REGISTRY_USER }} --docker-password={{ ENTITLED_REGISTRY_KEY }} --namespace=openshift-operators
+    oc create secret docker-registry 'ibm-entitlement-key' --docker-server={{ ENTITLED_REGISTRY }} --docker-username={{ ENTITLED_REGISTRY_USER }} --docker-password={{ ENTITLED_REGISTRY_KEY }} --namespace={{ WAIOPS_NAMESPACE }}
+    oc create secret docker-registry 'ibm-entitlement-key' --docker-server={{ ENTITLED_REGISTRY }} --docker-username={{ ENTITLED_REGISTRY_USER }} --docker-password={{ ENTITLED_REGISTRY_KEY }} --namespace=openshift-marketplace
+    oc create secret docker-registry 'ibm-entitlement-key' --docker-server={{ ENTITLED_REGISTRY }} --docker-username={{ ENTITLED_REGISTRY_USER }} --docker-password={{ ENTITLED_REGISTRY_KEY }} --namespace=openshift-operators
+    oc patch -n openshift-marketplace serviceaccount ibm-aiops-catalog -p '{"imagePullSecrets": [{"name": "ibm-entitlement-key"}]}'
+    oc patch -n openshift-marketplace serviceaccount default -p '{"imagePullSecrets": [{"name": "ibm-entitlement-key"}]}'
+  ignore_errors: yes
+
+
+# Create aiops-topology-service-account
+- name: PREREQUISITES -          🚀 Create aiops-topology-service-account
+  shell: |
+    cat <<EOF | oc apply -n {{ WAIOPS_NAMESPACE }} -f -
+    apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: aiops-topology-service-account
+      labels:
+        managedByUser: 'true'
+    imagePullSecrets:
+      - name: ibm-entitlement-key
+    EOF
+  ignore_errors: yes
+
+
+# Patch builder service account
+# - name: PREREQUISITES -          🩹 Patch builder service account
+#   shell: |
+#     INTERNAL=$(oc get secret -n {{ WAIOPS_NAMESPACE }} | grep '^builder-dockercfg' | cut -f1 -d ' ')
+#     BASE=$(oc get secret ibm-entitlement-key -n {{ WAIOPS_NAMESPACE }} -o json | jq ".data[]" | sed -e 's/^"//' -e 's/"$//' | base64 -d | sed -e 's/}}$/,/')
+#     ADDITIONAL=$(oc get secret $INTERNAL -n {{ WAIOPS_NAMESPACE }} -o json | jq ".data[]" | sed -e 's/^"//' -e 's/"$//' | base64 -d | sed -e 's/^{//')
+#     echo $BASE$ADDITIONAL} > builder-secret.tmp
+#     oc create secret generic merged-secret --type=kubernetes.io/dockerconfigjson --from-file=.dockerconfigjson=builder-secret.tmp -n {{ WAIOPS_NAMESPACE }} || true
+#     rm builder-secret.tmp
+#     oc patch serviceaccount builder  -p '{"secrets": [{"name": "merged-secret"}]}' -n {{ WAIOPS_NAMESPACE }} || true
+#   register: ready
+# - name: DEBUG -              🟢 Output
+#   debug: 
+#     var: ready.stdout_lines
+#     verbosity: 1

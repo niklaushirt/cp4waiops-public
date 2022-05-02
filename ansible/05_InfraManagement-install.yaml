@@ -27,7 +27,7 @@
 #  - LDAP
 # ---------------------------------------------------------------------------------------------------------------------------------------------------"
 # ---------------------------------------------------------------------------------------------------------------------------------------------------"
-
+ 
 
 - hosts: localhost
   #become: true
@@ -35,44 +35,44 @@
 
   roles:  
 # Placeholder for customization
-    - role: 00_pre
+    - role: 00_init-custom-hook
 
-    - role: 00_pre_checks
+    - role: 02_init_checks
     
 # Run Prerequisites
-    - role: 01_initialization
+    - role: 03_init-initialization
 
 # Install CP4WAIOPS Infrastructure Management Instance
-    - role: 12_aiops-infra
+    - role: 16_inframanagement-install
       
 
 
 # Install Add-Ons while CP4WAIOPS is coming up
-    - role: 25_aiops-addons-ldap
+    - role: 25_addons-ldap
 
-    - role: 26_aiops-addons-user
+    - role: 26_addons-user
 
 
 
     
 
 # Wait for Common Services being completely installed
-    - role: 99_aiops-wait-common-services
+    - role: 99_aimanager-wait-common-services
       
 
 # Post installation tasks
-    - role: 40_aiops-post-ldap-register
+    - role: 40_core-post-ldap-register
 
 
-    - role: 99_aiops-open-infra
+    - role: 99_open-infra
 
 
 # Wait for CP4WAIOPS being completely installed
-    - role: 99_aiops-wait-infra
+    - role: 99_aimanager-wait-infra
       
 
 
-    - role: 99_aiops-open-infra
+    - role: 99_open-infra
 
 
 # Get all login credentials

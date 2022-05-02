@@ -215,7 +215,7 @@ CREATE_EXTERNAL_ROUTES: true
 # Install the EvtManager --> AI Manager Gateway
 INSTALL_GATEWAY: true
 # Number of Pods to be expected in final CP4WAIOPS Namespace
-WAIOPS_NS_MIN_PODS_FINAL: 110
+WAIOPS_NS_MIN_PODS_FINAL: 120
 # Number of Pods to be expected in final AI Manager Namespace
 CS_NS_MIN_PODS: 35
 # Number of Pods to be expected in final RookCeph Namespace
@@ -247,9 +247,9 @@ CATALOG_IMAGE: icr.io/cpopen/ibm-operator-catalog:latest
 # URLs for Documentation
 # --------------------------------------------------------------------------------------------------------------------------------------
 # *************************************************************************************************************************************************
-URL_STEP_1: https://github.ibm.com/NIKH/aiops-install-ansible-fvt-33#3-ai-manager-configuration
-URL_STEP_2: https://github.ibm.com/NIKH/aiops-install-ansible-fvt-33#4-ai-manager-post-install-configuration
-URL_STEP_3: https://github.ibm.com/NIKH/aiops-install-ansible-fvt-33#5-ai-manager-finalize-configuration
+URL_STEP_1: https://github.ibm.com/NIKH/aiops-install-ansible-33#3-ai-manager-configuration
+URL_STEP_2: https://github.ibm.com/NIKH/aiops-install-ansible-33#4-ai-manager-post-install-configuration
+URL_STEP_3: https://github.ibm.com/NIKH/aiops-install-ansible-33#5-ai-manager-finalize-configuration
 
 
 

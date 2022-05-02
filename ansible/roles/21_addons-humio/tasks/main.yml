@@ -1,0 +1,155 @@
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Install HUMIO
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Install HUMIO
+# --------------------------------------------------------------------------------------------------------------------------------------
+
+- name: LOGGING -                📥 WRITE TO LOGFILE
+  shell: |
+    export MESSAGE="Installing HUMIO"
+    export currentDate=$(date +%Y-%m-%d_%H:%M)
+    echo "---------------------------------------------------------------------------------------------------------------------------------------------------" >> ../installAIManager.log
+    echo $currentDate" - "$USER" - "$MESSAGE  >> ../installAIManager.log
+  ignore_errors: yes
+
+
+- name: HUMIO -              🚀 Create humio-logging namespace
+  kubernetes.core.k8s:
+    api_version: v1
+    kind: Namespace
+    name: "humio-logging"
+    state: present
+
+
+- name: HUMIO -              🚀 Install CRDs
+  shell: |
+    oc apply -n humio-logging -f ./templates/humio/crd/bases/core.humio.com_humioclusters.yaml
+    oc apply -n humio-logging -f ./templates/humio/crd/bases/core.humio.com_humioexternalclusters.yaml
+    oc apply -n humio-logging -f ./templates/humio/crd/bases/core.humio.com_humioingesttokens.yaml
+    oc apply -n humio-logging -f ./templates/humio/crd/bases/core.humio.com_humioparsers.yaml
+    oc apply -n humio-logging -f ./templates/humio/crd/bases/core.humio.com_humiorepositories.yaml
+    oc apply -n humio-logging -f ./templates/humio/crd/bases/core.humio.com_humioviews.yaml
+    oc apply -n humio-logging -f ./templates/humio/crd/bases/core.humio.com_humioalerts.yaml
+    oc apply -n humio-logging -f ./templates/humio/crd/bases/core.humio.com_humioactions.yaml
+
+
+- name: HUMIO -              🚀 Humio SCC
+  shell: |
+    oc adm policy add-scc-to-user privileged -n humio-logging -z humio-operator
+    oc adm policy add-scc-to-user privileged -n humio-logging -z humiocluster-humio
+
+
+- name: HUMIO -              🔐 Create Humio License Secret
+  kubernetes.core.k8s:
+    state: present
+    namespace: humio-logging
+    template: ./templates/humio/./humio-license-secret.j2
+  register: task_result
+
+
+- name: HUMIO -              🚀 Install Humio Operator
+  kubernetes.core.k8s:
+    state: present
+    namespace: humio-logging
+    src: ./templates/humio/./humio-operator.yaml
+  register: task_result
+
+
+- name: HUMIO -              🚀 Install Kafka and Zookeeper
+  kubernetes.core.k8s:
+    state: present
+    namespace: humio-logging
+    template: ./templates/humio/./humio-kafka.j2
+  register: task_result
+
+
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Wait for Kafka being ready
+# --------------------------------------------------------------------------------------------------------------------------------------
+- name: HUMIO -              🕦 Wait for Kafka to become ready
+  shell: oc get pod -n humio-logging |grep "2/2"| grep -c ""
+  register: kubectl_get_pods
+  until: kubectl_get_pods.stdout|int > 5
+  retries: 500
+  delay: 15
+
+
+- name: HUMIO -              🚀 Install Humio Core Instance
+  kubernetes.core.k8s:
+    state: present
+    namespace: humio-logging
+    template: ./templates/humio/./humio-instance.j2
+  register: task_result
+
+
+
+
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Wait for humio-logging being ready
+# --------------------------------------------------------------------------------------------------------------------------------------
+- name: HUMIO -              🕦 Wait for humio-logging to become ready
+  shell: oc get pod -n humio-logging |grep "2/2"| grep -c ""
+  register: kubectl_get_pods
+  until: kubectl_get_pods.stdout|int > 6
+  retries: 500
+  delay: 15
+  
+  
+- name: HUMIO -              🕦 Wait 5 minutes for everything to settle
+  pause:
+    seconds: 300
+
+
+- name: HUMIO -              🚀 Install Humio Configuration (Repository and Ingest Token)
+  kubernetes.core.k8s:
+    state: present
+    namespace: humio-logging
+    src: ./templates/humio/./humio-config.yaml
+  register: task_result
+
+
+
+- name: HUMIO -              🚀 Create Route
+  kubernetes.core.k8s:
+    state: present
+    namespace: humio-logging
+    src: ./templates/humio/./humio-route.yaml
+  register: task_result
+
+
+- name: HUMIO -              🚀 Install Fluentbit
+  kubernetes.core.k8s:
+    state: present
+    namespace: humio-logging
+    src: ./templates/humio/./fluentbit.yaml
+  register: task_result
+
+
+
+    
+- name: HUMIO -              🚀 Output Humio Connection Details
+  shell: |
+    echo "**********************************************************************************************************************************"
+    echo "HUMIO Connection Details"
+    echo "**********************************************************************************************************************************"
+    echo "    HUMIO:"
+    echo "        URL:      http://$(oc get route -n humio-logging humio -o jsonpath={.spec.host})"
+    echo "        User:     developer"
+    echo "        Password: P4ssw0rd!"
+    echo ""
+    echo ""
+    echo ""
+    echo "        INTEGRATION URL:      http://$(oc get route -n humio-logging humio -o jsonpath={.spec.host})/api/v1/repositories/aiops/query"
+    echo ""
+    echo ""
+  register: output_string
+  ignore_errors: yes
+- name: HUMIO -              🚀 Output Humio Connection Details
+  debug: 
+    var: output_string.stdout_lines

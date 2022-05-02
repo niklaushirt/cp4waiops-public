@@ -1,0 +1,201 @@
+---
+# tasks file for aiops
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#       __________  __ ___       _____    ________            
+#      / ____/ __ \/ // / |     / /   |  /  _/ __ \____  _____
+#     / /   / /_/ / // /| | /| / / /| |  / // / / / __ \/ ___/
+#    / /___/ ____/__  __/ |/ |/ / ___ |_/ // /_/ / /_/ (__  ) 
+#    \____/_/      /_/  |__/|__/_/  |_/___/\____/ .___/____/  
+#                                              /_/            
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------------------------------------------------------"
+#  Ansible Install Playbook V0.1
+#
+#  CloudPak for Watson AIOps
+#
+#  ©2022 nikh@ch.ibm.com
+# ---------------------------------------------------------------------------------------------------------------------------------------------------"
+# ---------------------------------------------------------------------------------------------------------------------------------------------------"
+# ---------------------------------------------------------------------------------------------------------------------------------------------------"
+# ---------------------------------------------------------------------------------------------------------------------------------------------------"
+
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Get Config File
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+- name: LOAD PARAMETERS -        👓 Load parameters
+  include_vars: ../00_config_cp4waiops.yaml
+
+
+- name: TIMESTAMP -              🟢 START - INITIALIZATION
+  debug: 
+    msg="{{ lookup('pipe','date +%d.%m.%Y---%H:%M:%S') }}"
+
+
+
+
+- name: INITIALIZATION -         📥 WRITE TO LOGFILE
+  shell: |
+    export MESSAGE="Initializing Installer"
+    export currentDate=$(date +%Y-%m-%d_%H:%M)
+    echo "---------------------------------------------------------------------------------------------------------------------------------------------------" >> ../installAIManager.log
+    echo $currentDate" - "$USER" - "$MESSAGE  >> ../installAIManager.log
+  ignore_errors: yes
+
+
+
+- name: INITIALIZATION -         📥  Installing in Namespace "{{ WAIOPS_NAMESPACE }}" with size "{{ WAIOPS_SIZE }}"
+  set_fact: WAIOPS_NAMESPACE_GLOBAL={{ WAIOPS_NAMESPACE }} 
+
+
+- name: INITIALIZATION -         📥  Installation Parameters"
+  debug:
+    msg:
+    - "** CP4WAIOPS AI Manager Parameters ***********************************************************************"
+    - " AI Manager Installation Name:      {{WAIOPS_NAME}}"
+    - " AI Manager Namespace:              {{WAIOPS_NAMESPACE}}"
+    - " AI Manager Installation Size:      {{WAIOPS_SIZE}}"
+    - ""
+    - "** Installation Options ***********************************************************************"
+    - " Rook-Ceph installation method:    {{ROOK_CEPH_INSTALL_MODE}}"
+    - " Auto Login for OCP:               {{OCP_LOGIN}}"
+    - "    OCP Url:                        {{OCP_URL}}"
+    - "    OCP Token:                      {{OCP_TOKEN}}"
+    - " OCP Major Version:                {{OCP_MAJOR_VERSION}}"
+    - " Storage Class File Override:      {{STORAGECLASS_FILE_OVERRIDE}}"
+    - " Storage Class Block Override:     {{STORAGECLASS_BLOCK_OVERRIDE}}"
+    - " Storage Class InfraManagement:    {{INFRA_STORAGE_CLASS_FILE}}"
+    - ""
+    - "** Additional Content *************************************************************************"
+    - "  LDAP Domain:                     {{LDAP_DOMAIN}}"
+    - "  LDAP Base:                       {{LDAP_BASE}}"
+    - "  LDAP Admin Password:             {{LDAP_ADMIN_PASSWORD}}"
+    - " Install Turbonomic:               "
+    - "     Turbonomic Storage Class:      {{STORAGE_CLASS_TURBO}}"
+
+
+
+
+
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Checks
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+
+# - name: PREREQUISITES -      🔐 Check Entitlement provided
+#   fail: msg="Please provide IBM Entitlement Pull Secret Key/Token (Get it from here https://myibm.ibm.com/products-services/containerlibrary)"
+#   when: "ENTITLED_REGISTRY_KEY is not defined"
+
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Login
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+# - name: LOGIN -              🔐 Check Login credentials
+#   fail: msg="If you select auto-login, you have to provide Cluster credentials"
+#   when: OCP_LOGIN and OCP_URL=="not_configured" and OCP_TOKEN=="not_configured"
+
+
+# - name: LOGIN -              👨‍💼 Login to cluster
+#   shell: "oc login --token={{ OCP_TOKEN }} --server={{ OCP_URL }}"   
+#   register: k8s_auth_results
+#   when: OCP_LOGIN == true
+
+
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Check Platform
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+- name: INITIALIZATION -         🌏 Get Cluster FQDN
+  shell: |
+    CLUSTER_ROUTE=$(oc get routes console -n openshift-console | tail -n 1 2>&1 ) 
+    CLUSTER_FQDN=$( echo $CLUSTER_ROUTE | awk '{print $2}')
+    echo ${CLUSTER_FQDN##*console.}
+  register: CLUSTER_NAME
+
+
+- name: INITIALIZATION -         🌏 Check Cluster Connectivity
+  fail: msg="You must be logged in to the server!"
+  when: CLUSTER_NAME.stdout==""
+
+
+
+
+- name: INITIALIZATION -         💾 Set Global Cluster Name={{ CLUSTER_NAME.stdout_lines[0] }} 
+  set_fact: CLUSTER_NAME_GLOBAL={{ CLUSTER_NAME.stdout_lines[0] }} 
+
+
+
+- name: INITIALIZATION -         🔎  Check if Rook-Ceph should be installed for mode {{ ROOK_CEPH_INSTALL_MODE }}
+  shell: |
+    INSTALL_MODE="{{ ROOK_CEPH_INSTALL_MODE }}"
+    CLUSTER_NAME={{ CLUSTER_NAME.stdout_lines[0] }}
+    if [ -z "${INSTALL_MODE##*enable*}" ]; 
+    then
+      echo "true"
+    else
+      if [ -z "${INSTALL_MODE##*disable*}" ]; 
+      then
+        echo "false"
+      else
+        if [ -z "${CLUSTER_NAME##*fyre.ibm.com*}" ]; 
+        then
+            echo "true"
+        else
+            echo "false"
+        fi 
+      fi
+    fi
+  register: INSTALL_ROOK_CEPH_TEST
+  #args:
+  #  executable: /bin/bash
+
+- name: INITIALIZATION -         💾 Install Rook-Ceph={{ INSTALL_ROOK_CEPH_TEST.stdout_lines[0] }} 
+  set_fact: INSTALL_ROOK_CEPH={{ INSTALL_ROOK_CEPH_TEST.stdout_lines[0] }} 
+
+- name: INITIALIZATION -         💾 Override Storage Class File to 'rook-cephfs'={{ INSTALL_ROOK_CEPH_TEST.stdout_lines[0] }} 
+  set_fact: STORAGECLASS_FILE_OVERRIDE=rook-cephfs 
+  when: INSTALL_ROOK_CEPH
+
+- name: INITIALIZATION -         💾 Override Storage Class Large Block to 'rook-cephfs'={{ INSTALL_ROOK_CEPH_TEST.stdout_lines[0] }} 
+  set_fact: STORAGECLASS_BLOCK_OVERRIDE=rook-cephfs
+  when: INSTALL_ROOK_CEPH
+
+
+
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Openshift Version
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+- name: INITIALIZATION -         ☑️  Determine OpenShift Major Version
+  shell: |
+    DECLARED_VERSION={{ OCP_MAJOR_VERSION }}
+    if [ -z "${DECLARED_VERSION##*automatic*}" ]; 
+    then
+      VERSION=$(oc version | grep "Server Version"| cut -d':' -f2| cut -d'.' -f1-2)
+      echo ${VERSION//* } 
+    else 
+      echo $DECLARED_VERSION
+    fi
+  register: MAJOR_VERSION
+  args:
+    executable: /bin/bash
+
+- name: INITIALIZATION -         💾 Set OCP_MAJOR_VERSION={{ MAJOR_VERSION.stdout_lines[0] }} 
+  set_fact: OCP_MAJOR_VERSION={{ MAJOR_VERSION.stdout_lines[0] }} 
+
+- name: DEBUG -                  🟢 Output
+  debug: 
+    var: OCP_MAJOR_VERSION
+    verbosity: 1

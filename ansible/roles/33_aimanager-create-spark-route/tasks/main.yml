@@ -1,0 +1,26 @@
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Patches
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+
+- name: TIMESTAMP -              🟢 START - CREATE SPARK ROUTE
+  debug: 
+    msg="{{ lookup('pipe','date +%d.%m.%Y---%H:%M:%S') }}"
+
+
+- name: ROUTES -                 📥 WRITE TO LOGFILE
+  shell: |
+    export MESSAGE="Create Spark Route"
+    export currentDate=$(date +%Y-%m-%d_%H:%M)
+    echo "---------------------------------------------------------------------------------------------------------------------------------------------------" >> ../installAIManager.log
+    echo $currentDate" - "$USER" - "$MESSAGE  >> ../installAIManager.log
+  ignore_errors: yes
+
+
+- name: ROUTES -                 🚀 Create Spark Master UI Route (you can ignore errors in this step)
+  shell: oc expose svc aiops-ir-analytics-spark-master -n {{ WAIOPS_NAMESPACE }} --name spark
+  ignore_errors: yes
+  when: CREATE_EXTERNAL_ROUTES == true
+

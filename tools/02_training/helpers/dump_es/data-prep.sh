@@ -46,4 +46,20 @@ cat /tmp/snowchangerequest3.json  > ./tools/8_training/INDEXES_SNOW/snowchangere
 
 #./tools/8_training/INDEXES_SNOW/snowchangerequest.json
 
+mkdir CLEAN
+for actFile in $(ls -1 . | grep "json");
+do
+    echo $actFile
+    cat $actFile| grep -v "mysql"| grep -v "load"| grep -v "mongodb"| grep -v "rabbitmq"| grep -v "redis"| grep -v "dispatch"| grep -v "payment" > ./CLEAN/$actFile
+    cat ./CLEAN/$actFile|jq '._source.instance_id' | sort | uniq -c
+done
+
+
+mkdir CLEAN
+for actFile in $(ls -1 . | grep "json");
+do
+    echo $actFile
+    cat $actFile| grep -v "mysql"| grep -v "load"| grep -v "mongodb"| grep -v "rabbitmq"| grep -v "redis"| grep -v "shipping"| grep -v "user"| grep -v "cart"| grep -v "dispatch"| grep -v "payment" > ./CLEAN/$actFile
+    cat ./CLEAN/$actFile|jq '._source.instance_id' | sort | uniq -c
+done
 

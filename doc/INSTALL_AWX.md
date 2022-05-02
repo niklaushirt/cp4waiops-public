@@ -17,7 +17,7 @@ You can easily install AWX (OpenSource Ansible Tower) into the same cluster as C
 1. Launch
 
 	```bash
-	ansible-playbook ./ansible/23_install-awx.yaml	
+	ansible-playbook ./ansible/23_addons-install-awx.yaml	
 	```
 	
 2. Wait for the pods to come up

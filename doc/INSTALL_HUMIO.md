@@ -86,7 +86,7 @@ Just launch the following and this should automatically install:
 
 
 ```bash
-ansible-playbook ./ansible/21_install-humio.yaml
+ansible-playbook ./ansible/21_addons-install-humio.yaml
 ```
 
 <div style="page-break-after: always;"></div>

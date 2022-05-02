@@ -30,7 +30,7 @@
 
   roles:
 
-    - role: 40_aiops-post-ldap-register
+    - role: 40_core-post-ldap-register
     
 
 

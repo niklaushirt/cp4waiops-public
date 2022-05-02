@@ -203,6 +203,59 @@ echo "    "
 
 
 
+ELK_READY=$(oc get ns openshift-logging  --ignore-not-found|| true) 
+if [[ $ELK_READY =~ "Active" ]]; 
+then
+    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+    echo "    🚀 ELK "
+    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+    token=$(oc sa get-token cluster-logging-operator -n openshift-logging)
+    routeES=`oc get route elasticsearch -o jsonpath={.spec.host} -n openshift-logging`
+    routeKIBANA=`oc get route kibana -o jsonpath={.spec.host} -n openshift-logging`
+    echo "      "
+    echo "            📥 ELK:"
+    echo "      "
+    echo "               🌏 ELK service URL             : https://$routeES/app*"
+    echo "               🔐 Authentication type         : Token"
+    echo "               🔐 Token                       : $token"
+    echo "      "
+    echo "               🌏 Kibana URL                  : https://$routeKIBANA"
+    echo "               🚪 Kibana port                 : 443"
+    echo "               🗺️  Mapping                     : "
+    echo "{ "
+    echo "  \"codec\": \"elk\","
+    echo "  \"message_field\": \"message\","
+    echo "  \"log_entity_types\": \"kubernetes.container_image_id, kubernetes.host, kubernetes.pod_name, kubernetes.namespace_name\","
+    echo "  \"instance_id_field\": \"kubernetes.container_name\","
+    echo "  \"rolling_time\": 10,"
+    echo "  \"timestamp_field\": \"@timestamp\""
+    echo "}"
+    echo "  "
+    echo ""
+    echo ""
+    echo ""
+    echo "               🗺️  Filter                     : "
+    echo ""
+    echo "      {"
+    echo "        \"query\": {"
+    echo "          \"bool\": {"
+    echo "               \"must\": {"
+    echo "                  \"term\" : { \"kubernetes.namespace_name\" : \"robot-shop\" }"
+    echo "               }"
+    echo "              }"
+    echo "          }"
+    echo "      }"
+    echo "  "
+    echo ""
+    echo ""
+    echo ""
+
+ fi
+
+
+
 echo "***************************************************************************************************************************************************"
 echo "***************************************************************************************************************************************************"
 echo "🚀 Additional Components"
@@ -515,59 +568,6 @@ echo "    "
 
 
 
-ELK_READY=$(oc get ns openshift-logging  --ignore-not-found|| true) 
-if [[ $ELK_READY =~ "Active" ]]; 
-then
-    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
-    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
-    echo "    🚀 ELK "
-    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
-    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
-    token=$(oc sa get-token cluster-logging-operator -n openshift-logging)
-    routeES=`oc get route elasticsearch -o jsonpath={.spec.host} -n openshift-logging`
-    routeKIBANA=`oc get route kibana -o jsonpath={.spec.host} -n openshift-logging`
-    echo "      "
-    echo "            📥 ELK:"
-    echo "      "
-    echo "               🌏 ELK service URL             : https://$routeES/app*"
-    echo "               🔐 Authentication type         : Token"
-    echo "               🔐 Token                       : $token"
-    echo "      "
-    echo "               🌏 Kibana URL                  : https://$routeKIBANA"
-    echo "               🚪 Kibana port                 : 443"
-    echo "               🗺️  Mapping                     : "
-    echo "{ "
-    echo "  \"codec\": \"elk\","
-    echo "  \"message_field\": \"message\","
-    echo "  \"log_entity_types\": \"kubernetes.container_image_id, kubernetes.host, kubernetes.pod_name, kubernetes.namespace_name\","
-    echo "  \"instance_id_field\": \"kubernetes.container_name\","
-    echo "  \"rolling_time\": 10,"
-    echo "  \"timestamp_field\": \"@timestamp\""
-    echo "}"
-    echo "  "
-    echo ""
-    echo ""
-    echo ""
-    echo "               🗺️  Filter                     : "
-    echo ""
-    echo "      {"
-    echo "        \"query\": {"
-    echo "          \"bool\": {"
-    echo "               \"must\": {"
-    echo "                  \"term\" : { \"kubernetes.namespace_name\" : \"robot-shop\" }"
-    echo "               }"
-    echo "              }"
-    echo "          }"
-    echo "      }"
-    echo "  "
-    echo ""
-    echo ""
-    echo ""
-
- fi
-
-
-
 
 
 
@@ -630,12 +630,44 @@ echo ""
 echo ""
 
 
+echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+echo "    🚀 APIs "
+echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
 
-echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
-echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
-echo "    🚀 GRAPHQL Playground "
-echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
-echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+
+apiURL=$(oc get routes -n $WAIOPS_NAMESPACE topology-merge  -o jsonpath="{['spec']['host']}")
+echo "                🌏 Topology Merge:           https://$apiURL/"
+echo "    "
+apiURL=$(oc get routes -n $WAIOPS_NAMESPACE topology-rest  -o jsonpath="{['spec']['host']}")
+echo "                🌏 Topology REST:           https://$apiURL/"
+echo "    "
+apiURL=$(oc get routes -n $WAIOPS_NAMESPACE topology-file  -o jsonpath="{['spec']['host']}")
+echo "                🌏 Topology File:           https://$apiURL/"
+echo "    "
+apiURL=$(oc get routes -n $WAIOPS_NAMESPACE  topology-manage  -o jsonpath="{['spec']['host']}")
+echo "                🌏 Topology Manage:           https://$apiURL/"
+echo "    "
+apiURL=$(oc get routes -n $WAIOPS_NAMESPACE ai-platform-api  -o jsonpath="{['spec']['host']}")
+echo "                🌏 AI Platform API:           https://$apiURL/"
+echo "    "
+apiURL=$(oc get routes -n $WAIOPS_NAMESPACE datalayer-api  -o jsonpath="{['spec']['host']}")
+echo "                🌏 Datalayer API:           https://$apiURL/"
+echo "    "
+echo "                🌏 Datalayer SWAGGER:           https://$apiURL/irdatalayer.aiops.io/docs/active/v1"
+echo "    "
+echo ""
+echo ""
+echo ""
+echo ""
+echo ""
+
+echo "        -----------------------------------------------------------------------------------------------------------------------------------------------"
+echo "        -----------------------------------------------------------------------------------------------------------------------------------------------"
+echo "        🚀 GRAPHQL Playground "
+echo "        -----------------------------------------------------------------------------------------------------------------------------------------------"
+echo "        -----------------------------------------------------------------------------------------------------------------------------------------------"
 apiURL=$(oc get routes -n $WAIOPS_NAMESPACE ai-platform-api -o jsonpath="{['spec']['host']}")
 ZEN_API_HOST=$(oc get route -n $WAIOPS_NAMESPACE cpd -o jsonpath='{.spec.host}')
 ZEN_LOGIN_URL="https://${ZEN_API_HOST}/v1/preauth/signin"
@@ -657,43 +689,43 @@ curl -k \
 ZEN_TOKEN=$(echo "${ZEN_LOGIN_RESPONSE}" | jq -r .token)
 
 
-echo "    " 
-echo "            📥 Playground:"
-echo "    " 
-echo "                🌏 URL:                   https://$apiURL/graphql"
-echo ""
-echo ""
-echo "    " 
-echo "                🔐 HTTP HEADERS"
-echo "                        {"
-echo "                        \"authorization\": \"Bearer $ZEN_TOKEN\""
-echo "                        }"
-echo "    " 
-echo "    " 
-echo "    " 
-echo "                📥 Example Payload"
-echo "                        query {"
-echo "                            getTrainingDefinitions {"
-echo "                              definitionName"
-echo "                              algorithmName"
-echo "                              version"
-echo "                              deployedVersion"
-echo "                              description"
-echo "                              createdBy"
-echo "                              modelDeploymentDate"
-echo "                              promoteOption"
-echo "                              trainingSchedule {"
-echo "                                frequency"
-echo "                                repeat"
-echo "                                timeRangeValidStart"
-echo "                                timeRangeValidEnd"
-echo "                                noEndDate"
-echo "                              }"
+echo "        " 
+echo "                📥 Playground:"
+echo "        " 
+echo "                    🌏 URL:                   https://$apiURL/graphql"
+echo "    "
+echo "    "
+echo "        " 
+echo "                    🔐 HTTP HEADERS"
+echo "                            {"
+echo "                            \"authorization\": \"Bearer $ZEN_TOKEN\""
 echo "                            }"
-echo "                          }"
-echo "    " 
-echo "    " 
-echo "    " 
-echo "                🔐 ZEN Token:             $ZEN_TOKEN"
+echo "        " 
+echo "        " 
+echo "        " 
+echo "                    📥 Example Payload"
+echo "                            query {"
+echo "                                getTrainingDefinitions {"
+echo "                                  definitionName"
+echo "                                  algorithmName"
+echo "                                  version"
+echo "                                  deployedVersion"
+echo "                                  description"
+echo "                                  createdBy"
+echo "                                  modelDeploymentDate"
+echo "                                  promoteOption"
+echo "                                  trainingSchedule {"
+echo "                                    frequency"
+echo "                                    repeat"
+echo "                                    timeRangeValidStart"
+echo "                                    timeRangeValidEnd"
+echo "                                    noEndDate"
+echo "                                  }"
+echo "                                }"
+echo "                              }"
+echo "        " 
+echo "        " 
+echo "        " 
+echo "                    🔐 ZEN Token:             $ZEN_TOKEN"
 
 

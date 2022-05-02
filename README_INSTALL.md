@@ -44,7 +44,7 @@ These are the high level steps that you need to execute to install the demo envi
 1. Install AI Manager
 
 	```bash
-	ansible-playbook ./ansible/01_AIManager-base-install.yaml -e ENTITLED_REGISTRY_KEY=<REGISTRY_TOKEN> 
+	ansible-playbook ./ansible/01_aimanager-base-install.yaml -e ENTITLED_REGISTRY_KEY=<REGISTRY_TOKEN> 
 	```
 
 1. [AI Manager Configuration](#3-ai-manager-configuration)
@@ -52,7 +52,7 @@ These are the high level steps that you need to execute to install the demo envi
 1. Launch Post Install
 
 	```bash
-	ansible-playbook ./ansible/02_AIManager-post-install.yaml
+	ansible-playbook ./ansible/02_aimanager-post-install.yaml
 	```
 
 1. [AI Manager Post Install Configuration](#4-ai-manager-post-install-configuration )
@@ -60,7 +60,7 @@ These are the high level steps that you need to execute to install the demo envi
 1. Launch Finalize Install
 
 	```bash
-	ansible-playbook ./ansible/03_AIManager-finalize-install.yaml
+	ansible-playbook ./ansible/03_aimanager-finalize-install.yaml
 	```
 
 1. [AI Manager Finalize Configuration](#5-ai-manager-finalize-configuration )
@@ -235,7 +235,7 @@ This allows the CP4WAIOPS images to be pulled from the IBM Container Registry.
 Or directly run:
 
 ```bash
-ansible-playbook ./ansible/01_AIManager-base-install.yaml -e ENTITLED_REGISTRY_KEY=<REGISTRY_TOKEN> 
+ansible-playbook ./ansible/01_aimanager-base-install.yaml -e ENTITLED_REGISTRY_KEY=<REGISTRY_TOKEN> 
 ```
 
 > This takes about an hour.
@@ -440,7 +440,7 @@ Do this for your applications (RobotShop by default)
 Or directly run:
 
 ```bash
-ansible-playbook ./ansible/02_AIManager-post-install.yaml
+ansible-playbook ./ansible/02_aimanager-post-install.yaml
 ```
 
 This will:
@@ -708,7 +708,7 @@ Training will be done for:
 Or directly run:
 
 ```bash
-ansible-playbook ./ansible/03_AIManager-finalize-install.yaml
+ansible-playbook ./ansible/03_aimanager-finalize-install.yaml
 ```
 
 <div style="page-break-after: always;"></div>
@@ -1064,7 +1064,7 @@ Installer should aready have done this.
 But if there still are problems, you can directly run: 
 
 ```bash
-ansible-playbook ./ansible/31_aiops-create-valid-ingress-certificates.yaml
+ansible-playbook ./ansible/31_aimanager-create-valid-ingress-certificates.yaml
 ```
 
 
