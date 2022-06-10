@@ -3,8 +3,10 @@
 ![K8s CNI](./doc/pics/front.png)
 <center> ©2022 Niklaus Hirt / IBM </center>
 # Welcome to the CloudPak for Watson AIOps Demo Assets
+
 A Story-Telling demo showcasing Watson AIOps with integration of Instana, Humio, Slack, Event Manager (NetCool Operations Insights - NOI), AI Manager, and much more. The story explains how a broken website will be fixed .
 Different flavors of this demo are available, a very flexible, PowerPoint based click-through demo and instructions for your very own installation, so you can pick the one that is most applicable for your situation.
+
 ### The different levels of demo that I have made available:
 1. ### [Show it - Offline Click Through Demo](#show-it---offline-click-through-demo-1)
 	🚨 **New version including: CP4WAIOPS 3.2, Turbonomic and Instana**
