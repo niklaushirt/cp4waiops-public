@@ -38,7 +38,7 @@ echo ""
 echo "  ***************************************************************************************************************************************************"
 echo "   🛠️  Get Route"
 oc create route passthrough ai-platform-api -n $WAIOPS_NAMESPACE  --service=aimanager-aio-ai-platform-api-server --port=4000 --insecure-policy=Redirect --wildcard-policy=None
-export ROUTE=$(oc get route -n cp4waiops ai-platform-api  -o jsonpath={.spec.host})
+export ROUTE=$(oc get route -n $WAIOPS_NAMESPACE ai-platform-api  -o jsonpath={.spec.host})
 echo "       Route: $ROUTE"
 echo ""
 

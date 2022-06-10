@@ -39,7 +39,7 @@ do
       cd /tmp/training-files-logs/
 
       export my_timestamp=$(date $DATE_FORMAT_LOGS)
-      #echo "DATE:"$my_timestamp"72000"
+      echo "       LOG Base Date: $my_timestamp"
       sed -i -e "s/MY_TIMESTAMP/$my_timestamp/g" timestampedErrorFile.json
 
       #------------------------------------------------------------------------------------------------------------------------------------

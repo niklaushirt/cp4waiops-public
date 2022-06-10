@@ -80,14 +80,19 @@
 # Load Topology
     #- role: 81_aimanager-create-observers
     - role: 82_aimanager-load-topology-merge
-    - role: 83_aimanager-load-overlay-topology
+    - role: 83_aimanager-create-topology
     - role: 84_aimanager-create-aiops-application
+
+
+# Create Kafka Connections
+    - role: 34_aimanager-create-kafka-connections
+
 
 # Install Add-Ons while data is loading
       
     - role: 23_addons-awx      
-
     - role: 99_aimanager-wait-awx
+    - role: 35_aimanager-create-awx-connection
 
     - role: 47_aimanager-load-awx-playbooks-for-demo
 

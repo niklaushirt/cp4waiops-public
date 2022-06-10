@@ -111,7 +111,7 @@ do
             export act_timestamp_readable=$(date -v "$METRICS_SKEW" -v "+"$ADD_SECONDS"S" "$DATE_FORMAT_READABLE")
 
 
-            echo "        ♻️  ITERATION: $ITERATIONS-$BUNDLE_ITERATIONS     at "$act_timestamp_readable"   -     Seconds skew "$ADD_SECONDS
+            echo "        ♻️  ITERATION: $ITERATIONS-$BUNDLE_ITERATIONS     at "$act_timestamp_readable"   -     Seconds skew "$ADD_SECONDS"   - "$MY_TIMESTAMP
             #echo ""
 
             # Clear incection file

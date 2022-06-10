@@ -1,0 +1,115 @@
+{% load static %}
+{% include "demouiapp/_header.html" %} 
+
+<div hidden id="mydiv" class="alert alert-success" role="alert">
+    <h4 class="alert-heading">🚀 Running!</h4>
+    <p>Operation in progress.</p>
+    <p>Please wait....</p>
+  </div>
+
+    <div id="main-panel" role="main" class="container theme-showcase">
+        <div class="jumbotron container">
+            <table>
+                <tbody>
+                    <tr>
+                        {% include "demouiapp/_navbar.html" %}   
+                        <td style="width:100%; padding-left:50px;">
+                            <p style="font-size:2.5em;">IBM CloudPak for Watson AIOps</p>
+                            <h1>AIManager Demo UI</h1>
+                            <p></p>
+                            <p>A Simple way to generate Events and Log Anomalies for CP4WAIOPS.</p>
+                            <p> </p>
+                            <p> </p>
+                            <p> </p>
+                            <hr>
+
+                            <script>
+                                let toggle = button => {
+                                    let element = document.getElementById("mydiv");
+                                    let elementMain = document.getElementById("main-panel");
+                                  let arg1 = event.target.getAttribute('data-arg1');
+                                     element.removeAttribute("hidden");
+                                     elementMain.setAttribute("hidden", "hidden");
+                                     button.innerText = "Running";
+                                     window.open(arg1,"_self");
+                                  } 
+                                
+                              </script>
+                            <p style="font-size:50px;">🚀 Access CP4WAIOPS </p>
+                            <p style="font-size:23px;"><a href="https:/{{ aimanager_url }}" target="_blank"
+                                role="button" class="btn btn-info btn-lg">AI Manager</a></p>
+                            <p style="font-size:20px;">👩‍💻&nbsp;&nbsp;USER: demo &nbsp;&nbsp;&nbsp;&nbsp;🔐&nbsp;&nbsp;PASSWORD: P4ssw0rd!</p>
+                            <p style="font-size:20px;">👩‍💻&nbsp;&nbsp;USER: {{aimanager_user}} &nbsp;&nbsp;&nbsp;&nbsp;🔐&nbsp;&nbsp;PASSWORD: {{aimanager_pwd}}</p>
+                            <p></p>All other CP4WAIOPS Applications can be found <a href="apps">here</a>
+                                <hr>
+                            <p></p>
+                            <p></p>
+
+                            <p> </p>
+                            <p> </p>
+                            <p> </p>
+                            <p style="font-size:50px;">🚀 Create Live Events and Log Anomalies </p>
+  
+                            <table  width="300" cellspacing="0" cellpadding="0" style="width: 1100px; table-layout: fixed">
+                                <tbody>
+
+
+                                    <tr>
+
+                                    </tr>
+                                    <tr>
+                                    <td style="width: 30%; vertical-align:top">
+                                        <p style="font-size:20px;">Create Incident</p>
+                                        </td>
+                                        <td  width="40px">
+                                            &nbsp;
+                                        </td>
+                                        <td  style="width: 259px; vertical-align:top">
+                                            <p style="font-size:20px;">Create Events</a>
+                                        </td>
+                                        <td  width="10px">
+                                            &nbsp;
+                                        </td>
+                                        <td  style="width: 259px; vertical-align:top">
+                                            <p style="font-size:20px;">Clear Stories and Events</p>
+                    
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 259px; vertical-align:top">
+                                            <p></p><button type="button" onclick="toggle(this)" data-arg1='injectAllREST' class="btn btn-danger btn-lg">Create Incident Memory Leak</button>
+                                            <p></p><button type="button" onclick="toggle(this)" data-arg1='injectAllFanREST' class="btn btn-danger btn-lg">Create Incident Fan Failure</button>
+                                        </td>
+                                        <td  width="40px">
+                                            &nbsp;
+                                        </td>
+                                       
+                                        <td  style="width: 259px; vertical-align:top">
+                                            <p></p><button type="button" onclick="toggle(this)" data-arg1='injectEventsREST' class="btn btn-warning">Create Events</button>
+                                            <p></p><button type="button" onclick="toggle(this)" data-arg1='injectLogsREST' class="btn btn-warning">Create Log Anomalies</button>
+                                            <p></p><button type="button" onclick="toggle(this)" data-arg1='injectMetricsREST' class="btn btn-warning">Create Metric Anomalies</button>
+                                        </td>
+                                        <td  width="10px">
+                                            &nbsp;
+                                        </td>
+                                        <td  style="width: 259px; vertical-align:top">
+                                            <p></p><button type="button" onclick="toggle(this)" data-arg1='clearAllREST' class="btn btn-success">Clear Stories and Events</button>
+                                            <p></p><button type="button" onclick="toggle(this)" data-arg1='clearEventsREST' class="btn btn-success">Clear Events</button>
+                                            <p></p><button type="button" onclick="toggle(this)" data-arg1='clearStoriesREST' class="btn btn-success">Clear Stories</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <hr>
+                            <p></p>
+                            <p></p>
+
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% include "demouiapp/_footer.html" %} 
+
+

@@ -7,7 +7,7 @@
 
 - name: TRAINING RUN -           📥 WRITE TO LOGFILE
   shell: |
-    export MESSAGE="Run MEtrics Training"
+    export MESSAGE="Run Metrics Training"
     export currentDate=$(date +%Y-%m-%d_%H:%M)
     echo "---------------------------------------------------------------------------------------------------------------------------------------------------" >> ../installAIManager.log
     echo $currentDate" - "$USER" - "$MESSAGE  >> ../installAIManager.log

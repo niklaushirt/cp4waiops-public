@@ -532,7 +532,7 @@ menu_check_install_aimgr () {
             if  ([[ ! $ELEMENT_OK =~ "1/1" ]]); 
             then 
                   echo "      ⭕ Job $ELEMENT not run successfully"; 
-                  echo "      ⭕ (You may want to delete the Job to make it run again - this can take some time)";  
+                  echo "      ⭕ (You may want to delete the Job to make it run again - this might take some time)";  
                   echo ""
             else
                   echo "      ✅ OK: Job $ELEMENT"; 

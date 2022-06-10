@@ -10,165 +10,92 @@
     msg="{{ lookup('pipe','date +%d.%m.%Y---%H:%M:%S') }}"
 
 
-# --------------------------------------------------------------------------------------------------------------------------------------
-# WAIOPS
-# --------------------------------------------------------------------------------------------------------------------------------------
-- name: TOPOLOGY -        🚀 CREATE REST OBSERVER
+- name: TOPOLOGY -               📥 WRITE TO LOGFILE
   shell: |
-    set -x
-        
-    # echo "Create Custom Topology - Starting..."
-    # export WAIOPS_NAMESPACE=$(oc get po -A|grep aiops-orchestrator-controller |awk '{print$1}')
-
-
-
-    # export EVTMGR_REST_USR=$(oc get secret aiops-topology-asm-credentials -n $WAIOPS_NAMESPACE -o jsonpath='{.data.username}' | base64 --decode)
-    # export EVTMGR_REST_PWD=$(oc get secret aiops-topology-asm-credentials -n $WAIOPS_NAMESPACE -o jsonpath='{.data.password}' | base64 --decode)
-
-    # export TOPO_MGT_ROUTE="https://"$(oc get route -n $WAIOPS_NAMESPACE topology-manage -o jsonpath={.spec.host})
-
-
-    # export LOGIN="$EVTMGR_REST_USR:$EVTMGR_REST_PWD"
-
-    # echo "Wait 5 seconds"
-    # sleep 5
-
-    # echo "URL: $TOPO_MGT_ROUTE/1.0/rest-observer/rest/resources"
-    # echo "LOGIN: $LOGIN"
-
-
-
-    # # -------------------------------------------------------------------------------------------------------------------------------------------------
-    # # CREATE EDGES
-    # # -------------------------------------------------------------------------------------------------------------------------------------------------
-    
-    
-
-    # curl -X "POST" "$TOPO_MGT_ROUTE/1.0/topology/mgmt_artifacts" --insecure \
-    # -u $LOGIN \
-    # -H 'Content-Type: application/json' \
-    # -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' \
-    # -d '{
-    #     "keyIndexName": "rest-observer:restTopology",
-    #     "_id": "jMNvSs9-RTa2TP5GwvYyuQ",
-    #     "hasStateDescription": "Job Started",
-    #     "matchTokens": ["rest-observer"],
-    #     "description": "",
-    #     "hasState": "RUNNING",
-    #     "observedTime": 1647968787657,
-    #     "observationStart": 1647968787187,
-    #     "tags": ["LISTEN_JOB", "rest-observer"],
-    #     "schedule": {
-    #         "lastRunTime": 1647968785173
-    #     },
-    #     "path": "/jobs/bulk_replace",
-    #     "vertexType": "mgmtArtifact",
-    #     "_createdAt": "2022-03-22T17:06:23.752Z",
-    #     "name": "restTopology",
-    #     "entityTypes": ["ASM_OBSERVER_JOB"],
-    #     "observerName": "rest-observer",
-    #     "parameters": {
-    #         "provider": "restTopology"
-    #     }
-    # }'
-
-    # curl -X "POST" "$TOPO_MGT_ROUTE/1.0/topology/mgmt_artifacts" --insecure \
-    # -u $LOGIN \
-    # -H 'Content-Type: application/json' \
-    # -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' \
-    # -d '{
-    #     "keyIndexName": "rest-observer-provider",
-    #     "_id": "HwpuXSUWVingLt6AZx8hDw",
-    #     "vertexType": "mgmtArtifact",
-    #     "providerId": "HwpuXSUWVingLt6AZx8hDw",
-    #     "_observedAt": "2022-03-22T17:06:23.558Z",
-    #     "name": "rest-observer-provider",
-    #     "entityTypes": ["provider"],
-    #     "observedTime": 1647968783558
-    # }'
-
-
-
-    
-    
-    # echo "."
-
-
-  register: output_string
+    export MESSAGE="Create K8s observer"
+    export currentDate=$(date +%Y-%m-%d_%H:%M)
+    echo "---------------------------------------------------------------------------------------------------------------------------------------------------" >> ../installAIManager.log
+    echo $currentDate" - "$USER" - "$MESSAGE  >> ../installAIManager.log
   ignore_errors: yes
 
-
-
-
-
-- name: TOPOLOGY -        🚀 CREATE K8s OBSERVER (Takes 3-4 minutes)
+# --------------------------------------------------------------------------------------------------------------------------------------
+- name: TOPOLOGY -               🚀 CREATE K8S OBSERVER
   shell: |
     set -x
-        
-    # echo "Create Custom Topology - Starting..."
-    # export WAIOPS_NAMESPACE=$(oc get po -A|grep aiops-orchestrator-controller |awk '{print$1}')
-
-    # export EVTMGR_REST_USR=$(oc get secret aiops-topology-asm-credentials -n $WAIOPS_NAMESPACE -o jsonpath='{.data.username}' | base64 --decode)
-    # export EVTMGR_REST_PWD=$(oc get secret aiops-topology-asm-credentials -n $WAIOPS_NAMESPACE -o jsonpath='{.data.password}' | base64 --decode)
-
-    # export TOPO_MGT_ROUTE="https://"$(oc get route -n $WAIOPS_NAMESPACE topology-manage -o jsonpath={.spec.host})
-
-
-    # export LOGIN="$EVTMGR_REST_USR:$EVTMGR_REST_PWD"
-
-    # echo "Wait 5 seconds"
-    # sleep 5
-
-    # echo "URL: $TOPO_MGT_ROUTE/1.0/rest-observer/rest/resources"
-    # echo "LOGIN: $LOGIN"
-
-
-
-    # # -------------------------------------------------------------------------------------------------------------------------------------------------
-    # # CREATE EDGES
-    # # -------------------------------------------------------------------------------------------------------------------------------------------------
     
-    
-    # curl -X "POST" "$TOPO_MGT_ROUTE/1.0/topology/mgmt_artifacts" --insecure \
-    # -u $LOGIN \
-    # -H 'Content-Type: application/json' \
-    # -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' \
-    # -d '  {
-    #   "keyIndexName": "kubernetes-observer:robot-shop",
-    #   "matchTokens": [
-    #     "kubernetes-observer"
-    #   ],
-    #   "description": "",
-    #   "tags": [
-    #     "OBSERVATION_JOB",
-    #     "kubernetes-observer"
-    #   ],
-    #   "schedule": {
-    #     "interval": 2,
-    #     "units": "minutes"
-    #   },
-    #   "path": "/jobs/local",
-    #   "vertexType": "mgmtArtifact",
-    #   "name": "robot-shop",
-    #   "entityTypes": [
-    #     "ASM_OBSERVER_JOB"
-    #   ],
-    #   "observerName": "kubernetes-observer",
-    #   "parameters": {
-    #     "connect_read_timeout_ms": 5000,
-    #     "hide_terminated_pods": true,
-    #     "namespaceGroupParameters": {
-    #       "correlate": true
-    #     },
-    #     "role_token": false,
-    #     "namespace": "robot-shop",
-    #     "data_center": "robot-shop"
-    #   }
-    # }' 
-    
-    
-    echo "."
-    sleep 150
+    export WAIOPS_NAMESPACE=$(oc get po -A|grep aiops-orchestrator-controller |awk '{print$1}')
+
+    oc create route passthrough -n $WAIOPS_NAMESPACE --service aimanager-aio-controller --port extport
+
+
+    export AI_PLATFORM_ROUTE=$(oc get route -n $WAIOPS_NAMESPACE ai-platform-api  -o jsonpath={.spec.host})
+    export AIO_PLATFORM_ROUTE=$(oc get route -n $WAIOPS_NAMESPACE aimanager-aio-controller -o jsonpath={.spec.host})
+
+
+
+    echo "        Namespace:          $WAIOPS_NAMESPACE"
+    echo "        AI_PLATFORM_ROUTE:  $AI_PLATFORM_ROUTE"
+    echo "        AIO_PLATFORM_ROUTE: $AIO_PLATFORM_ROUTE"
+    echo ""
+
+    echo "       🛠️  Getting ZEN Token"
+
+    ZEN_API_HOST=$(oc get route -n $WAIOPS_NAMESPACE cpd -o jsonpath='{.spec.host}')
+    ZEN_LOGIN_URL="https://${ZEN_API_HOST}/v1/preauth/signin"
+    LOGIN_USER=admin
+    LOGIN_PASSWORD="$(oc get secret admin-user-details -n $WAIOPS_NAMESPACE -o jsonpath='{ .data.initial_admin_password }' | base64 --decode)"
+
+    ZEN_LOGIN_RESPONSE=$(
+    curl -k \
+    -H 'Content-Type: application/json' \
+    -XPOST \
+    "${ZEN_LOGIN_URL}" \
+    -d '{
+        "username": "'"${LOGIN_USER}"'",
+        "password": "'"${LOGIN_PASSWORD}"'"
+    }' 2> /dev/null
+    )
+
+    ZEN_LOGIN_MESSAGE=$(echo "${ZEN_LOGIN_RESPONSE}" | jq -r .message)
+
+    if [ "${ZEN_LOGIN_MESSAGE}" != "success" ]; then
+        echo "Login failed: ${ZEN_LOGIN_MESSAGE}"
+
+    fi
+
+    ZEN_TOKEN=$(echo "${ZEN_LOGIN_RESPONSE}" | jq -r .token)
+    echo "${ZEN_TOKEN}"
+    echo "        AI_PLATFORM_ROUTE:  $ZEN_TOKEN"
+
+    echo "Sucessfully logged in" 
+    echo ""
+    echo "Creating OBSERVER"
+    curl -X 'POST' --insecure \
+      "https://$AIO_PLATFORM_ROUTE/v1/observer/connections?connection_id=robot-shop" \
+      -H 'accept: application/json' \
+      -H 'Content-Type: application/json' \
+        -H "authorization: Bearer $ZEN_TOKEN"  \
+      -d '{ 
+      "connection_config": { 
+        "job_type": "local", 
+        "observer_parameters": { 
+          "parameters": { 
+            "hide_terminated_pods": true, 
+            "namespaceGroupParameters": { 
+              "correlate": true 
+            }, 
+            "data_center": "robot-shop", 
+            "namespace": "robot-shop" 
+          }, 
+          "scheduleRequest": false, 
+          "unique_id": "mariapp-robot-shop", 
+          "description": "Automatically created by Nicks scripts" 
+        } 
+      }, 
+      "connection_type": "kubernetes_observer", 
+      "datasource_type": "topology" 
+    }'
+
 
   register: output_string
   ignore_errors: yes

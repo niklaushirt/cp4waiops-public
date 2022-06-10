@@ -49,7 +49,8 @@ do
       echo "Install Log"
       echo "*****************************************************************************************************************************"
 
-      tail installAIManager.log
+      #tail installAIManager.log
+      cat installAIManager.log
       echo "  "
       echo "  "
       echo "  "
@@ -87,6 +88,11 @@ do
       echo "    ❗ Pods Not Ready:                                     "
       oc get pods -n $WAIOPS_NAMESPACE --no-headers|grep "0/1"|grep -v Completed| sed 's/^/       /'
 
+      echo "  "
+      echo "*****************************************************************************************************************************"
+      echo "  🐥 CSVs that are not ready"
+      oc get csv -A | grep -v 'Succeeded'| sed 's/^/       /'
+
 
       if [[ ! $ERROR_AKORA == "0" ]]; then
             echo "  "
@@ -102,7 +108,7 @@ do
       fi
 
 
-      sleep 10
+      sleep 15
 done
 
 

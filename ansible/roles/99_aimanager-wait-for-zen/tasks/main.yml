@@ -33,7 +33,7 @@
   delay: 15
 
 
-- name: CHECK -                  🕦 Wait for Zen Ansible Script zen_ready.stdout in namespace ibm-common-services (this can take some time)
+- name: CHECK -                  🕦 Wait for Zen Ansible Script zen_ready.stdout in namespace ibm-common-services (this might take some time)
   shell: |
     ZEN_LOGS=$(oc logs $(oc get po -n ibm-common-services|grep ibm-zen-operator|awk '{print$1}') -n ibm-common-services|grep -i -E "ok=2|ok=3|ok=4")
     echo $ZEN_LOGS

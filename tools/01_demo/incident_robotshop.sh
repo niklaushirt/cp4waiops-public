@@ -89,23 +89,45 @@ fi
 oc project $WAIOPS_NAMESPACE  >/tmp/demo.log 2>&1  || true
 
 
-
-echo ""
-echo ""
-echo "   ------------------------------------------------------------------------------------------------------------------------------"
-echo "   🚀  ❎ Closing existing Stories and Alerts..."
-echo "   ------------------------------------------------------------------------------------------------------------------------------"
 export USER_PASS="$(oc get secret aiops-ir-core-ncodl-api-secret -o jsonpath='{.data.username}' | base64 --decode):$(oc get secret aiops-ir-core-ncodl-api-secret -o jsonpath='{.data.password}' | base64 --decode)"
 oc apply -n $WAIOPS_NAMESPACE -f ./tools/01_demo/scripts/datalayer-api-route.yaml >/tmp/demo.log 2>&1  || true
 sleep 2
 export DATALAYER_ROUTE=$(oc get route  -n $WAIOPS_NAMESPACE datalayer-api  -o jsonpath='{.status.ingress[0].host}')
-export result=$(curl "https://$DATALAYER_ROUTE/irdatalayer.aiops.io/active/v1/stories" --insecure --silent -X PATCH -u "${USER_PASS}" -d '{"state": "resolved"}' -H 'Content-Type: application/json' -H "x-username:admin" -H "x-subscription-id:cfd95b7e-3bc7-4006-a4a8-a73a79c71255")
-echo "       Stories closed: "$(echo $result | jq ".affected")
 
-#export result=$(curl "https://$DATALAYER_ROUTE/irdatalayer.aiops.io/active/v1/alerts?filter=type.classification%20%3D%20%27robot-shop%27" --insecure --silent -X PATCH -u "${USER_PASS}" -d '{"state": "closed"}' -H 'Content-Type: application/json' -H "x-username:admin" -H "x-subscription-id:cfd95b7e-3bc7-4006-a4a8-a73a79c71255")
-export result=$(curl "https://$DATALAYER_ROUTE/irdatalayer.aiops.io/active/v1/alerts" --insecure --silent -X PATCH -u "${USER_PASS}" -d '{"state": "closed"}' -H 'Content-Type: application/json' -H "x-username:admin" -H "x-subscription-id:cfd95b7e-3bc7-4006-a4a8-a73a79c71255")
-echo "       Alerts closed: "$(echo $result | jq ".affected")
-#curl "https://$DATALAYER_ROUTE/irdatalayer.aiops.io/active/v1/alerts" -X GET -u "${USER_PASS}" -H "x-username:admin" -H "x-subscription-id:cfd95b7e-3bc7-4006-a4a8-a73a79c71255" | grep '"state": "open"' | wc -l
+
+echo ""
+echo ""
+echo "   ------------------------------------------------------------------------------------------------------------------------------"
+read -p "    ❓ Do you want to close existing Stories and Alerts❓ [y,N] " DO_COMM
+echo "   ------------------------------------------------------------------------------------------------------------------------------"
+if [[ $DO_COMM == "y" ||  $DO_COMM == "Y" ]]; then
+      echo ""
+      echo ""
+      echo "   ------------------------------------------------------------------------------------------------------------------------------"
+      echo "   🚀  ❎ Closing existing Stories and Alerts..."
+      echo "   ------------------------------------------------------------------------------------------------------------------------------"
+
+      export result=$(curl "https://$DATALAYER_ROUTE/irdatalayer.aiops.io/active/v1/stories" --insecure --silent -X PATCH -u "${USER_PASS}" -d '{"state": "resolved"}' -H 'Content-Type: application/json' -H "x-username:admin" -H "x-subscription-id:cfd95b7e-3bc7-4006-a4a8-a73a79c71255")
+      echo "       Stories closed: "$(echo $result | jq ".affected")
+
+      #export result=$(curl "https://$DATALAYER_ROUTE/irdatalayer.aiops.io/active/v1/alerts?filter=type.classification%20%3D%20%27robot-shop%27" --insecure --silent -X PATCH -u "${USER_PASS}" -d '{"state": "closed"}' -H 'Content-Type: application/json' -H "x-username:admin" -H "x-subscription-id:cfd95b7e-3bc7-4006-a4a8-a73a79c71255")
+      export result=$(curl "https://$DATALAYER_ROUTE/irdatalayer.aiops.io/active/v1/alerts" --insecure --silent -X PATCH -u "${USER_PASS}" -d '{"state": "closed"}' -H 'Content-Type: application/json' -H "x-username:admin" -H "x-subscription-id:cfd95b7e-3bc7-4006-a4a8-a73a79c71255")
+      echo "       Alerts closed: "$(echo $result | jq ".affected")
+      #curl "https://$DATALAYER_ROUTE/irdatalayer.aiops.io/active/v1/alerts" -X GET -u "${USER_PASS}" -H "x-username:admin" -H "x-subscription-id:cfd95b7e-3bc7-4006-a4a8-a73a79c71255" | grep '"state": "open"' | wc -l
+fi
+
+
+
+
+#------------------------------------------------------------------------------------------------------------------------------------
+#  Deactivating MYSQL Service
+#------------------------------------------------------------------------------------------------------------------------------------
+echo " "
+echo "   ------------------------------------------------------------------------------------------------------------------------------"
+echo "   🚀  Deactivating MYSQL Service..."
+echo "   ------------------------------------------------------------------------------------------------------------------------------"
+oc patch service mysql -n robot-shop --patch '{"spec": {"selector": {"service": "mysql-outage"}}}'
+
 
 
 #------------------------------------------------------------------------------------------------------------------------------------
@@ -261,6 +283,84 @@ echo "   -----------------------------------------------------------------------
 
 
 
+echo ""
+echo ""
+echo "   ------------------------------------------------------------------------------------------------------------------------------"
+read -p "    ❓ Do you want to open the webpages for the demo❓ [Y,n] " DO_COMM
+echo "   ------------------------------------------------------------------------------------------------------------------------------"
+if [[ $DO_COMM == "n" ||  $DO_COMM == "N" ]]; then
+      echo "    Skipping...."
+else
+      export DEMOUI_ROUTE="http://"$(oc get route -n $WAIOPS_NAMESPACE waiops-demo-ui-python -o jsonpath={.spec.host})
+      export AIMANAGER_ROUTE="https://"$(oc get route -n $WAIOPS_NAMESPACE cpd -o jsonpath={.spec.host})
+      export ROBOTSHOP_ROUTE="http://"$(oc get routes -n robot-shop web  -o jsonpath="{['spec']['host']}")|| true
+      export AWX_ROUTE="http://"$(oc get route -n awx awx -o jsonpath={.spec.host})|| true
+
+      echo ""
+      echo ""
+      echo ""      
+      echo "      📥 AI Manager"
+      echo ""
+      echo "                🌏 URL:           $AIMANAGER_ROUTE"
+      echo "                🧑 User:          demo"
+      echo "                🔐 Password:      P4ssw0rd!"
+      echo ""    
+      echo "                🧑 User:          $(oc -n ibm-common-services get secret platform-auth-idp-credentials -o jsonpath='{.data.admin_username}' | base64 --decode && echo)"
+      echo "                🔐 Password:      $(oc -n ibm-common-services get secret platform-auth-idp-credentials -o jsonpath='{.data.admin_password}' | base64 --decode)"
+      echo ""
+      echo ""
+      echo ""
+      appToken=$(oc get cm -n $WAIOPS_NAMESPACE demo-ui-python-config -o jsonpath='{.data.TOKEN}')
+      echo "            📥 Demo UI:"   
+      echo "    " 
+      echo "                🌏 URL:           $DEMOUI_ROUTE"
+      echo "                🔐 Token:         $(oc get cm -n $WAIOPS_NAMESPACE demo-ui-python-config -o jsonpath='{.data.TOKEN}' && echo)"
+      echo ""
+      echo ""
+      echo ""
+      echo "            📥 RobotShop:"   
+      echo "    " 
+      echo "                🌏 APP URL:      $ROBOTSHOP_ROUTE"
+      echo ""
+      echo ""
+      echo ""
+      echo "            📥 AWX :"
+      echo ""
+      echo "                🌏 URL:           $AWX_ROUTE"
+      echo "                🧑 User:          admin"
+      echo "                🔐 Password:      $(oc -n awx get secret awx-admin-password -o jsonpath='{.data.password}' | base64 --decode && echo)"
+
+      echo ""
+      echo ""
+      echo ""
+      echo ""
+      echo ""
+      echo ""
+
+
+
+      if [ -x "$(command -v open)" ]; then
+      open $DEMOUI_ROUTE
+      open $AWX_ROUTE"/#/jobs"
+      open $AIMANAGER_ROUTE"/aiops/cfd95b7e-3bc7-4006-a4a8-a73a79c71255/resolution-hub/stories"
+      open $ROBOTSHOP_ROUTE
+      else 
+      if [ -x "$(command -v firefox)" ]; then
+            firefox $DEMOUI_ROUTE
+            firefox $AWX_ROUTE"/#/jobs"
+            firefox $AIMANAGER_ROUTE"/aiops/cfd95b7e-3bc7-4006-a4a8-a73a79c71255/resolution-hub/stories"
+            firefox $ROBOTSHOP_ROUTE
+      else 
+            if [ -x "$(command -v google-chrome)" ]; then
+            google-chrome $DEMOUI_ROUTE
+            google-chrome $AWX_ROUTE"/#/jobs"
+            google-chrome $AIMANAGER_ROUTE"/aiops/cfd95b7e-3bc7-4006-a4a8-a73a79c71255/resolution-hub/stories"
+            google-chrome $ROBOTSHOP_ROUTE
+            fi
+      fi
+      fi
+fi
+
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -282,6 +382,12 @@ echo "   -----------------------------------------------------------------------
 # Inject the Metric Anomalies
 ./tools/01_demo/scripts/simulate-metrics.sh
 
+# Inject the Log Inception files
+./tools/01_demo/scripts/simulate-logs.sh 
+./tools/01_demo/scripts/simulate-logs.sh 
+./tools/01_demo/scripts/simulate-logs.sh 
+
+
 
 echo " "
 echo " "
@@ -295,6 +401,3 @@ echo "  ✅  Done..... "
 echo ""
 echo "***************************************************************************************************************************************************"
 echo "***************************************************************************************************************************************************"
-
-
-

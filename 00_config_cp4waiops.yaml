@@ -209,13 +209,11 @@ CREATE_TOPO_ROUTE: true
 # Create externally accessible Routes  (security risk!)
 # Flink
 # AI Manager API Route
-# Datalayer API
+# Datalayer API ...
 CREATE_EXTERNAL_ROUTES: true
 
-# Install the EvtManager --> AI Manager Gateway
-INSTALL_GATEWAY: true
 # Number of Pods to be expected in final CP4WAIOPS Namespace
-WAIOPS_NS_MIN_PODS_FINAL: 120
+WAIOPS_NS_MIN_PODS_FINAL: 124
 # Number of Pods to be expected in final AI Manager Namespace
 CS_NS_MIN_PODS: 35
 # Number of Pods to be expected in final RookCeph Namespace

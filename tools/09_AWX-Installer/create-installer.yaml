@@ -45,3 +45,13 @@ spec:
         env:
           - name: INSTALL_REPO
             value : "https://github.com/niklaushirt/aiops-install-awx-33.git"
+          - name: SHOW_TOOLS
+            value : "true"
+          - name: SHOW_ADDONS
+            value : "true"
+          - name: SHOW_CONFIG
+            value : "true"
+          - name: SHOW_DEBUG
+            value : "true"
+          - name: ENTITLED_REGISTRY_KEY
+            value : "CHANGEME1234"

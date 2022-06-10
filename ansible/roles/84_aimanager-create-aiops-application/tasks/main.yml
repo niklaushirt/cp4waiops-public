@@ -75,7 +75,36 @@
           ]
       }'
     else
-      echo "Template already exists"
+      echo "Delete Template"
+            curl -X "DELETE" "$TOPO_MGT_ROUTE/1.0/topology/groups/$TEMPLATE_ID" --insecure \
+      -u $LOGIN \
+      -H 'Content-Type: application/json' \
+      -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255'
+
+      
+      curl -X "POST" "$TOPO_MGT_ROUTE/1.0/topology/groups" --insecure \
+      -u $LOGIN \
+      -H 'Content-Type: application/json' \
+      -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' \
+      -d '  {
+
+          "_correlationEnabled": "true",
+          "iconId": "application",
+          "vertexType": "group",
+          "groupTokens": [
+              "namespace:robot-shop"
+          ],
+          "correlatable": "true",
+          "name": "robot-shop-template",
+          "entityTypes": [
+              "completeGroup",
+              "namespace"
+          ],
+          "tags": [
+              "robot-shop-template"
+          ]
+      }'
+
     fi
 
     if [[ $APP_ID == "" ]];

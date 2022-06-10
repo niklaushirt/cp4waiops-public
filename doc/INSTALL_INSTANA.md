@@ -103,7 +103,7 @@ mkdir -p /var/log/instana
 	  > Configure admin user ✓
 	  > https://159.122.143.xxx
 	  > E-Mail: admin@instana.local
-	  > Password: RqRxxxQcL
+	  > Password: hX85k7bTtu
 	```
 
 1. Import License

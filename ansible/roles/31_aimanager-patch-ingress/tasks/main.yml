@@ -137,7 +137,7 @@
   shell: oc get po -n {{ WAIOPS_NAMESPACE }} | grep nginx|grep "1/1"|grep -c ""
   register: kubectl_get_pods
   until: kubectl_get_pods.stdout == "2"
-  retries: 500
+  retries: 50
   delay: 15
 
 

@@ -10,7 +10,7 @@
 
 - name: LOGGING -                📥 WRITE TO LOGFILE
   shell: |
-    export MESSAGE=" ✅ Done Ai Manager Base Install (01_AIManager-install)"
+    export MESSAGE=" ✅ Done Ai Manager Install"
     export currentDate=$(date +%Y-%m-%d_%H:%M)
     echo $currentDate" - "$USER" - "$MESSAGE  >> ../installAIManager.log
     echo "**********************************************************************************************************************************************************" >> ../installAIManager.log

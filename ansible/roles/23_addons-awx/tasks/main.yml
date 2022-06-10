@@ -38,16 +38,3 @@
     src: ./templates/awx/awx-deploy-cr.yml
 
 
-- name: AWX -                    📥 WRITE TO LOGFILE
-  shell: |
-    export MESSAGE="Installing AWX"
-    export currentDate=$(date +%Y-%m-%d_%H:%M)
-    echo "              📥 AWX Login:"  >> ../installAIManager.log
-    echo ""  >> ../installAIManager.log
-    echo "                🌏 URL:      https://$(oc get route -n awx awx -o jsonpath={.spec.host})"  >> ../installAIManager.log
-    echo "                🧑 User:     admin"  >> ../installAIManager.log
-    echo "                🔐 Password: $(oc -n awx get secret awx-admin-password -o jsonpath='{.data.password}' | base64 --decode && echo)"  >> ../installAIManager.log
-    echo "---------------------------------------------------------------------------------------------------------------------------------------------------" >> ../installAIManager.log
-  ignore_errors: yes
-
-

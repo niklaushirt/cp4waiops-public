@@ -44,29 +44,31 @@
 
 # Run Roles 
 
-    - role: 87_aimanager-training-load-snow
-
-    - role: 87_aimanager-training-load-logs
-
-    - role: 87_aimanager-training-load-metric
-
-
+    - role: 85_aimanager-training-check-exists
     - role: 86_aimanager-training-create-tg-configuration
-
+      when: TRAINING_EXISTS==false
     - role: 86_aimanager-training-create-metric-configuration
-
+      when: TRAINING_EXISTS==false
     - role: 86_aimanager-training-create-snow-configuration
-
+      when: TRAINING_EXISTS==false
     - role: 86_aimanager-training-create-logs-configuration
-
+      when: TRAINING_EXISTS==false
+    - role: 87_aimanager-training-load-snow
+      when: TRAINING_EXISTS==false
+    - role: 87_aimanager-training-load-logs
+      when: TRAINING_EXISTS==false
+    - role: 87_aimanager-training-load-metric
+      when: TRAINING_EXISTS==false
 
     - role: 87_aimanager-training-load-wait
-
+      when: TRAINING_EXISTS==false
     - role: 88_aimanager-training-run-snow
-
-    - role: 88_aimanager-training-run-metric
-
+      when: TRAINING_EXISTS==false
     - role: 88_aimanager-training-run-logs
+      when: TRAINING_EXISTS==false
+    - role: 88_aimanager-training-run-metric
+      when: TRAINING_EXISTS==false
+
 
 
 

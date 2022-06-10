@@ -1,55 +1,71 @@
 apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: waiops-event-gateway-admin
+  namespace: {{ WAIOPS_NAMESPACE }}
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: waiops-event-gateway-admin-crb
+subjects:
+  - kind: ServiceAccount
+    name: waiops-event-gateway-admin
+    namespace: {{ WAIOPS_NAMESPACE }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+---
+
+apiVersion: v1
 kind: ConfigMap
 metadata:
-  name:  {{ WAIOPS_NAME }}-event-gateway-config
+  name:  waiops-event-gateway-config
   namespace: {{ WAIOPS_NAMESPACE }}
 data:
-  TOKEN: 'token2022'
+  TOKEN: 'P4ssw0rd!'
   ITERATE_ELEMENT: 'events'
-  NODE_ELEMENT: 'Node'
-  NODEALIAS_ELEMENT: 'NodeAlias'
-  ALERT_ELEMENT: 'AlertGroup'
-  SUMMARY_ELEMENT: 'Summary'
-  TIMESTAMP_ELEMENT: '@timestamp'
-  URL_ELEMENT: 'URL'
-  SEVERITY_ELEMENT: 'Severity'
-  MANAGER_ELEMENT: 'Manager'
-  KAFKA_BROKER: '{{KAFKA_BROKER}}'
-  KAFKA_USER: '{{KAFKA_USER}}'
-  KAFKA_PWD: '{{KAFKA_PWD}}'
-  KAFKA_TOPIC_EVENTS: '{{KAFKA_TOPIC_EVENTS}}'
-  KAFKA_TOPIC_LOGS: '{{KAFKA_TOPIC_LOGS}}'
-  CERT_ELEMENT:  |-
-    {{CERT_ELEMENT}}
-  DEMO_EVENTS:  |-
-    {}
-  DEMO_LOGS:  |-
-    {}
+  WEBHOOK_DEBUG: 'false'
+  EVENT_TEMPLATE: '{"id": "1a2a6787-59ad-4acd-bd0d-46c1ddfd8e00","occurrenceTime": "@@TIMESTAMP_DATE","summary": "@@SUMMARY_TEXT","severity": @@SEVERITY_NUMBER,"type": {"eventType": "problem","classification": "@@MANAGER_NAME"},"expirySeconds": @@EXPIRY_SECONDS,"links": [{"linkType": "webpage","name": "@@MANAGER_NAME","description": "@@MANAGER_NAME","url": "@@URL_TXT"}],"sender": {"type": "host","name": "@@SENDER_NAME","sourceId": "@@SENDER_NAME"},"resource": {"type": "host","name": "@@RESOURCE_NAME","sourceId": "@@RESOURCE_NAME"},"details": {@@DETAILS_JSON}}' 
+  EVENT_MAPPING: |- 
+      kubernetes.container_name,RESOURCE_NAME;
+      kubernetes.namespace_name,SENDER_NAME;
+      @rawstring,SUMMARY_TEXT;
+      override_with_date,TIMESTAMP_DATE;
+      URL,URL_TXT;
+      Severity,SEVERITY_NUMBER;
+      Expiry,EXPIRY_SECONDS;
+      details,DETAILS_JSON;
+      Manager,MANAGER_NAME
+
+
+
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ WAIOPS_NAME }}-event-gateway
+  name: waiops-event-gateway
   namespace: {{ WAIOPS_NAMESPACE }}
   labels:
-      app:  {{ WAIOPS_NAME }}-event-gateway
+      app:  waiops-event-gateway
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app:  {{ WAIOPS_NAME }}-event-gateway
+      app:  waiops-event-gateway
   template:
     metadata:
       labels:
-        app:  {{ WAIOPS_NAME }}-event-gateway
+        app:  waiops-event-gateway
     spec:
       containers:
-      - image: niklaushirt/cp4waiops-event-gateway:3.0
+      - image: niklaushirt/cp4waiops-webhook-python:0.4
         imagePullPolicy: Always
         name: gateway
         command:
         ports:
-        - containerPort: 8080
+        - containerPort: 8000
         resources:
           requests:
             cpu: "50m"
@@ -59,20 +75,21 @@ spec:
             memory: "550Mi"
         envFrom:
         - configMapRef:
-            name:  {{ WAIOPS_NAME }}-event-gateway-config
+            name:  waiops-event-gateway-config
+      serviceAccountName: waiops-event-gateway-admin         
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name:  {{ WAIOPS_NAME }}-event-gateway-service
+  name:  waiops-event-gateway-service
   namespace: {{ WAIOPS_NAMESPACE }}
 spec:
   selector:
-    app:  {{ WAIOPS_NAME }}-event-gateway
+    app:  waiops-event-gateway
   ports:
     - protocol: TCP
-      port: 8080
-      targetPort: 8080
+      port: 8000
+      targetPort: 8000
 ---
 apiVersion: route.openshift.io/v1
 kind: Route
@@ -82,5 +99,5 @@ metadata:
 spec:
   to:
     kind: Service
-    name:  {{ WAIOPS_NAME }}-event-gateway-service
+    name:  waiops-event-gateway-service
 

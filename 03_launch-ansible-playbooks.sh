@@ -127,7 +127,7 @@ until [ "$selection" = "0" ]; do
       echo "  🧨  Demo Addons Playbooks"
       echo "  "
 
-      ls -1 ./ansible | grep -E "(11|12|13|14|16|17)"| sed 's/.yaml//'| sed 's/^/       /'
+      ls -1 ./ansible | grep -E "(11|12|13|14|16|17|19)"| sed 's/.yaml//'| sed 's/^/       /'
 
 
 
@@ -150,10 +150,10 @@ until [ "$selection" = "0" ]; do
 
       echo "  "
       echo "-----------------------------------------------------------------------"
-      echo "  📥  Post Install Playbooks"
+      echo "  📚  Runbooks Playbooks"
       echo "  "
 
-      ls -1 ./ansible | grep -E "(47|48)"| sed 's/.yaml//'| sed 's/^/       /'
+      ls -1 ./ansible | grep -E "(45|47|48|49)"| sed 's/.yaml//'| sed 's/^/       /'
 
 
       echo "  "
@@ -161,7 +161,7 @@ until [ "$selection" = "0" ]; do
       echo "  🔗  Topology Playbooks"
       echo "  "
 
-      ls -1 ./ansible | grep -E "(80|82|83|84)"| sed 's/.yaml//'| sed 's/^/       /'
+      ls -1 ./ansible | grep -E "(80|81|82|83|84)"| sed 's/.yaml//'| sed 's/^/       /'
 
 
       echo "  "

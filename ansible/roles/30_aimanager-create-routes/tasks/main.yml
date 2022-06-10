@@ -66,7 +66,14 @@
     shell: oc create route passthrough topology-manage -n {{ WAIOPS_NAMESPACE }} --service=aiops-topology-topology --port=https-topology-api
     ignore_errors: yes
     when: CREATE_TOPO_ROUTE == true
+
+  - name: ROUTES -                 🚀 Create Topology Route - topology-file-api
+    shell: oc create route reencrypt topology-file-api -n {{ WAIOPS_NAMESPACE }} --service=aiops-topology-file-observer --port=https-file-observer-api
+    ignore_errors: yes
+    when: CREATE_TOPO_ROUTE == true
+
   when: OBJECT_EXISTS.stdout|length == 0
+
 
 
 
@@ -76,7 +83,16 @@
     shell: oc create route edge job-manager -n {{ WAIOPS_NAMESPACE }} --service=cp4waiops-eventprocessor-eve-29ee-ep-jobmanager --port=ui
     ignore_errors: yes
     when: CREATE_EXTERNAL_ROUTES == true
-        
+  
+  - name: ROUTES -                 🚀 Create external Flink Policy Job Manager Route (you can ignore errors in this step)
+    shell: oc create route edge job-manager-policy -n {{ WAIOPS_NAMESPACE }} --service=aiops-ir-lifecycle-eventprocessor-ep-jobmanager --port=ui
+    ignore_errors: yes
+
+
+
+
+
+
   - name: ROUTES -                 🚀 Create external AI Manager API Route (you can ignore errors in this step)
     shell: oc create route passthrough ai-platform-api -n {{ WAIOPS_NAMESPACE }}  --service=aimanager-aio-ai-platform-api-server --port=4000 --insecure-policy=Redirect --wildcard-policy=None
     ignore_errors: yes
@@ -87,6 +103,13 @@
     shell: oc create route reencrypt datalayer-api -n {{ WAIOPS_NAMESPACE }}  --service=aiops-ir-core-ncodl-api --port=secure-port --insecure-policy=Redirect --wildcard-policy=None
     ignore_errors: yes
     when: CREATE_EXTERNAL_ROUTES == true
+
+
+  - name: ROUTES -                 🚀 Create external AIO Controller Route (you can ignore errors in this step)
+    shell: oc create route passthrough aimanager-aio-controller -n {{ WAIOPS_NAMESPACE }}  --service=aimanager-aio-controller
+    ignore_errors: yes
+    when: CREATE_EXTERNAL_ROUTES == true
+
 
   - name: ROUTES -                 🚀 Enable Swagger on external Datalayer API Route (you can ignore errors in this step)
     shell: oc set env deploy -n {{ WAIOPS_NAMESPACE }} aiops-ir-core-ncodl-api ENABLE_SWAGGER_UI="true" 
@@ -187,5 +210,11 @@
 # --------------------------------------------------------------------------------------------------------------------------------------
 - name: ROUTES -                 🩹 Delete Pods with ImgPull Error  (you can ignore errors in this step)
   shell: |
-    oc delete pod --ignore-not-found $(oc get po -n {{ WAIOPS_NAMESPACE }}|grep ImagePull|awk '{print$1}') -n {{ WAIOPS_NAMESPACE }}
+        errorPods=$(oc get po -n {{ WAIOPS_NAMESPACE }}|grep ImagePull|awk '{print$1}')
+        if [[ ! $errorPods == "" ]]; then
+          echo "Refreshing Pods"
+          oc delete pod --ignore-not-found $(oc get po -n {{ WAIOPS_NAMESPACE }}|grep ImagePull|awk '{print$1}') -n {{ WAIOPS_NAMESPACE }}>/dev/null 2>/dev/null
+        fi
+
+
   ignore_errors: yes

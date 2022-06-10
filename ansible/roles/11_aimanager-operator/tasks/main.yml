@@ -92,7 +92,11 @@
 - name: AIMANAGER OPERATOR -     🚀 Patch service account for pull secret (you can ignore errors)
   shell: |
     oc patch -n openshift-marketplace serviceaccount ibm-operator-catalog -p '{"imagePullSecrets": [{"name": "ibm-entitlement-key"}]}'
-    oc delete pod $(oc get po -n openshift-marketplace|grep ImagePull|awk '{print$1}') -n openshift-marketplace --ignore-not-found
+    errorPods=$(oc get po -n openshift-marketplace|grep ImagePull|awk '{print$1}')
+    if [[ ! $errorPods == "" ]]; then
+      echo "Refreshing Pods"
+      oc delete pod $(oc get po -n openshift-marketplace|grep ImagePull|awk '{print$1}') -n openshift-marketplace --ignore-not-found
+    fi
   register: kubectl_get_pods
   ignore_errors: yes
 
@@ -121,7 +125,7 @@
   shell: oc get csv -n {{ WAIOPS_NAMESPACE }}|grep ibm-aiops-orchestrator|grep "Succeeded"| grep -v ibm-watson-aiops-ui-operator | grep -c ""
   register: kubectl_get_pods
   until: kubectl_get_pods.stdout == "1"
-  retries: 500
+  retries: 50
   delay: 15
 
 
@@ -131,7 +135,7 @@
   shell: oc get csv -n {{ WAIOPS_NAMESPACE }}|grep -v "Succeeded"| grep -v ibm-watson-aiops-ui-operator | grep -c ""
   register: kubectl_get_pods
   until: kubectl_get_pods.stdout == "1"
-  retries: 500
+  retries: 50
   delay: 15
 
 

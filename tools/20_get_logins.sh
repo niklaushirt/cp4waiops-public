@@ -24,8 +24,6 @@ echo "**************************************************************************
 echo "***************************************************************************************************************************************************"
 echo "***************************************************************************************************************************************************"
 echo ""
-echo ""
-echo ""
 echo "   __________  __ ___       _____    ________            "
 echo "  / ____/ __ \/ // / |     / /   |  /  _/ __ \____  _____"
 echo " / /   / /_/ / // /| | /| / / /| |  / // / / / __ \/ ___/"
@@ -33,8 +31,7 @@ echo "/ /___/ ____/__  __/ |/ |/ / ___ |_/ // /_/ / /_/ (__  ) "
 echo "\____/_/      /_/  |__/|__/_/  |_/___/\____/ .___/____/  "
 echo "                                   /_/            "
 echo ""
-echo ""
-echo ""
+
 echo "  "
 echo "  🚀 CloudPak for Watson AIOps v3.3 - Logins and URLs "
 echo "  "
@@ -82,23 +79,23 @@ echo "    ----------------------------------------------------------------------
 echo "    "
 echo "      📥 AI Manager"
 echo ""
-echo "                🌏 URL:      https://$(oc get route -n $WAIOPS_NAMESPACE cpd -o jsonpath={.spec.host})"
-echo "                🧑 User:     demo"
-echo "                🔐 Password: P4ssw0rd!"
-echo ""
-echo "                🧑 User:     $(oc -n ibm-common-services get secret platform-auth-idp-credentials -o jsonpath='{.data.admin_username}' | base64 --decode && echo)"
-echo "                🔐 Password: $(oc -n ibm-common-services get secret platform-auth-idp-credentials -o jsonpath='{.data.admin_password}' | base64 --decode)"
-echo "     "
-echo "     "
-echo "     "       
+echo "                🌏 URL:           https://$(oc get route -n $WAIOPS_NAMESPACE cpd -o jsonpath={.spec.host})"
+echo "                🧑 User:          demo"
+echo "                🔐 Password:      P4ssw0rd!"
+echo ""    
+echo "                🧑 User:          $(oc -n ibm-common-services get secret platform-auth-idp-credentials -o jsonpath='{.data.admin_username}' | base64 --decode && echo)"
+echo "                🔐 Password:      $(oc -n ibm-common-services get secret platform-auth-idp-credentials -o jsonpath='{.data.admin_password}' | base64 --decode)"
+echo "     "    
+echo "     "    
+echo "     "           
 echo "      📥 Administration hub / Common Services"
-echo ""
-echo "                🌏 URL:      https://$(oc get route -n ibm-common-services cp-console -o jsonpath={.spec.host})"
-echo "                🧑 User:     demo"
-echo "                🔐 Password: P4ssw0rd!"
-echo ""
-echo "                🧑 User:     $(oc -n ibm-common-services get secret platform-auth-idp-credentials -o jsonpath='{.data.admin_username}' | base64 --decode && echo)"
-echo "                🔐 Password: $(oc -n ibm-common-services get secret platform-auth-idp-credentials -o jsonpath='{.data.admin_password}' | base64 --decode)"
+echo ""    
+echo "                🌏 URL:           https://$(oc get route -n ibm-common-services cp-console -o jsonpath={.spec.host})"
+echo "                🧑 User:          demo"
+echo "                🔐 Password:      P4ssw0rd!"
+echo ""    
+echo "                🧑 User:          $(oc -n ibm-common-services get secret platform-auth-idp-credentials -o jsonpath='{.data.admin_username}' | base64 --decode && echo)"
+echo "                🔐 Password:      $(oc -n ibm-common-services get secret platform-auth-idp-credentials -o jsonpath='{.data.admin_password}' | base64 --decode)"
 echo "    "
 echo "    "
 echo "    "
@@ -107,7 +104,7 @@ echo "    "
 
 
 
-DEMOUI_READY=$(oc get pod -n $WAIOPS_NAMESPACE | grep 'ibm-aiops-demo-ui' || true) 
+DEMOUI_READY=$(oc get pod -n $WAIOPS_NAMESPACE | grep 'demo-ui-python' || true) 
 if [[ $DEMOUI_READY =~ "1/1" ]]; 
 then
 
@@ -117,18 +114,39 @@ then
     echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
     echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
     echo "    "
-    appURL=$(oc get routes -n $WAIOPS_NAMESPACE cp4waiops-demo-ui  -o jsonpath="{['spec']['host']}")|| true
-    appToken=$(oc get cm -n cp4waiops demo-ui-config -o jsonpath='{.data.TOKEN}')
+    appURL=$(oc get routes -n $WAIOPS_NAMESPACE waiops-demo-ui-python  -o jsonpath="{['spec']['host']}")|| true
+    appToken=$(oc get cm -n $WAIOPS_NAMESPACE demo-ui-python-config -o jsonpath='{.data.TOKEN}')
     echo "            📥 Demo UI:"   
     echo "    " 
     echo "                🌏 URL:           http://$appURL/"
     echo "                🔐 Token:         $appToken"
     echo ""
     echo ""
-TOKEN
 fi
 
 
+
+DEMO_READY=$(oc get ns robot-shop  --ignore-not-found|| true) 
+if [[ $DEMO_READY =~ "Active" ]]; 
+then
+
+    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+    echo "    🚀 Demo Apps - Details"
+    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+    echo "    "
+    appURL=$(oc get routes -n robot-shop web  -o jsonpath="{['spec']['host']}")|| true
+    echo "            📥 RobotShop:"   
+    echo "    " 
+    echo "                🌏 APP URL:       http://$appURL/"
+    echo "  "
+    echo "    "
+    echo "    "
+    echo "    "
+    echo "    "
+  
+fi
 
 
 EVTMGR_READY=$(oc get pod -n $EVTMGR_NAMESPACE --ignore-not-found| grep webgui-0|| true) 
@@ -142,16 +160,16 @@ then
     echo "    "
     echo "      📥 Event Manager"
     echo ""
-    echo "            🌏 URL:      https://$(oc get route -n $EVTMGR_NAMESPACE  evtmanager-ibm-hdm-common-ui -o jsonpath={.spec.host})"
-    echo "            🧑 User:     demo"
-    echo "            🔐 Password: P4ssw0rd!"
+    echo "            🌏 URL:           https://$(oc get route -n $EVTMGR_NAMESPACE  evtmanager-ibm-hdm-common-ui -o jsonpath={.spec.host})"
+    echo "            🧑 User:          demo"
+    echo "            🔐 Password:      P4ssw0rd!"
     echo ""
-    echo "            🧑 User:     smadmin"
-    echo "            🔐 Password: $(oc get secret -n $EVTMGR_NAMESPACE  evtmanager-was-secret -o jsonpath='{.data.WAS_PASSWORD}'| base64 --decode && echo)"
+    echo "            🧑 User:          smadmin"
+    echo "            🔐 Password:      $(oc get secret -n $EVTMGR_NAMESPACE  evtmanager-was-secret -o jsonpath='{.data.WAS_PASSWORD}'| base64 --decode && echo)"
     echo ""
     echo "       ---------------------------------------------------------------------------------------------"
     echo "        EventManager/NOI WEBHOOK:"
-    echo "            URL:   <PASTE HERE FOR DOCUMENTATION WHEN CREATED>"
+    echo "               URL:          <PASTE HERE FOR DOCUMENTATION WHEN CREATED>"
     echo "    "
     echo "    "
     echo "    "
@@ -159,100 +177,6 @@ then
 fi
 
 
-
-
-echo "***************************************************************************************************************************************************"
-echo "***************************************************************************************************************************************************"
-echo "🚀 Kafka Connections"
-echo "***************************************************************************************************************************************************"
-echo "***************************************************************************************************************************************************"
-echo "    "
-echo "    "
-echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
-echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
-echo "    🚀 NOI"
-echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
-echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
-echo "    "
-echo "      📥 Just create the Kafka connection"
-echo ""
-echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
-echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
-echo "    🚀 ELK"
-echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
-echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
-echo "    "
-echo "      ❗ Set 'Base parallelism' to 5"
-echo "    "
-echo "      📥 Use the following Mapping"
-echo ""
-echo "{ "
-echo "  \"codec\": \"elk\","
-echo "  \"message_field\": \"message\","
-echo "  \"log_entity_types\": \"kubernetes.container_image_id, kubernetes.host, kubernetes.pod_name, kubernetes.namespace_name\","
-echo "  \"instance_id_field\": \"kubernetes.container_name\","
-echo "  \"rolling_time\": 10,"
-echo "  \"timestamp_field\": \"@timestamp\""
-echo "}"
-echo "  "
-echo "    "
-echo "    "
-echo "    "
-echo "    "
-
-
-
-
-ELK_READY=$(oc get ns openshift-logging  --ignore-not-found|| true) 
-if [[ $ELK_READY =~ "Active" ]]; 
-then
-    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
-    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
-    echo "    🚀 ELK "
-    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
-    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
-    token=$(oc sa get-token cluster-logging-operator -n openshift-logging)
-    routeES=`oc get route elasticsearch -o jsonpath={.spec.host} -n openshift-logging`
-    routeKIBANA=`oc get route kibana -o jsonpath={.spec.host} -n openshift-logging`
-    echo "      "
-    echo "            📥 ELK:"
-    echo "      "
-    echo "               🌏 ELK service URL             : https://$routeES/app*"
-    echo "               🔐 Authentication type         : Token"
-    echo "               🔐 Token                       : $token"
-    echo "      "
-    echo "               🌏 Kibana URL                  : https://$routeKIBANA"
-    echo "               🚪 Kibana port                 : 443"
-    echo "               🗺️  Mapping                     : "
-    echo "{ "
-    echo "  \"codec\": \"elk\","
-    echo "  \"message_field\": \"message\","
-    echo "  \"log_entity_types\": \"kubernetes.container_image_id, kubernetes.host, kubernetes.pod_name, kubernetes.namespace_name\","
-    echo "  \"instance_id_field\": \"kubernetes.container_name\","
-    echo "  \"rolling_time\": 10,"
-    echo "  \"timestamp_field\": \"@timestamp\""
-    echo "}"
-    echo "  "
-    echo ""
-    echo ""
-    echo ""
-    echo "               🗺️  Filter                     : "
-    echo ""
-    echo "      {"
-    echo "        \"query\": {"
-    echo "          \"bool\": {"
-    echo "               \"must\": {"
-    echo "                  \"term\" : { \"kubernetes.namespace_name\" : \"robot-shop\" }"
-    echo "               }"
-    echo "              }"
-    echo "          }"
-    echo "      }"
-    echo "  "
-    echo ""
-    echo ""
-    echo ""
-
- fi
 
 
 
@@ -276,9 +200,9 @@ then
     echo "    "
     echo "            📥 Turbonomic Dashboard :"
     echo ""
-    echo "                🌏 URL:      https://$(oc get route -n turbonomic api -o jsonpath={.spec.host})"
-    echo "                🧑 User:     administrator"
-    echo "                🔐 Password: As set at init step"
+    echo "                🌏 URL:           https://$(oc get route -n turbonomic api -o jsonpath={.spec.host})"
+    echo "                🧑 User:          administrator"
+    echo "                🔐 Password:      As set at init step"
     echo "    "
     echo "    "
     echo "    "
@@ -300,9 +224,9 @@ then
     echo "    "
     echo "            📥 HUMIO:"
     echo ""
-    echo "                🌏 URL:      http://$(oc get route -n humio-logging humio -o jsonpath={.spec.host})"
-    echo "                🧑 User:     developer"
-    echo "                🔐 Password: P4ssw0rd!"
+    echo "                🌏 URL:           http://$(oc get route -n humio-logging humio -o jsonpath={.spec.host})"
+    echo "                🧑 User:          developer"
+    echo "                🔐 Password:      P4ssw0rd!"
     echo "    "
     echo "    "
     echo "    "
@@ -357,23 +281,27 @@ then
     echo "    "
     echo "            📥 AWX :"
     echo ""
-    echo "                🌏 URL:      https://$(oc get route -n awx awx -o jsonpath={.spec.host})"
-    echo "                🧑 User:     admin"
-    echo "                🔐 Password: $(oc -n awx get secret awx-admin-password -o jsonpath='{.data.password}' | base64 --decode && echo)"
+    echo "                🌏 URL:           https://$(oc get route -n awx awx -o jsonpath={.spec.host})"
+    echo "                🧑 User:          admin"
+    echo "                🔐 Password:      $(oc -n awx get secret awx-admin-password -o jsonpath='{.data.password}' | base64 --decode && echo)"
     echo "    "
     echo "    "
     echo "    "
-    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
-    echo "    🚀 For Runbook Integration: "
-    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+    echo "                -----------------------------------------------------------------------------------------------------------------------------------------------"
+    echo "                🚀 For Runbook Integration: "
+    echo "                -----------------------------------------------------------------------------------------------------------------------------------------------"
 
     DEMO_TOKEN=$(oc -n default get secret $(oc get secret -n default |grep -m1 demo-admin-token|awk '{print$1}') -o jsonpath='{.data.token}'|base64 --decode)
     DEMO_URL=$(oc status|grep -m1 "In project"|awk '{print$6}')
 
-    echo "{"
-    echo "\"my_k8s_apiurl\": \"$DEMO_URL\","
-    echo "\"my_k8s_apikey\": \"$DEMO_TOKEN\""
-    echo "}"
+    echo "                   {"
+    echo "                   \"my_k8s_apiurl\": \"$DEMO_URL\","
+    echo "                   \"my_k8s_apikey\": \"$DEMO_TOKEN\""
+    echo "                   }"
+    echo "  "
+    echo "    "
+    echo "    "
+    echo "    "
     echo "    "
 fi
 
@@ -391,12 +319,15 @@ then
       echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
       echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
       echo "    "
-      echo "    🌏 URL:      https://$ARGOCD_URL"
+    echo "                🌏 URL:           https://$ARGOCD_URL"
       echo "  "
-      echo "    🧔 User:       $ARGOCD_USER"
-      echo "    🔐 Password:   $ARGOCD_PWD"
-      echo "  "
-      echo "  "
+      echo "              🧔 User:          $ARGOCD_USER"
+      echo "              🔐 Password:      $ARGOCD_PWD"
+        echo "  "
+        echo "    "
+        echo "    "
+        echo "    "
+        echo "    "
 fi
 
 
@@ -412,9 +343,9 @@ then
     echo "    "
     echo "            📥 ManageIQ :"
     echo ""
-    echo "                🌏 URL:      https://$(oc get route -n manageiq $(oc get route -n manageiq|grep httpd|awk '{print$1}') -o jsonpath={.spec.host})"
-    echo "                🧑 User:     admin"
-    echo "                🔐 Password: smartvm"
+    echo "                🌏 URL:           https://$(oc get route -n manageiq $(oc get route -n manageiq|grep httpd|awk '{print$1}') -o jsonpath={.spec.host})"
+    echo "                🧑 User:          admin"
+    echo "                🔐 Password:      smartvm"
     echo "    "
     echo "    "
     echo "    "
@@ -424,24 +355,62 @@ fi
 
 
 
-DEMO_READY=$(oc get ns robot-shop  --ignore-not-found|| true) 
-if [[ $DEMO_READY =~ "Active" ]]; 
+
+
+
+ELK_READY=$(oc get ns openshift-logging  --ignore-not-found|| true) 
+if [[ $ELK_READY =~ "Active" ]]; 
 then
+    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+    echo "    🚀 ELK "
+    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+    token=$(oc sa get-token cluster-logging-operator -n openshift-logging)
+    routeES=`oc get route elasticsearch -o jsonpath={.spec.host} -n openshift-logging`
+    routeKIBANA=`oc get route kibana -o jsonpath={.spec.host} -n openshift-logging`
+    echo "      "
+    echo "            📥 ELK:"
+    echo "      "
+    echo "               🌏 ELK service URL             : https://$routeES/app*"
+    echo "               🔐 Authentication type         : Token"
+    echo "               🔐 Token                       : $token"
+    echo "      "
+    echo "               🌏 Kibana URL                  : https://$routeKIBANA"
+    echo "               🚪 Kibana port                 : 443"
+    echo "               🗺️  Mapping                     : "
+    echo "{ "
+    echo "  \"codec\": \"elk\","
+    echo "  \"message_field\": \"message\","
+    echo "  \"log_entity_types\": \"kubernetes.container_image_id, kubernetes.host, kubernetes.pod_name, kubernetes.namespace_name\","
+    echo "  \"instance_id_field\": \"kubernetes.container_name\","
+    echo "  \"rolling_time\": 10,"
+    echo "  \"timestamp_field\": \"@timestamp\""
+    echo "}"
+    echo "  "
+    echo ""
+    echo ""
+    echo ""
+    echo "               🗺️  Filter                     : "
+    echo ""
+    echo "      {"
+    echo "        \"query\": {"
+    echo "          \"bool\": {"
+    echo "               \"must\": {"
+    echo "                  \"term\" : { \"kubernetes.namespace_name\" : \"robot-shop\" }"
+    echo "               }"
+    echo "              }"
+    echo "          }"
+    echo "      }"
+    echo "  "
+    echo ""
+    echo ""
+    echo ""
+    echo ""
+    echo ""
+    echo ""
 
-    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
-    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
-    echo "    🚀 Demo Apps - Details"
-    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
-    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
-    echo "    "
-    appURL=$(oc get routes -n robot-shop web  -o jsonpath="{['spec']['host']}")|| true
-    echo "            📥 RobotShop:"   
-    echo "    " 
-    echo "                🌏 APP URL:           http://$appURL/"
-
-  
-fi
-
+ fi
 
 
 echo "***************************************************************************************************************************************************"
@@ -452,7 +421,7 @@ echo "**************************************************************************
 echo ""
 echo "  📥 Openshift Console"
 echo ""
-echo "            🌏 URL:      https://$(oc get route -n openshift-console console -o jsonpath={.spec.host})"
+echo "            🌏 URL:               https://$(oc get route -n openshift-console console -o jsonpath={.spec.host})"
 echo " "
 echo " "
 echo " "
@@ -460,8 +429,8 @@ echo "  📥 Openshift Command Line"
 echo ""
 DEMO_TOKEN=$(oc -n default get secret $(oc get secret -n default |grep -m1 demo-admin-token|awk '{print$1}') -o jsonpath='{.data.token}'|base64 --decode)
 DEMO_URL=$(oc status|grep -m1 "In project"|awk '{print$6}')
-echo "            🌏 URL:     $DEMO_URL"
-echo "            🔐 Token:   $DEMO_TOKEN"
+echo "            🌏 URL:               $DEMO_URL"
+echo "            🔐 Token:             $DEMO_TOKEN"
 echo ""
 echo ""
 echo "            🧑 Login:   oc login --token=$DEMO_TOKEN --server=$DEMO_URL"
@@ -486,13 +455,18 @@ echo "    "
 echo "    "
 echo "    "
 echo "    "
+
+
+
+
+
+
+
 echo "***************************************************************************************************************************************************"
 echo "***************************************************************************************************************************************************"
 echo "🚀 CloudPak for Watson AIOps - Technical Links"
 echo "***************************************************************************************************************************************************"
 echo "***************************************************************************************************************************************************"
-echo "    "
-echo "    "
 echo "    "
 echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
 echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
@@ -502,8 +476,8 @@ echo "    ----------------------------------------------------------------------
 echo "    " 
 echo "            📥 Vault:"
 echo "    " 
-echo "                🌏 URL:      https://$(oc get route -n $WAIOPS_NAMESPACE ibm-vault-deploy-vault-route -o jsonpath={.spec.host})"
-echo "                🔐 Token:    $(oc get secret -n $WAIOPS_NAMESPACE ibm-vault-deploy-vault-credential -o jsonpath='{.data.token}' | base64 --decode && echo)"
+echo "                🌏 URL:           https://$(oc get route -n $WAIOPS_NAMESPACE ibm-vault-deploy-vault-route -o jsonpath={.spec.host})"
+echo "                🔐 Token:         $(oc get secret -n $WAIOPS_NAMESPACE ibm-vault-deploy-vault-credential -o jsonpath='{.data.token}' | base64 --decode && echo)"
 echo "    "
 echo "    "
 echo "    "
@@ -518,9 +492,9 @@ echo "    ----------------------------------------------------------------------
 echo "    " 
 echo "            📥 OPENLDAP:"
 echo "    " 
-echo "                🌏 URL:      http://$(oc get route -n default openldap-admin -o jsonpath={.spec.host})"
-echo "                🧑 User:     cn=admin,dc=ibm,dc=com"
-echo "                🔐 Password: P4ssw0rd!"
+echo "                🌏 URL:           http://$(oc get route -n default openldap-admin -o jsonpath={.spec.host})"
+echo "                🧑 User:          cn=admin,dc=ibm,dc=com"
+echo "                🔐 Password:      P4ssw0rd!"
 echo "    "
 echo "    "
 echo "    "
@@ -529,42 +503,64 @@ echo "    "
 
 
 
+ROUTE_READY=$(oc get routes -n $WAIOPS_NAMESPACE job-manager  --ignore-not-found|| true) 
+if [[ $ROUTE_READY =~ "job-manager" ]]; 
+then
+    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+    echo "    🚀 Flink Task Manager - Ingestion"
+    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+    appURL=$(oc get routes -n $WAIOPS_NAMESPACE job-manager  -o jsonpath="{['spec']['host']}")
+    echo "    " 
+    echo "                🌏 APP URL:       https://$appURL/"
+    echo "    "
+    echo "                In Chrome: if you get blocked just type "thisisunsafe" and it will continue (you don't get any visual feedback when typing!)"
+    echo "    "
+    echo "    "
+    echo "    "
+    echo "    "
+fi
 
-echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
-echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
-echo "    🚀 Flink Task Manager"
-echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
-echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
-appURL=$(oc get routes -n $WAIOPS_NAMESPACE job-manager  -o jsonpath="{['spec']['host']}")
-echo "    " 
-echo "            📥 Flink Task Manager:"
-echo "    " 
-echo "                🌏 APP URL:           https://$appURL/"
-echo "    "
-echo "                In Chrome: if you get blocked just type "thisisunsafe" and it will continue (you don't get any visual feedback when typing!)"
-echo "    "
-echo "    "
-echo "    "
-echo "    "
+ROUTE_READY=$(oc get routes -n $WAIOPS_NAMESPACE job-manager-policy  --ignore-not-found|| true) 
+if [[ $ROUTE_READY =~ "job-manager" ]]; 
+then
+    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+    echo "    🚀 Flink Task Manager - Policy Framework"
+    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+    appURL=$(oc get routes -n $WAIOPS_NAMESPACE job-manager-policy  -o jsonpath="{['spec']['host']}")
+    echo "    " 
+    echo "                🌏 APP URL:       https://$appURL/"
+    echo "    "
+    echo "                In Chrome: if you get blocked just type "thisisunsafe" and it will continue (you don't get any visual feedback when typing!)"
+    echo "    "
+    echo "    "
+    echo "    "
+    echo "    "
+fi 
 
 
-
-echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
-echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
-echo "    🚀 Spark Master"
-echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
-echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
-appURL=$(oc get routes -n $WAIOPS_NAMESPACE spark  -o jsonpath="{['spec']['host']}")
-echo "    " 
-echo "            📥 Spark Master:"
-echo "    " 
-echo "                🌏 APP URL:           http://$appURL/"
-echo "    "
-echo "    "
-echo "    "
-echo "    "
-echo "    "
-
+ROUTE_READY=$(oc get routes -n $WAIOPS_NAMESPACE spark  --ignore-not-found|| true) 
+if [[ $ROUTE_READY =~ "job-manager" ]]; 
+then
+    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+    echo "    🚀 Spark Master"
+    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+    echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+    appURL=$(oc get routes -n $WAIOPS_NAMESPACE spark  -o jsonpath="{['spec']['host']}")
+    echo "    " 
+    echo "            📥 Spark Master:"
+    echo "    " 
+    echo "                🌏 APP URL:       http://$appURL/"
+    echo "    "
+    echo "    "
+    echo "    "
+    echo "    "
+    echo "    "
+fi
 
 
 
@@ -582,9 +578,9 @@ then
     echo "    " 
     echo "            📥 Rook/Ceph Dashboard :"
     echo "    " 
-    echo "                🌏 URL:      https://dash-rook-ceph.$CLUSTER_NAME/"
-    echo "                🧑 User:     admin"
-    echo "                🔐 Password: $(oc -n rook-ceph get secret rook-ceph-dashboard-password -o jsonpath="{['data']['password']}" | base64 --decode)"
+    echo "                🌏 URL:           https://dash-rook-ceph.$CLUSTER_NAME/"
+    echo "                🧑 User:          admin"
+    echo "                🔐 Password:      $(oc -n rook-ceph get secret rook-ceph-dashboard-password -o jsonpath="{['data']['password']}" | base64 --decode)"
     echo "    "
     echo "    "
     echo "    "
@@ -592,6 +588,48 @@ then
 fi
 
 
+echo ""
+echo ""
+
+echo "***************************************************************************************************************************************************"
+echo "***************************************************************************************************************************************************"
+echo "🚀 CloudPak for Watson AIOps - DEMO Connections"
+echo "***************************************************************************************************************************************************"
+echo "***************************************************************************************************************************************************"
+echo "    "
+echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+echo "    🚀 Kafka Connections "
+echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+echo "    "
+echo "        "
+echo "        -----------------------------------------------------------------------------------------------------------------------------------------------"
+echo "        🚀 NOI"
+echo "        -----------------------------------------------------------------------------------------------------------------------------------------------"
+echo "        "
+echo "          📥 Just create the Kafka connection"
+echo ""    
+echo "        -----------------------------------------------------------------------------------------------------------------------------------------------"
+echo "        🚀 ELK"
+echo "        -----------------------------------------------------------------------------------------------------------------------------------------------"
+echo "        "
+echo "          ❗ Set 'Base parallelism' to 5"
+echo "        "
+echo "          📥 Use the following Mapping"
+echo ""
+echo "                { "
+echo "                  \"codec\": \"elk\","
+echo "                  \"message_field\": \"message\","
+echo "                  \"log_entity_types\": \"kubernetes.container_image_id, kubernetes.host, kubernetes.pod_name, kubernetes.namespace_name\","
+echo "                  \"instance_id_field\": \"kubernetes.container_name\","
+echo "                  \"rolling_time\": 10,"
+echo "                  \"timestamp_field\": \"@timestamp\""
+echo "                }"
+echo "  "
+echo "    "
+echo "    "
+echo "    "
 
 
 
@@ -628,35 +666,52 @@ echo ""
 echo ""
 echo ""
 echo ""
+echo ""
+echo ""
 
 
-echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
-echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
-echo "    🚀 APIs "
-echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
-echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+
+echo "***************************************************************************************************************************************************"
+echo "***************************************************************************************************************************************************"
+echo "🚀 CloudPak for Watson AIOps - APIs"
+echo "***************************************************************************************************************************************************"
+echo "***************************************************************************************************************************************************"
+echo ""
+
+
+
+echo "        -----------------------------------------------------------------------------------------------------------------------------------------------"
+echo "        -----------------------------------------------------------------------------------------------------------------------------------------------"
+echo "        🚀 Topology APIs "
+echo "        -----------------------------------------------------------------------------------------------------------------------------------------------"
+echo "        -----------------------------------------------------------------------------------------------------------------------------------------------"
 
 
 apiURL=$(oc get routes -n $WAIOPS_NAMESPACE topology-merge  -o jsonpath="{['spec']['host']}")
 echo "                🌏 Topology Merge:           https://$apiURL/"
 echo "    "
 apiURL=$(oc get routes -n $WAIOPS_NAMESPACE topology-rest  -o jsonpath="{['spec']['host']}")
-echo "                🌏 Topology REST:           https://$apiURL/"
+echo "                🌏 Topology REST:            https://$apiURL/"
 echo "    "
 apiURL=$(oc get routes -n $WAIOPS_NAMESPACE topology-file  -o jsonpath="{['spec']['host']}")
-echo "                🌏 Topology File:           https://$apiURL/"
+echo "                🌏 Topology File:            https://$apiURL/"
 echo "    "
 apiURL=$(oc get routes -n $WAIOPS_NAMESPACE  topology-manage  -o jsonpath="{['spec']['host']}")
-echo "                🌏 Topology Manage:           https://$apiURL/"
+echo "                🌏 Topology Manage:          https://$apiURL/"
 echo "    "
 apiURL=$(oc get routes -n $WAIOPS_NAMESPACE ai-platform-api  -o jsonpath="{['spec']['host']}")
-echo "                🌏 AI Platform API:           https://$apiURL/"
+echo "                🌏 AI Platform API:          https://$apiURL/"
 echo "    "
 apiURL=$(oc get routes -n $WAIOPS_NAMESPACE datalayer-api  -o jsonpath="{['spec']['host']}")
-echo "                🌏 Datalayer API:           https://$apiURL/"
+echo "                🌏 Datalayer API:            https://$apiURL/"
 echo "    "
-echo "                🌏 Datalayer SWAGGER:           https://$apiURL/irdatalayer.aiops.io/docs/active/v1"
+echo "                🌏 Datalayer SWAGGER:        https://$apiURL/irdatalayer.aiops.io/docs/active/v1"
 echo "    "
+apiURL=$(oc get routes -n $WAIOPS_NAMESPACE aimanager-aio-controller  -o jsonpath="{['spec']['host']}")
+echo "                🌏 AIO Controller API:       https://$apiURL/"
+echo "    "
+echo "                🌏 AIO Controller SWAGGER:   https://$apiURL/irdatalayer.aiops.io/openapi/ui/#/"
+
 echo ""
 echo ""
 echo ""

@@ -291,7 +291,7 @@ if [[ $WAIOPS_PODS -gt $WAIOPS_PODS_MIN ]]; then
       printf "\r  🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐣🥚 - Getting Humio Status                                          "
       export HUMIO_NAMESPACE=$(oc get ns humio-logging  --ignore-not-found|awk '{print$1}')
       printf "\r  🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐣 - GettingDEMO UI Status                                          "
-      export DEMOUI_READY=$(oc get pods -n $WAIOPS_NAMESPACE |grep ibm-aiops-demo-ui|awk '{print$1}')
+      export DEMOUI_READY=$(oc get pods -n $WAIOPS_NAMESPACE |grep waiops-demo-ui-python|awk '{print$1}')
       printf "\r  🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥 - Done ✅                                                        "
 fi
 
@@ -366,6 +366,80 @@ menu_EASY_02 () {
       fi
 
 }
+
+menu_EASY_ALL () {
+      echo "--------------------------------------------------------------------------------------------"
+      echo " 🚀  Install complete Demo Environment for AI Manager" 
+      echo "--------------------------------------------------------------------------------------------"
+      echo ""
+
+      # Check if already installed
+      if [[ ! $WAIOPS_NAMESPACE == "" ]]; then
+            echo "⚠️  CP4WAIOPS AI Manager seems to be installed already"
+
+            read -p "   Are you sure you want to continue❓ [y,N] " DO_COMM
+            if [[ $DO_COMM == "y" ||  $DO_COMM == "Y" ]]; then
+                  echo ""
+                  echo "   ✅ Ok, continuing..."
+                  echo ""
+            else
+                  echo ""
+                  echo "    ❌  Aborting"
+                  echo "--------------------------------------------------------------------------------------------"
+                  echo  ""    
+                  echo  ""
+                  return
+            fi
+      fi
+
+      #Get Pull Token
+      if [[ $ENTITLED_REGISTRY_KEY == "" ]];
+      then
+            echo ""
+            echo ""
+            echo "  Enter CP4WAIOPS Pull token: "
+            read TOKEN
+      else
+            TOKEN=$ENTITLED_REGISTRY_KEY
+      fi
+
+      echo ""
+      echo "  🔐 You have provided the following Token:"
+      echo "    "$TOKEN
+      echo ""
+
+      # Install
+      read -p "  Are you sure that this is correct❓ [y,N] " DO_COMM
+      if [[ $DO_COMM == "y" ||  $DO_COMM == "Y" ]]; then
+            echo ""
+
+            cd ansible
+            ansible-playbook -e ENTITLED_REGISTRY_KEY=$TOKEN 00_aimanager-install-all.yaml
+            cd -
+
+
+
+
+      else
+            echo "    ⚠️  Skipping"
+            echo "--------------------------------------------------------------------------------------------"
+            echo  ""    
+            echo  ""
+      fi
+
+      echo "*****************************************************************************************************************************"
+      echo "*****************************************************************************************************************************"
+      echo "*****************************************************************************************************************************"
+      echo "*****************************************************************************************************************************"
+      echo "  "
+      echo "  ✅ Complete Demo Environment for AI Manager Installation done"
+      echo "  "
+      echo "*****************************************************************************************************************************"
+      echo "*****************************************************************************************************************************"
+
+
+}
+
 
 
 menu_EASY_01 () {
@@ -605,8 +679,8 @@ menuDEMO_OPEN () {
       echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
       echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
       echo "    "
-      appURL=$(oc get routes -n $WAIOPS_NAMESPACE cp4waiops-demo-ui  -o jsonpath="{['spec']['host']}")|| true
-      appToken=$(oc get cm -n cp4waiops demo-ui-config -o jsonpath='{.data.TOKEN}')
+      appURL=$(oc get routes -n $WAIOPS_NAMESPACE waiops-demo-ui-python  -o jsonpath="{['spec']['host']}")|| true
+      appToken=$(oc get cm -n $WAIOPS_NAMESPACE demo-ui-python-config -o jsonpath='{.data.TOKEN}')
       echo "            📥 Demo UI:"   
       echo "    " 
       echo "                🌏 URL:           http://$appURL/"
@@ -989,8 +1063,8 @@ menu_INSTALL_AIOPSDEMO () {
       echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
       echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
       echo "    "
-      appURL=$(oc get routes -n $WAIOPS_NAMESPACE cp4waiops-demo-ui  -o jsonpath="{['spec']['host']}")|| true
-      appToken=$(oc get cm -n cp4waiops demo-ui-config -o jsonpath='{.data.TOKEN}')
+      appURL=$(oc get routes -n $WAIOPS_NAMESPACE waiops-demo-ui-python  -o jsonpath="{['spec']['host']}")|| true
+      appToken=$(oc get cm -n $WAIOPS_NAMESPACE demo-ui-python-config -o jsonpath='{.data.TOKEN}')
       echo "            📥 Demo UI:"   
       echo "    " 
       echo "                🌏 URL:           http://$appURL/"
@@ -1180,12 +1254,21 @@ echo "**************************************************************************
 echo "*****************************************************************************************************************************"
 echo "${NC}"
 
+      echo "  🐥 ${UYellow}CP4WAIOPS - Complete Install${NC}"
 
-      echo "  🐥 ${UYellow}CP4WAIOPS - Guided Install${NC}"
-      echo "         00  - Open Documentation                                      - Open the AI Manager installation Documentation"
 
       if [[ $WAIOPS_PODS -lt $WAIOPS_PODS_MIN ]]; then
-            echo "     🚀  ${BYellow}01  - Step 1: Install Base AI Manager${NC}   ${Green}<-- Start here${NC}        - Install Base AI Manager"
+            echo "     🚀  ${BYellow}00  - Step 1: Install AI Manager Demo${NC}   ${Green}<-- Start here${NC}        - Install Complete AI Manager Demo"
+      else
+            echo "     ✅  ${DGreen}00  - Step 1: Install AI Manager Demo${NC}                         - Already installed "
+      fi
+
+      echo "  "
+      echo "  "
+      echo "  🐥 ${UYellow}CP4WAIOPS - Guided Install${NC}"
+
+      if [[ $WAIOPS_PODS -lt $WAIOPS_PODS_MIN ]]; then
+            echo "     🚀  ${BYellow}01  - Step 1: Install Base AI Manager${NC}                                      - Install Vanilla AI Manager"
       else
             echo "     ✅  ${DGreen}01  - Step 1: Install Base AI Manager${NC}                         - Already installed "
       fi
@@ -1197,7 +1280,7 @@ echo "${NC}"
                   echo "     ✅  ${DGreen}02  - Step 2: Post Install Base AI Manager${NC}                    - Already installed (Models trained: $TRAINING_EXISTS)"
             fi
       else
-            echo "        ${BBlack}02  - Step 2: Post Install Base AI Manager${NC}                    - Not yet available. Wait for step 01 to complete."
+            echo "         ${BBlack}02  - Step 2: Post Install Base AI Manager${NC}                    - Not yet available. Wait for step 01 to complete."
       fi
 
       if [[ $WAIOPS_PODS -gt $WAIOPS_PODS_MIN ]]; then
@@ -1207,9 +1290,13 @@ echo "${NC}"
                   echo "     ✅ ${DGreen} 03  - Step 3: Finalize Install Base AI Manager${NC}                - Already installed (Runbooks created: $CHECK_RUNBOOKS)"
             fi
       else
-            echo "        ${BBlack}03  - Step 3: Finalize Install Base AI Manager${NC}                - Not yet available. Wait for step 02 to complete."
+            echo "         ${BBlack}03  - Step 3: Finalize Install Base AI Manager${NC}                - Not yet available. Wait for step 02 to complete."
 
       fi
+
+      echo "         09  - Open Documentation                                      - Open the AI Manager installation Documentation"
+
+
       echo "  "
       echo "  "
       echo "  "
@@ -1406,7 +1493,8 @@ echo "${NC}"
   read selection
   echo ""
   case $selection in
-      00 ) clear ; menuAWX_OPENDOC  ;;
+      09 ) clear ; menuAWX_OPENDOC  ;;
+      00 ) clear ; menu_EASY_ALL  ;;
       01 ) clear ; menu_EASY_01  ;;
       02 ) clear ; menu_EASY_02  ;;
       03 ) clear ; menu_EASY_03  ;;

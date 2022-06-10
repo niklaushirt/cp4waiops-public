@@ -69,10 +69,8 @@
   # - name: GATEWAY -            🩹 Patch Gateway
   #   shell: oc apply -n {{ WAIOPS_NAMESPACE }} -f ./templates/gateway/2_gateway_cr_cm.yaml
   #   ignore_errors: yes
-  #   when: INSTALL_GATEWAY == true
 
   # - name: GATEWAY -            ♻️  Restart Gateway
   #   shell: oc delete pod -n {{ WAIOPS_NAMESPACE }} $(oc get po -n {{ WAIOPS_NAMESPACE }}|grep event-gateway-generic|awk '{print$1}') 
   #   ignore_errors: yes
-  #   when: INSTALL_GATEWAY == true
   when: AIMANAGER_EXISTS.stdout != ""

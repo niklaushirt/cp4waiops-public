@@ -66,6 +66,8 @@
 # Wait for CP4WAIOPS being completely installed
     #- role: 99_aimanager-wait-cp4waiops
 
+# Install Demo UI    
+    - role: 18_aimanager-demo-ui
 
 # Open Post installation docs
     - role: 99_open-aimanager-runbook

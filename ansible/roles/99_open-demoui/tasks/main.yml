@@ -1,0 +1,36 @@
+
+
+# *************************************************************************************************************************************************
+# --------------------------------------------------------------------------------------------------------------------------------------
+# Open Doc
+# --------------------------------------------------------------------------------------------------------------------------------------
+# *************************************************************************************************************************************************
+
+
+- name: DEMO-UI -                🌏 Get DEMO UI LOGINS
+  shell: |
+    export WAIOPS_NAMESPACE=$(oc get po -A|grep aiops-orchestrator-controller |awk '{print$1}')
+    export DEMOUI_ROUTE=$(oc get route -n {{ WAIOPS_NAMESPACE }} waiops-demo-ui-python -o jsonpath={.spec.host})
+    echo "                🌏 URL:      http://$DEMOUI_ROUTE"
+    echo ""
+    echo "                🔐 Token:    $(oc get cm -n {{ WAIOPS_NAMESPACE }} demo-ui-python-config -o jsonpath='{.data.TOKEN}' && echo)"
+
+    export URL=http://$DEMOUI_ROUTE
+    if [ -x "$(command -v open)" ]; then
+      open $URL
+    else 
+      if [ -x "$(command -v firefox)" ]; then
+        firefox $URL
+      else 
+        if [ -x "$(command -v google-chrome)" ]; then
+          google-chrome $URL
+        fi
+      fi
+    fi
+  ignore_errors: yes
+  register: LOGINS
+
+
+- name: DEMO-UI -                🟢 DEMO UI LOGINS
+  debug: 
+    var: LOGINS.stdout_lines

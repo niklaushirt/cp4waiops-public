@@ -34,7 +34,7 @@
 
 
 # Run Roles 
-    #- role: 91_aimanager-debug-patches
+    - role: 91_aimanager-debug-patches
     
 
 
