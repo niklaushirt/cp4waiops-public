@@ -44,7 +44,7 @@ spec:
             memory: "250Mi"
         env:
           - name: INSTALL_REPO
-            value : "https://github.com/niklaushirt/cp4waiops-public.git"
+            value : "https://github.com/niklaushirt/aiops-install-awx-33.git"
           - name: SHOW_TOOLS
             value : "false"
           - name: SHOW_ADDONS

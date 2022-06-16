@@ -44,6 +44,8 @@
     echo $ZEN_TOKEN
   ignore_errors: yes
   register: ACT_ZEN_TOKEN
+  args:
+    executable: /bin/bash
 
 
 - name: AIManager Runbook -      💾 Set Fact ZEN_TOKEN
@@ -104,6 +106,8 @@
     echo "$result"
   ignore_errors: yes
   register: RBA_RESULT
+  args:
+    executable: /bin/bash
 
 
 
@@ -158,6 +162,8 @@
     echo "$result"
   ignore_errors: yes
   register: RBA_RESULT
+  args:
+    executable: /bin/bash
 
 
 
@@ -226,6 +232,8 @@
     echo "$result"
   ignore_errors: yes
   register: RBA_RESULT
+  args:
+    executable: /bin/bash
 
 
 

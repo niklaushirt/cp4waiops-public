@@ -127,6 +127,16 @@
 
 
 
+# ---------------------------------------------------------------------------------------------------------------------------------------------------"
+# LOAD MODEL TRAINING DATA ahead of time
+# ---------------------------------------------------------------------------------------------------------------------------------------------------"
+# Load data
+    - role: 87_aimanager-training-load-snow
+    - role: 87_aimanager-training-load-logs
+    - role: 87_aimanager-training-load-metric
+
+
+
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------"
 # CREATE TOPOLOGY
@@ -208,12 +218,7 @@
       when: TRAINING_EXISTS==false
     - role: 86_aimanager-training-create-logs-configuration
       when: TRAINING_EXISTS==false
-    - role: 87_aimanager-training-load-snow
-      when: TRAINING_EXISTS==false
-    - role: 87_aimanager-training-load-logs
-      when: TRAINING_EXISTS==false
-    - role: 87_aimanager-training-load-metric
-      when: TRAINING_EXISTS==false
+
 
 
 

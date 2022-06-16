@@ -102,6 +102,10 @@
 
   register: output_string
   ignore_errors: yes
+  args:
+    executable: /bin/bash
+
+    
 - name: LOGIN -          🔐 WAIOPS
   debug: 
     var: output_string.stdout_lines

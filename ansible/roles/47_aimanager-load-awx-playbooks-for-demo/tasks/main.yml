@@ -71,6 +71,8 @@
     echo "$EXENV_ID"
   ignore_errors: yes
   register: EXENV_ID
+  args:
+    executable: /bin/bash
 
 
 
@@ -117,6 +119,8 @@
     echo "$PROJECT_ID"
   ignore_errors: yes
   register: AWX_RESULT
+  args:
+    executable: /bin/bash
 
 - name: AWX Runbook Content -    💾 Set Fact AWX_PROJECT_ID {{ AWX_RESULT.stdout }} 
   set_fact: AWX_PROJECT_ID={{ AWX_RESULT.stdout }} 
@@ -161,6 +165,8 @@
     echo "$PROJECT_ID"
   ignore_errors: yes
   register: AWX_RESULT
+  args:
+    executable: /bin/bash
 
 
 - name: AWX Runbook Content -    🚀 Wait for AWX Project
@@ -206,6 +212,8 @@
     echo "$INVENTORY_ID"
   ignore_errors: yes
   register: AWX_RESULT
+  args:
+    executable: /bin/bash
 
 - name: AWX Runbook Content -    💾 Set Fact AWX_INVENTORY_ID {{ AWX_RESULT.stdout }} 
   set_fact: AWX_INVENTORY_ID={{ AWX_RESULT.stdout }} 
@@ -235,6 +243,8 @@
     echo $result
   ignore_errors: yes
   register: AWX_RESULT
+  args:
+    executable: /bin/bash
 
 
 
@@ -259,6 +269,8 @@
     echo $result
   ignore_errors: yes
   register: AWX_RESULT
+  args:
+    executable: /bin/bash
 
 
 - name: AWX Runbook Content -    🚀 Create AWX Template Start Robotshop Ratings
@@ -282,6 +294,8 @@
     echo $result
   ignore_errors: yes
   register: AWX_RESULT
+  args:
+    executable: /bin/bash
 
 
 
@@ -306,6 +320,8 @@
     echo $result
   ignore_errors: yes
   register: AWX_RESULT
+  args:
+    executable: /bin/bash
 
 
 

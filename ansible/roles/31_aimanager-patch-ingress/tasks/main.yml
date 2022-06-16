@@ -96,6 +96,8 @@
     fi
   register: certificate_patch
   ignore_errors: yes
+  args:
+    executable: /bin/bash
 
 
 - name: CERTIFICATES -           🟢 Patch AutomationUIConfig Certificates

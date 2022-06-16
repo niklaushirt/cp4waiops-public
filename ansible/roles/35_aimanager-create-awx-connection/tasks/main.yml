@@ -99,6 +99,8 @@
   ignore_errors: yes
   when: CREATE_EXTERNAL_ROUTES == true
   register: output_string
+  args:
+    executable: /bin/bash
   
 - name: OUTPUT -          🟢 RESULT
   debug: 

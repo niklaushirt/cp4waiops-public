@@ -27,6 +27,10 @@
 
   register: output_string
   ignore_errors: yes
+  args:
+    executable: /bin/bash
+
+    
 - name: TRAINING RUN METRIC -       ✅ RESULT
   debug: 
     var: output_string.stdout_lines
