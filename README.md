@@ -22,7 +22,7 @@ Different flavors of this demo are available, reaching from a very flexible, Pow
 	
 	> 	**🕦 Preparation time**: about 1 hour to get used to the demo flow and click targets.
 
-1. ### [Demo it - Shared Demo Environment](#-demo-it---shared-demo-environment-33)
+1. ### [Demo it - Shared Demo Environment](#-demo-it---shared-demo-environment)
 
 
 	> 	Pre-provisioned shared demo environment for customer live demos.
@@ -69,7 +69,7 @@ I have added a guided version and a Demo Walkthrough Video.
 
 
 
-## 🚀 Demo it - Shared Demo Environment 3.3
+## 🚀 Demo it - Shared Demo Environment
 
 
 ### Reserve
