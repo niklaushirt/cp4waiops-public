@@ -6,33 +6,103 @@
 # Welcome to the CloudPak for Watson AIOps Demo Assets
 
 A Story-Telling demo showcasing Watson AIOps with integration of Instana, Humio, Slack, Event Manager (NetCool Operations Insights - NOI), AI Manager, and much more. The story explains how a broken website will be fixed .
-Different flavors of this demo are available, a very flexible, PowerPoint based click-through demo and instructions for your very own installation, so you can pick the one that is most applicable for your situation.
+
+Different flavors of this demo are available, reaching from a very flexible, PowerPoint based click-through demo down to your very own installation, so you can pick the level which is most applicable for your situation.
 
 ### The different levels of demo that I have made available:
-1. ### [Show it - Offline Click Through Demo](#show-it---offline-click-through-demo-1)
-	🚨 **New version including: CP4WAIOPS 3.2, Turbonomic and Instana**
+
+1. ### [Show it - Offline Click Through Demo](#-show-it---offline-click-through-demo)
+
+	🚨 **New version including: CP4WAIOPS 3.4, Turbonomic and Instana**
+
+
 	> 	Simple PowerPoint based demo. Feels like the real thing and cannot go wrong.
 	
 	> 	**🚀 Available**:        instantly
 	
 	> 	**🕦 Preparation time**: about 1 hour to get used to the demo flow and click targets.
+
+1. ### [Demo it - Shared Demo Environment](#-demo-it---shared-demo-environment-33)
+
+
+	> 	Pre-provisioned shared demo environment for customer live demos.
+
+	> 	**🚀 Available**: within 2-3 hours (ping me on Slack to make sure I see the request)
 	
-1. ### [Install it - Install your own Demo Environment](#install-it---install-your-own-demo-environment-1)
-	🚨 **New version: CP4WAIOPS 3.2**
+	> 	**🕦 Preparation time**: about 1 hour to get used to the demo flow and click targets.
+	
+
+	
+1. ### [Install it - Install your own Demo Environment](#-install-it---install-your-own-demo-environment)
+
+	🚨 **New version: CP4WAIOPS 3.4**
+
 	> 	Complete walkthrough to install your own demo environment.
 	
 	> 	**🚀 Available**: as soon as you get your Cluster
 	
 	> 	**🕦 Preparation time**: about 8-12 hours if you have never done it.
-## Show it - Offline Click Through Demo
+
+
+![arch](pics/demo-flow.gif)
+
+
+## 🚀 Show it - Offline Click Through Demo
+
+
 If you need an easy and fast way to demo AIOps in an "almost real" way you can use the Click Through Demo built with PowerPoint.
 
 
-The file is [AIOPS_CLICKTRHOUGH_2022_3.4.0_V1](https://ibm.box.com/s/icgkxzlt2ja6dth16dpdin055uyysej1) in this repository.
-You can also find a short quick-and-dirty demo video in the folder.
+
+🚨 **New version including: CP4WAIOPS 3.4, Turbonomic and Instana**
+
+The file is [AIOPS_CLICKTRHOUGH_2022_3.4.0_V1](https://ibm.box.com/s/icgkxzlt2ja6dth16dpdin055uyysej1) on Box.
+
+I have added a guided version and a Demo Walkthrough Video.
 
 
 
-## Install it - Install your own Demo Environment
+
+
+
+
+
+
+
+## 🚀 Demo it - Shared Demo Environment 3.3
+
+
+### Reserve
+To reserve the Watson AIOps 3.3 demo instance you have to create an issue.
+
+* Click [here](https://github.com/niklaushirt/cp4waiops-public/issues/new/choose).
+* And select "Get Started"
+
+Please provide:
+
+- Your email, 
+- The timeslot for the demo preparation (4h max - to avoid conflicts) 
+- The timeslot for the demo (4h max - to avoid conflicts) 
+- Customer
+- OpportunityID ❗
+- And a short description 
+
+We will then send you the login details and invite you to the Slack demo channel.
+
+
+
+### Demo
+
+You can find all the needed information to run the demo in the #general channel of TEC Europe as soon as you have been invited.
+
+
+
+
+## 🚀 Install it - Install your own Demo Environment
+
+🚨 NEW Version 3.4
+
 For those who want to go the extra mile I have created a complete Installation Cookbook
-Get started setting up your own environment [here](https://github.com/niklaushirt/cp4waiops-deployer)
+
+ℹ️ [Information and Repository](https://github.com/niklaushirt/cp4waiops-deployer)
+
