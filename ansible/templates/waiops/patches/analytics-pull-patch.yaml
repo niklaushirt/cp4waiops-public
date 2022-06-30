@@ -1,3 +1,0 @@
-spec:
-  pullSecrets:
-  - ibm-entitlement-key
