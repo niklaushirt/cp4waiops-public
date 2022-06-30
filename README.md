@@ -27,11 +27,11 @@ Different flavors of this demo are available, a very flexible, PowerPoint based 
 If you need an easy and fast way to demo AIOps in an "almost real" way you can use the Click Through Demo built with PowerPoint.
 
 
-The file is [AIOps INTERACTIVE DEMO 3.2 2021](https://ibm.box.com/s/915h3vnctzlz7ri7bw8qia6b9kc7kogm) in this repository.
+The file is [AIOPS_CLICKTRHOUGH_2022_3.4.0_V1](https://ibm.box.com/s/icgkxzlt2ja6dth16dpdin055uyysej1) in this repository.
 You can also find a short quick-and-dirty demo video in the folder.
 
 
 
 ## Install it - Install your own Demo Environment
 For those who want to go the extra mile I have created a complete Installation Cookbook
-Get started setting up your own environment [here](./README_INSTALL.md)
+Get started setting up your own environment [here](https://github.com/niklaushirt/cp4waiops-deployer)
