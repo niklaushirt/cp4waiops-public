@@ -2,6 +2,7 @@
 ---------------------------------------------------------------------------------------------------------------
 ![K8s CNI](./doc/pics/front.png)
 <center> ©2022 Niklaus Hirt / IBM </center>
+
 # Welcome to the CloudPak for Watson AIOps Demo Assets
 
 A Story-Telling demo showcasing Watson AIOps with integration of Instana, Humio, Slack, Event Manager (NetCool Operations Insights - NOI), AI Manager, and much more. The story explains how a broken website will be fixed .
