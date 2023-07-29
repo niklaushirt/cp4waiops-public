@@ -5,15 +5,13 @@
 
 # Welcome to the CloudPak for Watson AIOps Demo Assets
 
-A Story-Telling demo showcasing Watson AIOps with integration of Instana, Humio, Slack, Event Manager (NetCool Operations Insights - NOI), AI Manager, and much more. The story explains how a broken website will be fixed .
+A Story-Telling demo showcasing IBM AIOps with integration of Instana, ELK, Slack, and much more. The story explains how a broken website will be fixed .
 
 Different flavors of this demo are available, reaching from a very flexible, PowerPoint based click-through demo down to your very own installation, so you can pick the level which is most applicable for your situation.
 
 ### The different levels of demo that I have made available:
 
 1. ### [Show it - Offline Click Through Demo](#-show-it---offline-click-through-demo)
-
-	🚨 **New version including: CP4WAIOPS 3.4, Turbonomic and Instana**
 
 
 	> 	Simple PowerPoint based demo. Feels like the real thing and cannot go wrong.
@@ -35,7 +33,7 @@ Different flavors of this demo are available, reaching from a very flexible, Pow
 	
 1. ### [Install it - Install your own Demo Environment](#-install-it---install-your-own-demo-environment)
 
-	🚨 **New version: CP4WAIOPS 3.4**
+
 
 	> 	Complete walkthrough to install your own demo environment.
 	
@@ -54,9 +52,8 @@ If you need an easy and fast way to demo AIOps in an "almost real" way you can u
 
 
 
-🚨 **New version including: CP4WAIOPS 3.4, Turbonomic and Instana**
 
-The file is [AIOPS_CLICKTRHOUGH_2022_3.4.0_V1](https://ibm.box.com/s/icgkxzlt2ja6dth16dpdin055uyysej1) on Box.
+The latest versions are [here](https://ibm.box.com/s/icgkxzlt2ja6dth16dpdin055uyysej1) on Box.
 
 I have added a guided version and a Demo Walkthrough Video.
 
@@ -75,7 +72,7 @@ I have added a guided version and a Demo Walkthrough Video.
 ### Reserve
 To reserve the Watson AIOps 3.3 demo instance you have to create an issue.
 
-* Click [here](https://github.com/niklaushirt/cp4waiops-public/issues/new/choose).
+* Click [here](https://github.com/niklaushirt/CP4AIOPS-public/issues/new/choose).
 * And select "Get Started"
 
 Please provide:
@@ -100,9 +97,8 @@ You can find all the needed information to run the demo in the #general channel 
 
 ## 🚀 Install it - Install your own Demo Environment
 
-🚨 NEW Version 3.4
 
 For those who want to go the extra mile I have created a complete Installation Cookbook
 
-ℹ️ [Information and Repository](https://github.com/niklaushirt/cp4waiops-deployer)
+ℹ️ [Information and Repository](https://github.com/niklaushirt/CP4AIOPS-deployer)
 
